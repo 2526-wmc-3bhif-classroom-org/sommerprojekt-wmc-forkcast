@@ -44,14 +44,14 @@ jobs:
           run: npm run generate
 
         - name: ls
-          run: "ls -lah"
+          run: "ls -lah .output"
 
         - name: Setup Pages
           uses: actions/configure-pages@v3
         - name: Upload artifact
           uses: actions/upload-pages-artifact@v3
           with:
-            path: '.output/public'
+            path: 'frontend/.output/public'
     
         - name: Deploy to GitHub Pages
           id: deployment
