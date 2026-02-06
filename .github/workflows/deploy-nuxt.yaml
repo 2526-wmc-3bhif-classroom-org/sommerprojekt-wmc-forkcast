@@ -1,4 +1,4 @@
-name: dist.yml
+name: Deploy Nuxt app
 on:
     push:
         branches:
