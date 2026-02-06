@@ -43,14 +43,16 @@ jobs:
         - name: Build Distribution Package
           run: npm run generate
 
+        - name: ls
+          run: "ls"
+
         - name: Setup Pages
           uses: actions/configure-pages@v3
         - name: Upload artifact
           uses: actions/upload-pages-artifact@v3
           with:
             path: '.output/public'
-        - name: ls
-          run: "ls"
+    
         - name: Deploy to GitHub Pages
           id: deployment
           uses: actions/deploy-pages@v4
