@@ -12,6 +12,9 @@ jobs:
     build:
         name: Build and Publish Distribution Package
         runs-on: ubuntu-latest
+        defaults:
+          run:
+            working-directory: ./frontend
         permissions:
           contents: write
         steps:
