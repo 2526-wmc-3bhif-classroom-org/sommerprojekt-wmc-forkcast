@@ -9,8 +9,10 @@ https://coolors.co/e8f1f2-b3efb2-7a9e7e-31493c-001a23
 
 ## DB - Entities
 - User (id, name, email, password, profilePicture)
+- Friend (userId, friendId)
+- Notification (id, userId, type, content, isRead)
 - CalenderEntry(userId, date, recipeId)
 - Recipe(id, name, image)
 - FavoriteFood(userId, recipeId)
 
-![Erd-Diagram](https://img.plantuml.biz/plantuml/svg/ZL1B2i903DtFAKBtlK4fWjYDco9uWD294fXFoQHAQRsxKohex5oz5zw7Hmv9KNJopXWAoZf3TKqa5Im6W2qqJNzksym3Uif07jbb736bPnIxKOatTjJpe9EGUNsRBZJmI7lN9yyUxuNdY8w29Ja5bNctMjJ2qk4Z2YjrCThDaQLj8wnhNQyB50s5yXiq-vW_fBBF7FAH__C6)
+![Erd-Diagram](https://img.plantuml.biz/plantuml/svg/bL91QWCn3BplAqJk-K098H2QIw64G1-Wxcgt0jjQPALbIVBtsbdQsc4llTXunfePoTv5GxMpTqr3mTWcMBr5qXLS6W3ku0au60saiDaSNxRRX0RqbF1eoc58P_B8hWH6ZF5BjAimbPuT7RcrinRbjp_VWpA5BZiNuAiOzzoYiOGvb4rZPTzA2XYiX3YU2BFzkuWZ3ANWYLeUwJ_ziSTXEV4UNKfC-XnCfrcoGyjtysRigUeFFqNPw23oqsKUDLolwxLSe19hvfZBN5LMgZvKLLHLL4xrGUx-2Ac33upGtm_BFF_IpIwjwGTz0m00)

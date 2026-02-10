@@ -1,28 +1,44 @@
 @startuml
 
 entity "User" {
-  id <<PK>>
-  name
-  email
-  password
-  profilePicture
+  id : integer <<PK>>
+  name : string
+  email : string
+  password : string
+  profilePicture : string
+}
+
+entity "Friend" {
+}
+
+entity "Notification" {
+  type : string
+  content : string
+  isRead : boolean
 }
 
 entity "Recipe" {
-  name
-  image
+  id : integer <<PK>>
+  name : string
+  image : string
 }
 
 entity "CalenderEntry" {
-  date
+  date : datetime
 }
 
 entity "FavoriteFood" {
 }
 
-User ||--|{ CalenderEntry
-User ||--|{ FavoriteFood
-Recipe ||--|{ FavoriteFood
-Recipe ||--|{ CalenderEntry
+User ||--o{ CalenderEntry
+Recipe ||--o{ CalenderEntry
+
+User ||--o{ FavoriteFood
+Recipe ||--o{ FavoriteFood
+
+User ||--o{ Notification
+
+User ||--o{ Friend : has friend
+User ||--o{ Friend : is friend
 
 @enduml
