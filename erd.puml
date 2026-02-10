@@ -1,0 +1,28 @@
+@startuml
+
+entity "User" {
+  id <<PK>>
+  name
+  email
+  password
+  profilePicture
+}
+
+entity "Recipe" {
+  name
+  image
+}
+
+entity "CalenderEntry" {
+  date
+}
+
+entity "FavoriteFood" {
+}
+
+User ||--|{ CalenderEntry
+User ||--|{ FavoriteFood
+Recipe ||--|{ FavoriteFood
+Recipe ||--|{ CalenderEntry
+
+@enduml
