@@ -1,7 +1,7 @@
 import BetterSqlite3 from "better-sqlite3";
 import { Database, Statement } from "better-sqlite3";
 
-const dbFileName = "flights.db";
+const dbFileName = "forkcast.db";
 
 export class Unit {
 
@@ -51,24 +51,6 @@ export class Unit {
     }
 }
 
-export function ensureSampleDataInserted(unit: Unit): "inserted" | "skipped" {
-    function alreadyPresent(): boolean {
-        const checkStmt = unit.prepare<{ cnt: number }>('select count(*) as "cnt" from Plane');
-        const result = checkStmt.get()?.cnt ?? 0;
-        return result > 0;
-    }
-
-    function insert(): void {
-        // TODO
-    }
-
-    if (!(alreadyPresent())) {
-        insert();
-        return "inserted";
-    }
-    return "skipped";
-}
-
 class DB {
     public static createDBConnection(): Database {
         const db = new BetterSqlite3(dbFileName, {
@@ -106,7 +88,55 @@ class DB {
     }
 
     private static ensureTablesCreated(connection: Database): void {
-        // TODO
+        connection.exec(`
+            CREATE TABLE IF NOT EXISTS User (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                email TEXT NOT NULL UNIQUE,
+                password TEXT NOT NULL,
+                profilePicture TEXT
+            );
+
+            CREATE TABLE IF NOT EXISTS Recipe (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                image TEXT
+            );
+
+            CREATE TABLE IF NOT EXISTS Notification (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                type TEXT NOT NULL,
+                content TEXT NOT NULL,
+                isRead BOOLEAN NOT NULL DEFAULT 0,
+                userId INTEGER NOT NULL,
+                FOREIGN KEY (userId) REFERENCES User(id)
+            );
+
+            CREATE TABLE IF NOT EXISTS Friend (
+                userId INTEGER NOT NULL,
+                friendId INTEGER NOT NULL,
+                PRIMARY KEY (userId, friendId),
+                FOREIGN KEY (userId) REFERENCES User(id),
+                FOREIGN KEY (friendId) REFERENCES User(id)
+            );
+
+            CREATE TABLE IF NOT EXISTS CalenderEntry (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                date DATETIME NOT NULL,
+                userId INTEGER NOT NULL,
+                recipeId INTEGER NOT NULL,
+                FOREIGN KEY (userId) REFERENCES User(id),
+                FOREIGN KEY (recipeId) REFERENCES Recipe(id)
+            );
+
+            CREATE TABLE IF NOT EXISTS FavoriteFood (
+                userId INTEGER NOT NULL,
+                recipeId INTEGER NOT NULL,
+                PRIMARY KEY (userId, recipeId),
+                FOREIGN KEY (userId) REFERENCES User(id),
+                FOREIGN KEY (recipeId) REFERENCES Recipe(id)
+            );
+        `);
     }
 }
 
