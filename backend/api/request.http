@@ -1,0 +1,9 @@
+POST http://localhost:3000/api/accounts/login HTTP/1.1
+Host: localhost:3000
+Content-Type: application/json
+
+{
+  "username": "kxrim",
+  "email": "test@gmail.com",
+  "password": "Test1234"
+}
