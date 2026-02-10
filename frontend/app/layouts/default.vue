@@ -1,8 +1,22 @@
 <script setup lang="ts">
-import NavbarComponent from "~/components/NavbarComponent.vue";
+useHead({
+  script: [
+    {
+      src: "https://kit.fontawesome.com/0a7e2ccef9.js",
+      crossorigin: "anonymous"
+    },
+    {
+      src: "https://unpkg.com/cally",
+      type: "module"
+    }
+  ]
+})
 </script>
 
 <template>
   <NavbarComponent/>
-  <slot/>
+  <div class="m-5">
+    <slot/>
+  </div>
+  <FooterComponent/>
 </template>
