@@ -1,8 +1,7 @@
 # Forkcast
 
-Forkcast ist eine webbasierte Applikation, die den Prozess der Mahlzeitenplanung digitalisiert und
-sozial vernetzt. Anstatt mühsam Listen zu schreiben, kombiniert Forkcast eine intuitive Drag-and-Drop-Planung mit einer
-intelligenten, dynamischen Einkaufsliste.
+Forkcast ist eine webbasierte Applikation, die den Prozess der Mahlzeitenplanung digitalisiert und vereinfacht. Anstatt mühsam Listen zu schreiben, kombiniert Forkcast einen Drag-and-Drop-Kalender mit einer
+intelligenten Einkaufsliste.
 
 ## Kernfunktionen
 
