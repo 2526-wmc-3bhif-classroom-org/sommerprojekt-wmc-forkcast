@@ -14,9 +14,9 @@ intelligenten Einkaufsliste.
   freies Textfeld (z.B. für "Snack" oder "Geburtstagsfeier").
 - Portions-Anpassung: Die Mengen der Zutaten werden im Planer individuell auf die Personenanzahl hochgerechnet.
 
-### Dynamische Einkaufsliste
+### Smarte Einkaufsliste
 
-- Aggregations-Logik: Gleiche Zutaten aus verschiedenen Rezepten (z.B. Zwiebeln) werden automatisch addiert.
+- Smarte Zutaten: Gleiche Zutaten aus verschiedenen Rezepten (z.B. Zwiebeln) werden automatisch addiert.
 - Bestands-Check: Nutzer können Zutaten, die sie bereits vorrätig haben, abhaken oder die Menge manuell reduzieren.
 - Rechtzeitige Planung: Die Liste generiert sich automatisch aus dem Wochenplan, um sicherzustellen, dass alle Zutaten
   rechtzeitig im Haus sind.
