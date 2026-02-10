@@ -8,7 +8,7 @@ const app = express();
 
 // Create db if not exists and ensure tables are created
 const unit = new Unit(true);
-unit.complete(true);
+unit.complete(null);
 
 app.use(cors());
 app.use(express.json());
