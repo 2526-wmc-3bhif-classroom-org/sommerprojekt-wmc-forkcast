@@ -1,0 +1,29 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "npx nodemon",
+    "start": "npx tsx src/app.ts"
+  },
+  "type": "module",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "http-status-codes": "^2.3.0",
+    "better-sqlite3": "^12.5.0"
+  },
+  "devDependencies": {
+    "@tsconfig/next": "^2.0.4",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.19.1",
+    "nodemon": "^3.1.9",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3"
+  },
+  "nodemonConfig": {
+    "ignore": [
+      "**/*.json"
+    ]
+  }
+}
