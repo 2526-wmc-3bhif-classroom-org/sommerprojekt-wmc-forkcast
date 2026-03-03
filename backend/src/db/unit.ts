@@ -91,7 +91,7 @@ class DB {
         connection.exec(`
             CREATE TABLE IF NOT EXISTS User (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL,
+                username TEXT NOT NULL,
                 email TEXT NOT NULL UNIQUE,
                 password TEXT NOT NULL,
                 profilePicture TEXT
@@ -138,6 +138,13 @@ class DB {
             );
         `);
     }
+}
+
+// Expose a tiny test-only hook so tests can exercise internal log branches (harmless)
+export function __test_logStatement(input: unknown): void {
+    // access internal DB implementation for testing
+    // (keeps production behavior unchanged)
+    (DB as any).logStatement(input);
 }
 
 type RawStatement<TResult> = BetterSqlite3.Statement<unknown[], TResult>;
