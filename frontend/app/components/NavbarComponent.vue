@@ -1,12 +1,8 @@
-<script setup lang="ts">
-import NotificationComponent from "~/components/NotificationComponent.vue";
-</script>
-
 <template>
   <!-- Loading indicator for page switches -->
   <NuxtLoadingIndicator color="var(--color-primary)" :height="2" :throttle="0" />
 
-  <div class="navbar bg-base-100 shadow-sm">
+  <div class="sticky top-0 navbar bg-base-100 shadow-sm">
     <div class="flex-1">
       <NuxtLink to="/" class="btn btn-ghost text-xl"><i class="fa-solid fa-utensils"></i>Forkcast</NuxtLink>
     </div>

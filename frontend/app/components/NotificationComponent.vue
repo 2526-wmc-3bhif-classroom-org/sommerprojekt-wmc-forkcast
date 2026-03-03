@@ -14,7 +14,7 @@ const props = defineProps(["icon", "title", "description", "goto"])
       </div>
     </div>
 
-    <NuxtLink class="btn btn-ghost btn-circle" :to="props.goto">
+    <NuxtLink class="btn btn-ghost btn-circle" :to="goto">
       <i class="fa-solid fa-arrow-right"></i>
     </NuxtLink>
   </div>
