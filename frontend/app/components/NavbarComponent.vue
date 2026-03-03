@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import NotificationComponent from "~/components/NotificationComponent.vue";
 </script>
 
 <template>
@@ -30,12 +31,15 @@
         <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar">
           <i class="fa-solid fa-bell"></i>
         </div>
-        <div tabindex="0" class="card card-compact dropdown-content bg-base-100 z-1 mt-3 w-60 p-2 shadow">
-          <button class="btn btn-ghost"><i class="fa-solid fa-trash-can"></i>Clear</button>
+        <div tabindex="0" class="card card-compact dropdown-content bg-base-100 z-1 mt-3 w-96 p-2 shadow">
+          <div class="flex flex-row justify-between">
+            <button class="btn btn-ghost btn-circle"><i class="fa-solid fa-bell-slash"></i></button>
+            <button class="btn btn-ghost btn-circle"><i class="fa-solid fa-trash-can"></i></button>
+          </div>
           <ul>
-            <li><div class="btn btn-soft w-full mt-2">Notif</div></li>
-            <li><div class="btn btn-soft w-full mt-2">Notif</div></li>
-            <li><div class="btn btn-soft w-full mt-2">Notif</div></li>
+            <li><NotificationComponent icon="fa-triangle-exclamation" title="Notification 1" description="This is a notification" goto="/"/></li>
+            <li><NotificationComponent title="Notification 2" description="This is a notification" goto="/"/></li>
+            <li><NotificationComponent title="Notification 3" description="This is a notification" goto="/"/></li>
           </ul>
         </div>
       </div>
