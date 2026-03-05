@@ -28,3 +28,6 @@ jobs:
 
     - name: Build (Compile TypeScript)
       run: npx tsc
+
+    - name: Run Unit Tests
+      run: npm test
