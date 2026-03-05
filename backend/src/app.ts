@@ -14,10 +14,10 @@ unit.complete();
 app.use(cors());
 app.use(express.json());
 
-app.use("/api", authRoutes);
+app.use("/api/auth", authRoutes);
 
 // Example of a protected route
-app.get("/api/profile", authenticateToken, (req: AuthRequest, res) => {
+app.get("/api/users/profile", authenticateToken, (req: AuthRequest, res) => {
     // req.user is available here
     res.json({ message: `Welcome user ${req.user?.userId}` });
 });
