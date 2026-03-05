@@ -1,10 +1,16 @@
 import fs from "fs";
 import path from "path";
 import os from "os";
-import { Unit, __test_logStatement } from "../src/db/unit";
+import { Unit } from "../src/db/unit";
+
+// This is a workaround to test a private method. Ideally, this should not be done.
+const __test_logStatement = (statement: string | unknown) => {
+    const DB = (Unit as any).DB;
+    DB.logStatement(statement);
+};
+
 
 describe("Unit (DB) — simple, direct tests", () => {
-  const dbFile = path.resolve(process.cwd(), "forkcast.db");
   let origCwd: string;
   let tmpDir: string;
 
@@ -17,16 +23,15 @@ describe("Unit (DB) — simple, direct tests", () => {
   afterEach(() => {
     try {
       process.chdir(origCwd);
-      if (fs.existsSync(path.join(tmpDir, "forkcast.db"))) fs.unlinkSync(path.join(tmpDir, "forkcast.db"));
       fs.rmSync(tmpDir, { recursive: true, force: true });
     } catch {}
   });
 
   it("prepare + run + getLastRowId (insert) returns an id", () => {
     const unit = new Unit(false);
-    const stmt = unit.prepare<{ id: number }, { username: string }>(
-      "INSERT INTO user (username, email, password) VALUES (@username, 'a@b', 'x')",
-      { username: "u1" }
+    const stmt = unit.prepare(
+      "INSERT INTO User (name, email, password) VALUES (@name, 'a@b', 'x')",
+        { name: "u1" }
     );
     const res = stmt.run();
     expect(res).toBeDefined();

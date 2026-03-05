@@ -3,9 +3,9 @@ import path from "path";
 import os from "os";
 import { Unit } from "../src/db/unit";
 import { UserRepository } from "../src/repository/userRepository";
+import { User } from "../src/types";
 
-describe("UserRepository — integration with Unit (simple)", () => {
-  const dbFile = path.resolve(process.cwd(), "forkcast.db");
+describe("UserRepository — integration with Unit", () => {
   let origCwd: string;
   let tmpDir: string;
 
@@ -23,25 +23,40 @@ describe("UserRepository — integration with Unit (simple)", () => {
     } catch {}
   });
 
-  it("createAccount + exists + findByUsername (happy path)", () => {
+  it("create() and findByEmail() should work together", () => {
     const unit = new Unit(false);
     const repo = new UserRepository(unit);
 
-    repo.createAccount("bob", "b@b", "pw-hash");
-    expect(repo.exists("bob")).toBe(true);
+    const userToCreate: Omit<User, "id"> = {
+      name: "bob",
+      email: "b@b.com",
+      password: "pw-hash",
+      profilePicture: "pic.jpg"
+    };
 
-    const user = repo.findByUsername("bob");
-    expect(user).toBeDefined();
-    expect(user?.username).toBe("bob");
+    // Create user
+    const createdUser = repo.create(userToCreate);
+    expect(createdUser).toBeDefined();
+    expect(createdUser.id).toBeGreaterThan(0);
+    expect(createdUser.name).toBe("bob");
+    expect(createdUser.email).toBe("b@b.com");
+
+    // Find user
+    const foundUser = repo.findByEmail("b@b.com");
+    expect(foundUser).toBeDefined();
+    expect(foundUser?.id).toBe(createdUser.id);
+    expect(foundUser?.name).toBe("bob");
 
     unit.complete(true);
   });
 
-  it("exists return false if user missing and findByUsername returns undefined", () => {
-    const unit = new Unit(true);
+  it("findByEmail() should return undefined if user is not found", () => {
+    const unit = new Unit(true); // Read-only is fine for this test
     const repo = new UserRepository(unit);
-    expect(repo.exists("noone")).toBe(false);
-    expect(repo.findByUsername("noone")).toBeUndefined();
+
+    const user = repo.findByEmail("noone@nowhere.com");
+    expect(user).toBeUndefined();
+
     unit.complete();
   });
 });
