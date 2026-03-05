@@ -1,10 +1,12 @@
-import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
 import { Unit } from "../db/unit";
 import { UserRepository } from "../repository/userRepository";
 import { User } from "../types";
+import { hashPassword, comparePassword } from "../utils";
+import { generateJWT } from "../utils/jwtUtils";
+import { Response } from "express";
+import jwt from "jsonwebtoken"; // Keep for verifyToken for now
 
-const JWT_SECRET = process.env.JWT_SECRET || "supersecretjwtkey"; // TODO: Use a strong secret from environment variables
+const JWT_SECRET = process.env.JWT_SECRET || "supersecretjwtkey"; // Keep for verifyToken for now
 
 export class AuthService {
     private userRepository: UserRepository;
@@ -19,7 +21,7 @@ export class AuthService {
             throw new Error("User with this email already exists");
         }
 
-        const hashedPassword = await bcrypt.hash(password, 10);
+        const hashedPassword = await hashPassword(password);
 
         const newUser = this.userRepository.create({
             name,
@@ -33,19 +35,22 @@ export class AuthService {
         return userWithoutPassword;
     }
 
-    public async login(email: string, password: string): Promise<string> {
+    public async login(res: Response, email: string, password: string): Promise<Omit<User, "password">> {
         const user = this.userRepository.findByEmail(email);
         if (!user) {
             throw new Error("Invalid credentials");
         }
 
-        const isPasswordValid = await bcrypt.compare(password, user.password);
+        const isPasswordValid = await comparePassword(password, user.password);
         if (!isPasswordValid) {
             throw new Error("Invalid credentials");
         }
 
-        const token = jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET, { expiresIn: "1h" });
-        return token;
+        generateJWT(res, user.id.toString()); // Assuming user.id is a number, convert to string for jwtUtils
+        
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { password: _, ...userWithoutPassword } = user;
+        return userWithoutPassword;
     }
 
     public verifyToken(token: string): { userId: number; email: string } {

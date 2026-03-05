@@ -4,19 +4,48 @@ import jwt from "jsonwebtoken";
 const JWT_SECRET = process.env.JWT_SECRET || "secret";
 const JWT_EXPIRY = process.env.JWT_EXPIRY || "1h";
 
+const parseExpiryStringToMilliseconds = (expiry: string): number => {
+    const value = parseInt(expiry.slice(0, -1));
+    const unit = expiry.slice(-1);
+
+    if (isNaN(value)) {
+        throw new Error("Invalid JWT_EXPIRY value: " + expiry);
+    }
+
+    switch (unit) {
+        case "s":
+            return value * 1000;
+        case "m":
+            return value * 60 * 1000;
+        case "h":
+            return value * 60 * 60 * 1000;
+        case "d":
+            return value * 24 * 60 * 60 * 1000;
+        default:
+            if (!isNaN(parseInt(expiry))) {
+                return parseInt(expiry) * 1000;
+            }
+            throw new Error("Invalid JWT_EXPIRY unit: " + expiry);
+    }
+};
+
 const generateJWT = (res: Response, userId: string) => {
+    // @ts-ignore
     const token = jwt.sign({ userId }, JWT_SECRET, { expiresIn: JWT_EXPIRY });
 
-    const expiryInSeconds = parseInt(JWT_EXPIRY as string);
-    if (isNaN(expiryInSeconds)) {
-        throw new Error("Invalid JWT_EXPIRY value");
+    let maxAgeMilliseconds: number;
+    try {
+        maxAgeMilliseconds = parseExpiryStringToMilliseconds(JWT_EXPIRY);
+    } catch (error) {
+        console.error("Error parsing JWT_EXPIRY:", error);
+        throw error;
     }
 
     res.cookie("jwt", token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "strict",
-        maxAge: expiryInSeconds * 1000,
+        maxAge: maxAgeMilliseconds,
         path: "/",
     });
 };

@@ -34,9 +34,9 @@ router.post("/login", async (req: Request, res: Response, next: NextFunction) =>
         }
 
         const authService = new AuthService(unit);
-        const token = await authService.login(email, password);
+        const user = await authService.login(res, email, password); // Pass res and expect user object
         unit.complete(true);
-        res.status(200).json({ token });
+        res.status(200).json(user); // Return user object, token is set as cookie
     } catch (error: any) {
         unit.complete(false);
         if (error.message.includes("Invalid credentials")) {

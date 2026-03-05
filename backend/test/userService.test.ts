@@ -4,6 +4,7 @@ import os from "os";
 import { AuthService } from "../src/service/authService";
 import { Unit } from "../src/db/unit";
 import jwt from "jsonwebtoken";
+import { Response } from "express"; // Import Response
 
 const JWT_SECRET = process.env.JWT_SECRET || "supersecretjwtkey";
 
@@ -52,25 +53,40 @@ describe("AuthService — JWT Workflow Tests", () => {
         unit2.complete(false);
     });
 
-    it("should login successfully and return a valid JWT", async () => {
+    it("should login successfully and set a JWT cookie", async () => {
         // Register first
         const unit1 = new Unit(false);
         const authService1 = new AuthService(unit1);
-        await authService1.register("Charlie", "charlie@example.com", "password123");
+        const registeredUser = await authService1.register("Charlie", "charlie@example.com", "password123");
         unit1.complete(true);
+
+        // Mock Response object
+        const mockResponse = {
+            cookie: jest.fn(),
+        } as unknown as Response;
 
         // Login
         const unit2 = new Unit(false);
         const authService2 = new AuthService(unit2);
-        const token = await authService2.login("charlie@example.com", "password123");
+        const loggedInUser = await authService2.login(mockResponse, "charlie@example.com", "password123");
         unit2.complete(true);
 
-        expect(token).toBeDefined();
-        
-        // Verify token
-        const decoded = jwt.verify(token, JWT_SECRET) as { userId: number; email: string };
-        expect(decoded.email).toBe("charlie@example.com");
-        expect(decoded.userId).toBeDefined();
+        expect(loggedInUser).toHaveProperty("id");
+        expect(loggedInUser.name).toBe("Charlie");
+        expect(loggedInUser.email).toBe("charlie@example.com");
+        expect(loggedInUser).not.toHaveProperty("password");
+
+        expect(mockResponse.cookie).toHaveBeenCalledTimes(1);
+        expect(mockResponse.cookie).toHaveBeenCalledWith(
+            "jwt",
+            expect.any(String),
+            expect.objectContaining({
+                httpOnly: true,
+                secure: expect.any(Boolean),
+                sameSite: "strict",
+                path: "/",
+            })
+        );
     });
 
     it("should fail to login with incorrect password", async () => {
@@ -80,18 +96,28 @@ describe("AuthService — JWT Workflow Tests", () => {
         await authService1.register("Dave", "dave@example.com", "password123");
         unit1.complete(true);
 
+        // Mock Response object
+        const mockResponse = {
+            cookie: jest.fn(),
+        } as unknown as Response;
+
         // Login with wrong password
         const unit2 = new Unit(false);
         const authService2 = new AuthService(unit2);
-        await expect(authService2.login("dave@example.com", "wrongpassword"))
+        await expect(authService2.login(mockResponse, "dave@example.com", "wrongpassword"))
             .rejects.toThrow("Invalid credentials");
         unit2.complete(false);
     });
 
     it("should fail to login with non-existent email", async () => {
+        // Mock Response object
+        const mockResponse = {
+            cookie: jest.fn(),
+        } as unknown as Response;
+
         const unit = new Unit(false);
         const authService = new AuthService(unit);
-        await expect(authService.login("nonexistent@example.com", "password123"))
+        await expect(authService.login(mockResponse, "nonexistent@example.com", "password123"))
             .rejects.toThrow("Invalid credentials");
         unit.complete(false);
     });
