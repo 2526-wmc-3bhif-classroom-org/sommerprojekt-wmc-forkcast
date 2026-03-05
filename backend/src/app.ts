@@ -1,7 +1,8 @@
 import express from "express";
 import cors from "cors";
-import {Unit} from "./db/unit";
-import {userRouter} from "./routes/userRouter";
+import { Unit } from "./db/unit";
+import authRoutes from "./routes/authRoutes";
+import { authenticateToken, AuthRequest } from "./middleware/authMiddleware";
 
 const PORT = 3000;
 const app = express();
@@ -13,7 +14,14 @@ unit.complete();
 app.use(cors());
 app.use(express.json());
 
-app.use("/api/accounts", userRouter)
+app.use("/api", authRoutes);
+
+// Example of a protected route
+app.get("/api/profile", authenticateToken, (req: AuthRequest, res) => {
+    // req.user is available here
+    res.json({ message: `Welcome user ${req.user?.userId}` });
+});
+
 app.listen(PORT, () => {
-  console.log("Server is running on http://localhost:3000");
+  console.log(`Server is running on http://localhost:${PORT}`);
 });

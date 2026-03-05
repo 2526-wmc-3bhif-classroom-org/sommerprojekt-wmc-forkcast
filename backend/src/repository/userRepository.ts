@@ -2,30 +2,32 @@ import { Unit } from "../db/unit";
 import { User } from "../types";
 
 export class UserRepository {
-    constructor(private unit: Unit) {}
+    private unit: Unit;
 
-    public createAccount(username: string, email: string, passwordHash: string): void {
+    constructor(unit: Unit) {
+        this.unit = unit;
+    }
+
+    public findByEmail(email: string): User | undefined {
+        const stmt = this.unit.prepare<User>("SELECT * FROM User WHERE email = :email",
+            { email: email });
+        return stmt.get();
+    }
+
+    public create(user: Omit<User, "id">): User {
         const stmt = this.unit.prepare(
-            "INSERT INTO user (username, email, password) VALUES (@username, @email, @password)",
-            { username, email, password: passwordHash }
-        );
+            "INSERT INTO User (name, email, password, profilePicture) VALUES (:name, :email, :password, :profilePicture)",
+            {
+                name: user.name,
+                email: user.email,
+                password: user.password,
+                profilePicture: user.profilePicture || null
+            });
         stmt.run();
-    }
-
-    public exists(username: string): boolean {
-        const stmt = this.unit.prepare(
-            "SELECT 1 FROM user WHERE username = @username",
-            { username }
-        );
-        const row = stmt.get();
-        return !!row;
-    }
-
-    public findByUsername(username: string): User | undefined {
-        const stmt = this.unit.prepare(
-            "SELECT * FROM user WHERE username = @username",
-            { username }
-        );
-        return stmt.get() as User | undefined;
+        const newUser = this.findByEmail(user.email);
+        if (!newUser) {
+            throw new Error("Failed to create user");
+        }
+        return newUser;
     }
 }

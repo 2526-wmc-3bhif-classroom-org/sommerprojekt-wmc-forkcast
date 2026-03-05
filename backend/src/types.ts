@@ -1,9 +1,9 @@
 export interface User {
     id: number;
-    username: string;
+    name: string;
     email: string;
     password: string;
-    profilePicture?: string;
+    profilePicture: string | null;
 }
 
 export interface Recipe {
