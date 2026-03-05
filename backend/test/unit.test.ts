@@ -1,14 +1,7 @@
 import fs from "fs";
 import path from "path";
 import os from "os";
-import { Unit } from "../src/db/unit";
-
-// This is a workaround to test a private method. Ideally, this should not be done.
-const __test_logStatement = (statement: string | unknown) => {
-    const DB = (Unit as any).DB;
-    DB.logStatement(statement);
-};
-
+import { Unit, __test_logStatement } from "../src/db/unit";
 
 describe("Unit (DB) — simple, direct tests", () => {
   let origCwd: string;
