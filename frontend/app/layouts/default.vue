@@ -4,7 +4,7 @@ import FullScreenErrorComponent from "~/components/FullScreenErrorComponent.vue"
 
 <template>
   <NavbarComponent/>
-  <div class="m-5">
+  <div>
     <NuxtErrorBoundary>
       <slot/>
       <template #error="{ error, clearError }">
