@@ -1,0 +1,220 @@
+openapi: 3.0.0
+info:
+  title: Forkcast API
+  description: API Documentation for Forkcast Application
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000/api
+    description: Local development server
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+security:
+  - bearerAuth: []
+paths:
+  /auth/register:
+    post:
+      summary: Register a new user
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '201':
+          description: User registered successfully
+        '400':
+          description: Invalid input
+  /auth/login:
+    post:
+      summary: Login a user
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Login successful
+        '401':
+          description: Invalid credentials
+  /recipes:
+    get:
+      summary: Get all recipes
+      parameters:
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Search term for recipes
+      responses:
+        '200':
+          description: List of recipes
+  /recipes/{id}:
+    get:
+      summary: Get single recipe details
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Recipe details
+        '404':
+          description: Recipe not found
+  /users/me:
+    get:
+      summary: Get current user profile
+      responses:
+        '200':
+          description: User profile data
+    put:
+      summary: Update current user profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Profile updated
+  /users/me/friends:
+    get:
+      summary: Get friend list
+      responses:
+        '200':
+          description: List of friends
+    post:
+      summary: Add a friend
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                friendId:
+                  type: integer
+      responses:
+        '201':
+          description: Friend added
+  /users/me/friends/{friendId}:
+    delete:
+      summary: Remove a friend
+      parameters:
+        - in: path
+          name: friendId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Friend removed
+  /users/me/favorites:
+    get:
+      summary: Get favorite recipes
+      responses:
+        '200':
+          description: List of favorite recipes
+    post:
+      summary: Add recipe to favorites
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                recipeId:
+                  type: integer
+      responses:
+        '201':
+          description: Recipe added to favorites
+  /users/me/favorites/{recipeId}:
+    delete:
+      summary: Remove recipe from favorites
+      parameters:
+        - in: path
+          name: recipeId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Recipe removed from favorites
+  /users/me/calendar:
+    get:
+      summary: Get calendar entries
+      responses:
+        '200':
+          description: List of calendar entries
+    post:
+      summary: Add calendar entry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                recipeId:
+                  type: integer
+                date:
+                  type: string
+                  format: date
+      responses:
+        '201':
+          description: Calendar entry added
+  /users/me/calendar/{calendarEntryId}:
+    delete:
+      summary: Remove calendar entry
+      parameters:
+        - in: path
+          name: calendarEntryId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Calendar entry removed
+  /users/me/notifications:
+    get:
+      summary: Get notifications
+      responses:
+        '200':
+          description: List of notifications
+  /users/me/notifications/{notificationId}:
+    put:
+      summary: Mark notification as read
+      parameters:
+        - in: path
+          name: notificationId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Notification marked as read
+

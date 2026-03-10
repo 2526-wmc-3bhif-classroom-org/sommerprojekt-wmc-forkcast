@@ -1,6 +1,9 @@
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
+import path from "path";
+import swaggerUi from "swagger-ui-express";
+import YAML from "yamljs";
 import { Unit } from "./db/unit";
 import authRoutes from "./routes/authRoutes";
 import { authenticateToken } from "./middleware/authMiddleware";
@@ -44,6 +47,9 @@ app.use("/api/users/me/favorites", authenticateToken, favoriteRoutes);
 app.use("/api/users/me/calendar", authenticateToken, calendarRoutes);
 app.use("/api/users/me/notifications", authenticateToken, notificationRoutes);
 
+const swaggerDocument = YAML.load(path.join(process.cwd(), "src/public/swagger.yaml"));
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
 app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+    console.log(`Server is running on http://localhost:${PORT}`);
 });
