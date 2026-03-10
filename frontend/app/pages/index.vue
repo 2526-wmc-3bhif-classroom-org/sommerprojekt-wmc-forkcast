@@ -1,16 +1,20 @@
+<script setup lang="ts">
+</script>
 <template>
 
   <section class="hero">
     <div class="hero bg-base-200 min-h-screen">
       <div class="hero-content flex-col lg:flex-row">
-        <!--TODO maybe img-->
         <div>
-          <h1 class="text-5xl font-bold">Welcome To Forkcast!</h1>
-          <p class="py-6">
-            Your personal meal planner
+          <h1 class="text-6xl font-bold mb-2.5">Meet Forkcast,</h1>
+          <h1 class="text-5xl font-bold">the #1 app for meal planning and cooking</h1>
+          <p class="py-6 text-xl">
+            Organize weekly meals, discover new recipes, and cook stress free.
           </p>
-          <NuxtLink to="/login" class="btn btn-primary">Login To Get Started</NuxtLink>
+          <NuxtLink to="/auth/register" class="btn btn-primary mr-5">Start Planning Free</NuxtLink>
+          <NuxtLink to="/auth/login" class="btn btn-outline">Login</NuxtLink>
         </div>
+        <!--TODO add img/interactive of example meal plan-->
       </div>
     </div>
   </section>
