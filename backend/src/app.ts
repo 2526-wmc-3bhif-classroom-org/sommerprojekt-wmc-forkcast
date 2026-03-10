@@ -3,7 +3,7 @@ import express from "express";
 import cors from "cors";
 import { Unit } from "./db/unit";
 import authRoutes from "./routes/authRoutes";
-import { authenticateToken, AuthRequest } from "./middleware/authMiddleware";
+import { authenticateToken } from "./middleware/authMiddleware";
 import friendRoutes from "./routes/friendRoutes";
 import recipeRoutes from "./routes/recipeRoutes";
 import favoriteRoutes from "./routes/favoriteRoutes";
@@ -19,7 +19,7 @@ app.use(cors());
 app.use(express.json());
 
 app.use("/api/auth", authRoutes);
-app.use("/api/recipe", authenticateToken, recipeRoutes);
+app.use("/api/recipes", recipeRoutes);
 app.use("/api/users/me/friends", authenticateToken, friendRoutes);
 app.use("/api/users/me/favorites", authenticateToken, favoriteRoutes);
 
