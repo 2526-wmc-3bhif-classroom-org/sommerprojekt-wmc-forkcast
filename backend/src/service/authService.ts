@@ -4,9 +4,6 @@ import { User } from "../types";
 import { hashPassword, comparePassword } from "../utils";
 import { generateJWT } from "../utils/jwtUtils";
 import { Response } from "express";
-import jwt from "jsonwebtoken"; // Keep for verifyToken for now
-
-const JWT_SECRET = process.env.JWT_SECRET || "supersecretjwtkey"; // Keep for verifyToken for now
 
 export class AuthService {
     private userRepository: UserRepository;
@@ -51,14 +48,5 @@ export class AuthService {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { password: _, ...userWithoutPassword } = user;
         return userWithoutPassword;
-    }
-
-    public verifyToken(token: string): { userId: number; email: string } {
-        try {
-            const decoded = jwt.verify(token, JWT_SECRET) as { userId: number; email: string };
-            return decoded;
-        } catch (error) {
-            throw new Error("Invalid or expired token");
-        }
     }
 }

@@ -1,8 +1,8 @@
 import { Response } from "express";
 import jwt from "jsonwebtoken";
 
-const JWT_SECRET = process.env.JWT_SECRET || "secret";
-const JWT_EXPIRY = process.env.JWT_EXPIRY || "1h";
+export const JWT_SECRET = process.env.JWT_SECRET || "secretkey";
+export const JWT_EXPIRY = process.env.JWT_EXPIRY || "30m";
 
 const parseExpiryStringToMilliseconds = (expiry: string): number => {
     const value = parseInt(expiry.slice(0, -1));
