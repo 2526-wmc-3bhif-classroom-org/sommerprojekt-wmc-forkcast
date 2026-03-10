@@ -10,15 +10,16 @@ import favoriteRoutes from "./routes/favoriteRoutes";
 import profileRoutes from "./routes/profileRoutes";
 import calendarRoutes from "./routes/calendarRoutes";
 import notificationRoutes from "./routes/notificationRoutes";
-
 import { RemoteRecipeStore } from "./repository/remoteRecipeStore";
+import { parseDurationToMilliseconds } from "./utils";
 
 const PORT = 3000;
 const app = express();
-const RECIPE_EXPIRATION_CHECK_INTERVAL : number =
-    parseInt(process.env.RECIPE_EXPIRATION_CHECK_INTERVAL || "86400000")
-    || 24 * 60 * 60 * 1000; // default to 24 hours
+export const CACHE_TTL_MS =
+    parseDurationToMilliseconds(process.env.CACHE_TTL_MS
+        ,24 * 60 * 60 * 1000);
 
+console.log(CACHE_TTL_MS)
 // Create db if not exists and ensure tables are created
 const unit = new Unit(true);
 unit.complete(null);
@@ -27,7 +28,7 @@ const recipeStore = new RemoteRecipeStore();
 setInterval(() => {
     console.log("Cleaning up expired recipes...");
     recipeStore.removeExpiredRecipes().catch(console.error);
-}, RECIPE_EXPIRATION_CHECK_INTERVAL); // Cleanup
+}, CACHE_TTL_MS); // Cleanup
 
 // Initial cleanup on startup
 recipeStore.removeExpiredRecipes().catch(console.error);

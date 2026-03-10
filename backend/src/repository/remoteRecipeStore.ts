@@ -1,5 +1,6 @@
 import { Recipe } from '../types';
 import {Unit} from "../db/unit";
+import { CACHE_TTL_MS } from "../app";
 
 export class RemoteRecipeStore {
     private readonly API_URL = "https://api.spoonacular.com/recipes";
@@ -47,8 +48,12 @@ export class RemoteRecipeStore {
 
     async searchRecipesInDatabase(query: string): Promise<Recipe[]> {
         const unit = new Unit(true);
-        // exclude recipes older than 24h
-        const stmt = unit.prepare<Recipe>("SELECT id, name, image FROM Recipe WHERE name LIKE :query AND updatedAt > datetime('now', '-1 day')", { query: `%${query}%` });
+        // exclude recipes older than configured TTL
+        const cutoff = new Date(Date.now() - CACHE_TTL_MS).toISOString();
+        const stmt = unit.prepare<Recipe>("SELECT id, name, image FROM Recipe WHERE name LIKE :query AND updatedAt > :cutoff", {
+            query: `%${query}%`,
+            cutoff
+        });
         const recipes = stmt.all();
         unit.complete();
         return recipes;
@@ -56,17 +61,19 @@ export class RemoteRecipeStore {
 
     async saveRecipeToDatabase(recipe: Recipe): Promise<void> {
         const unit = new Unit(false);
+        const now = new Date().toISOString();
         // upsert to update timestamp
         const stmt = unit.prepare<void>(`
-            INSERT INTO Recipe (id, name, image, updatedAt) VALUES (:id, :name, :image, datetime('now'))
+            INSERT INTO Recipe (id, name, image, updatedAt) VALUES (:id, :name, :image, :updatedAt)
             ON CONFLICT(id) DO UPDATE SET
-                updatedAt = datetime('now'),
+                updatedAt = excluded.updatedAt,
                 name = excluded.name,
                 image = excluded.image
         `, {
             id: recipe.id,
             name: recipe.name,
-            image: recipe.image
+            image: recipe.image,
+            updatedAt: now
         });
         stmt.run();
         unit.complete(true);
@@ -96,7 +103,11 @@ export class RemoteRecipeStore {
     async findRecipeByIdInDatabase(id: number): Promise<Recipe | undefined> {
         const unit = new Unit(true);
         // check expiry
-        const stmt = unit.prepare<Recipe>("SELECT id, name, image FROM Recipe WHERE id = :id AND updatedAt > datetime('now', '-1 day')", { id });
+        const cutoff = new Date(Date.now() - CACHE_TTL_MS).toISOString();
+        const stmt = unit.prepare<Recipe>("SELECT id, name, image FROM Recipe WHERE id = :id AND updatedAt > :cutoff", {
+            id,
+            cutoff
+        });
         const recipe = stmt.get();
         unit.complete();
         return recipe;
@@ -104,7 +115,8 @@ export class RemoteRecipeStore {
 
     async removeExpiredRecipes(): Promise<void> {
         const unit = new Unit(false);
-        const stmt = unit.prepare<void>("DELETE FROM Recipe WHERE updatedAt <= datetime('now', '-1 day')");
+        const cutoff = new Date(Date.now() - CACHE_TTL_MS).toISOString();
+        const stmt = unit.prepare<void>("DELETE FROM Recipe WHERE updatedAt <= :cutoff", { cutoff });
         stmt.run();
         unit.complete(true);
     }
