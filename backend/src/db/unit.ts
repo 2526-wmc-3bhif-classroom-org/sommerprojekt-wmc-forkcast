@@ -140,6 +140,13 @@ class DB {
     }
 }
 
+// Expose a tiny test-only hook so tests can exercise internal log branches (harmless)
+export function __test_logStatement(input: unknown): void {
+    // access internal DB implementation for testing
+    // (keeps production behavior unchanged)
+    (DB as any).logStatement(input);
+}
+
 type RawStatement<TResult> = BetterSqlite3.Statement<unknown[], TResult>;
 type RunResult = ReturnType<RawStatement<unknown>["run"]>;
 

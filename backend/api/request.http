@@ -1,0 +1,114 @@
+@host = http://localhost:3000/api
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxIiwiaWF0IjoxNzcyNzA2OTY3LCJleHAiOjE3NzI3MTA1Njd9.tTrALNJz7Wv3GqcpWlLUCKSpWLsquZhfgZF7hr3u52c
+@userId = 1
+@friendId = 2
+@recipeId = 1
+@calendarEntryId = 1
+@notificationId = 1
+
+### Authentication - Register User
+POST {{host}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Test User",
+  "email": "test@example.com",
+  "password": "57db1253b68b6802b59a969f750fa32b60cb5cc8a3cb19b87dac28f541dc4e2a"
+}
+
+### Authentication - Login User
+POST {{host}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "57db1253b68b6802b59a969f750fa32b60cb5cc8a3cb19b87dac28f541dc4e2a"
+}
+
+### Users - Get Current User Profile
+GET {{host}}/users/profile
+Authorization: Bearer {{token}}
+
+### Users - Update Current User Profile
+PUT {{host}}/users/me
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Updated Test User",
+  "profilePicture": "https://example.com/new_pic.jpg"
+}
+
+### Friends - Get User's Friends
+GET {{host}}/users/me/friends
+Authorization: Bearer {{token}}
+
+### Friends - Add a Friend
+POST {{host}}/users/me/friends
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "friendId": {{friendId}}
+}
+
+### Friends - Delete a Friend
+DELETE {{host}}/users/me/friends/{{friendId}}
+Authorization: Bearer {{token}}
+
+### Recipes - Get All Recipes
+GET {{host}}/recipes
+
+### Recipes - Get All Recipes with Search
+GET {{host}}/recipes?search=pasta
+
+### Recipes - Get Single Recipe by ID
+GET {{host}}/recipes/{{recipeId}}
+
+### Favorite Foods - Get User's Favorite Recipes
+GET {{host}}/users/me/favorites
+Authorization: Bearer {{token}}
+
+### Favorite Foods - Add a Recipe to Favorites
+POST {{host}}/users/me/favorites
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "recipeId": {{recipeId}}
+}
+
+### Favorite Foods - Delete a Recipe from Favorites
+DELETE {{host}}/users/me/favorites/{{recipeId}}
+Authorization: Bearer {{token}}
+
+### Calendar Entries - Get User's Calendar Entries
+GET {{host}}/users/me/calendar?startDate=2023-01-01&endDate=2023-12-31
+Authorization: Bearer {{token}}
+
+### Calendar Entries - Add a Calendar Entry
+POST {{host}}/users/me/calendar
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "recipeId": {{recipeId}},
+  "date": "2023-10-27T12:00:00Z"
+}
+
+### Calendar Entries - Delete a Calendar Entry
+DELETE {{host}}/users/me/calendar/{{calendarEntryId}}
+Authorization: Bearer {{token}}
+
+### Notifications - Get User's Notifications
+GET {{host}}/users/me/notifications
+Authorization: Bearer {{token}}
+
+### Notifications - Mark a Notification as Read
+PUT {{host}}/users/me/notifications/{{notificationId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "isRead": true
+}
