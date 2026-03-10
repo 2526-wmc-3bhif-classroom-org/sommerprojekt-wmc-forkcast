@@ -18,7 +18,7 @@ app.use(cors());
 app.use(express.json());
 
 app.use("/api/auth", authRoutes);
-app.use("/api/recipe", recipeRoutes);
+app.use("/api/recipe", authenticateToken, recipeRoutes);
 app.use("/api/users/me/friends", authenticateToken, friendRoutes);
 
 app.listen(PORT, () => {
