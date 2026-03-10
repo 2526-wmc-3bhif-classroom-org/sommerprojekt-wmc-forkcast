@@ -10,7 +10,7 @@ const router = Router();
 router.post("/register",
     body("name").notEmpty().withMessage("Username is required"),
     body("email").notEmpty().isEmail().withMessage("Email is required and must be a valid email"),
-    body("password").notEmpty().withMessage("Password is required"),
+    body("password").notEmpty().withMessage("Password is required").isStrongPassword,
     validateRequest,
     async (req: Request, res: Response) => {
     const unit = new Unit(false);
