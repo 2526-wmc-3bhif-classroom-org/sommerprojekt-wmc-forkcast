@@ -35,7 +35,7 @@ definePageMeta({
             <div>
               <NuxtLink to="/auth/forgot" class="link link-hover">Forgot password?</NuxtLink>
             </div>
-            <button class="btn btn-neutral mt-4">
+            <button class="btn btn-primary mt-4">
               <i class="fa-solid fa-arrow-right-to-bracket"/>
               Login
             </button>

@@ -40,7 +40,7 @@ definePageMeta({
                 Terms of use
               </NuxtLink>
             </label>
-            <button class="btn btn-neutral mt-4">
+            <button class="btn btn-primary mt-4">
               <i class="fa-solid fa-arrow-right-to-bracket"/>
               Register
             </button>

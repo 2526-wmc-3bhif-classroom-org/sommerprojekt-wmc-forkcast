@@ -19,7 +19,7 @@
           </calendar-date>
 
           <button class="btn btn-primary m-2">
-            <NuxtLink to="/schedule"><i class="fa-solid fa-clock mr-1.5"></i>Schedule</NuxtLink>
+            <NuxtLink to="/dashboard/schedule"><i class="fa-solid fa-clock mr-1.5"></i>Schedule</NuxtLink>
           </button>
         </div>
       </div>
@@ -44,9 +44,9 @@
           <i class="fa-solid fa-user"></i>
         </div>
         <ul tabindex="-1" class="menu menu-md dropdown-content bg-base-100 rounded-box z-1 mt-3 p-2 shadow">
-          <li><NuxtLink to="/account"><i class="fa-solid fa-user"></i>Account</NuxtLink></li>
-          <li><NuxtLink to="/settings"><i class="fa-solid fa-gear"></i>Settings</NuxtLink></li>
-          <li><NuxtLink to="/logout"><i class="fa-solid fa-arrow-right-from-bracket"></i>Logout</NuxtLink></li>
+          <li><NuxtLink to="/dashboard/account"><i class="fa-solid fa-user"></i>Account</NuxtLink></li>
+          <li><NuxtLink to="/dashboard/settings"><i class="fa-solid fa-gear"></i>Settings</NuxtLink></li>
+          <li><NuxtLink to="/auth/logout"><i class="fa-solid fa-arrow-right-from-bracket"></i>Logout</NuxtLink></li>
         </ul>
       </div>
     </div>
