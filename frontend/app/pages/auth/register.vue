@@ -37,7 +37,7 @@ definePageMeta({
             <label class="label pt-2">
               <input type="checkbox"  class="checkbox" />
               I accept the
-              <NuxtLink to="/terms" class="link link-hover">
+              <NuxtLink to="/terms-of-use" class="link link-hover">
                 <i class="fa-solid fa-up-right-from-square"/>
                 Terms of use
               </NuxtLink>
