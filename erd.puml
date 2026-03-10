@@ -21,6 +21,7 @@ entity "Recipe" {
   id : integer <<PK>>
   name : string
   image : string
+  updateAt : datetime
 }
 
 entity "CalenderEntry" {
