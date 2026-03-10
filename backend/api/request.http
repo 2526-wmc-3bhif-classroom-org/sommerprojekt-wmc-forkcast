@@ -1,5 +1,5 @@
 @host = http://localhost:3000/api
-@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxIiwiaWF0IjoxNzcyNzA2OTY3LCJleHAiOjE3NzI3MTA1Njd9.tTrALNJz7Wv3GqcpWlLUCKSpWLsquZhfgZF7hr3u52c
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxIiwiaWF0IjoxNzczMTQ2NDU4LCJleHAiOjE3NzMxNTAwNTh9.slNshP9Q1DvF68PMSuXMsASyjldxCLRZEoInG8kmdNk
 @userId = 1
 @friendId = 2
 @recipeId = 1
@@ -13,7 +13,7 @@ Content-Type: application/json
 {
   "name": "Test User",
   "email": "test@example.com",
-  "password": "57db1253b68b6802b59a969f750fa32b60cb5cc8a3cb19b87dac28f541dc4e2a"
+  "password": "TestPassword123!"
 }
 
 ### Authentication - Login User
@@ -22,7 +22,7 @@ Content-Type: application/json
 
 {
   "email": "test@example.com",
-  "password": "57db1253b68b6802b59a969f750fa32b60cb5cc8a3cb19b87dac28f541dc4e2a"
+  "password": "TestPassword123!"
 }
 
 ### Users - Get Current User Profile
@@ -58,12 +58,15 @@ Authorization: Bearer {{token}}
 
 ### Recipes - Get All Recipes
 GET {{host}}/recipes
+Authorization: Bearer {{token}}
 
 ### Recipes - Get All Recipes with Search
 GET {{host}}/recipes?search=pasta
+Authorization: Bearer {{token}}
 
 ### Recipes - Get Single Recipe by ID
 GET {{host}}/recipes/{{recipeId}}
+Authorization: Bearer {{token}}
 
 ### Favorite Foods - Get User's Favorite Recipes
 GET {{host}}/users/me/favorites

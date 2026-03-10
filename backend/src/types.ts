@@ -10,6 +10,7 @@ export interface Recipe {
     id: number;
     name: string;
     image: string;
+    updatedAt?: Date;
 }
 
 export interface Notification {
@@ -36,4 +37,3 @@ export interface FavoriteFood {
     userId: number;
     recipeId: number;
 }
-

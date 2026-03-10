@@ -98,9 +98,10 @@ class DB {
             );
 
             CREATE TABLE IF NOT EXISTS Recipe (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                id INTEGER PRIMARY KEY,
                 name TEXT NOT NULL,
-                image TEXT
+                image TEXT,
+                updatedAt DATETIME DEFAULT (datetime('now'))
             );
 
             CREATE TABLE IF NOT EXISTS Notification (
@@ -137,6 +138,13 @@ class DB {
                 FOREIGN KEY (recipeId) REFERENCES Recipe(id)
             );
         `);
+
+        try {
+            connection.exec("ALTER TABLE Recipe ADD COLUMN updatedAt DATETIME DEFAULT (datetime('now'))");
+        } catch (e) {
+            // Column likely already exists in dev environment, or was just created by CREATE TABLE above.
+            // This is a simple migration step.
+        }
     }
 }
 
