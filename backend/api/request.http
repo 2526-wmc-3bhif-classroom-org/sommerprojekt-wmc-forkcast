@@ -25,10 +25,12 @@ Content-Type: application/json
   "password": "57db1253b68b6802b59a969f750fa32b60cb5cc8a3cb19b87dac28f541dc4e2a"
 }
 
+### TODO
 ### Users - Get Current User Profile
 GET {{host}}/users/profile
 Authorization: Bearer {{token}}
 
+### TODO
 ### Users - Update Current User Profile
 PUT {{host}}/users/me
 Authorization: Bearer {{token}}
