@@ -5,14 +5,16 @@ definePageMeta({
 </script>
 
 <template>
-  <div class="sm:hero min-h-screen">
+  <div class="hero min-h-screen
+                bg-[linear-gradient(rgba(0,0,0,0.2),rgba(0,0,0,0.8)),url('/images/login-bg.jpg')]
+                bg-center">
     <div class="hero-content flex-col lg:flex-row-reverse">
-      <div class="text-center lg:text-left">
+      <div class="text-center lg:text-left lg:ml-24">
         <h1 class="text-3xl md:text-5xl font-bold text-nowrap">
           <i class="fa-solid fa-hand-peace mr-2"/>
           Glad to have you!
         </h1>
-        <p class="py-6 w-full lg:w-96">
+        <p class="py-6 w-96 m-auto">
           Please enter your username and
           password to create your account.
           If you already have an account, you can log in to it.
