@@ -26,7 +26,7 @@ Content-Type: application/json
 }
 
 ### Users - Get Current User Profile
-GET {{host}}/users/profile
+GET {{host}}/users/me
 Authorization: Bearer {{token}}
 
 ### Users - Update Current User Profile
