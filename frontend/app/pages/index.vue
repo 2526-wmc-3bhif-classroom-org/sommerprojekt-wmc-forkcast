@@ -4,7 +4,7 @@
 
   <section class="hero">
     <div class="hero bg-base-200 min-h-screen
-                bg-[linear-gradient(rgba(0,0,0,0), rgba(255,255,255,10)),url('../assets/images/hero-bg.jpg')]
+                bg-[linear-gradient(rgba(0,0,0,0.2),rgba(0,0,0,0.8)),url('/images/hero-bg.jpg')]
                 bg-center">
       <div class="hero-content flex-col lg:flex-row">
         <div>
