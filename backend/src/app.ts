@@ -5,6 +5,7 @@ import { Unit } from "./db/unit";
 import authRoutes from "./routes/authRoutes";
 import { authenticateToken, AuthRequest } from "./middleware/authMiddleware";
 import friendRoutes from "./routes/friendRoutes";
+import recipeRoutes from "./routes/recipeRoutes";
 
 const PORT = 3000;
 const app = express();
@@ -17,6 +18,7 @@ app.use(cors());
 app.use(express.json());
 
 app.use("/api/auth", authRoutes);
+app.use("/api/recipe", recipeRoutes);
 app.use("/api/users/me/friends", authenticateToken, friendRoutes);
 
 app.listen(PORT, () => {
