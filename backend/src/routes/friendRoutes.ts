@@ -1,7 +1,8 @@
 import {Router} from "express";
 import {AuthRequest} from "../middleware/authMiddleware";
 import {StatusCodes} from "http-status-codes";
-import { body, validationResult } from 'express-validator';
+import { body } from 'express-validator';
+import { validateRequest } from "../middleware/validationMiddleware";
 
 const router = Router();
 
@@ -12,12 +13,8 @@ router.get('/', (req: AuthRequest, res) => {
 router.post(
     '/',
     body('friendId').notEmpty().withMessage('friendId is required'),
+    validateRequest,
     (req: AuthRequest, res) => {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(StatusCodes.BAD_REQUEST).json({ errors: errors.array() });
-        }
-
         res.sendStatus(StatusCodes.CONFLICT);
     }
 );
