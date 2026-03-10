@@ -3,6 +3,7 @@ import {StatusCodes} from "http-status-codes";
 import { query, param } from "express-validator";
 import {RemoteRecipeStore} from "../repository/remoteRecipeStore";
 import { validateRequest } from "../middleware/validationMiddleware";
+import {AuthRequest} from "../middleware/authMiddleware";
 
 const router = Router();
 const remoteRecipeStore = new RemoteRecipeStore();
@@ -10,7 +11,7 @@ const remoteRecipeStore = new RemoteRecipeStore();
 router.get("/",
     query("search").optional().isString().trim().escape(),
     validateRequest,
-    async (req: Request, res: Response) => {
+    async (req: AuthRequest, res: Response) => {
     try {
         const search = req.query.search as string;
 
@@ -32,7 +33,7 @@ router.get("/",
 router.get("/:id",
     param("id").isInt().withMessage("Recipe ID must be an integer").toInt(),
     validateRequest,
-    async (req: Request, res: Response) => {
+    async (req: AuthRequest, res: Response) => {
     try {
         const { id } = req.params;
         const recipe = await remoteRecipeStore.getRecipeById(Number(id));
