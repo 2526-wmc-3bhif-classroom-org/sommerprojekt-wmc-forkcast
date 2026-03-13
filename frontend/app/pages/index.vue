@@ -1,10 +1,4 @@
-<script setup lang="ts">
-definePageMeta({
-  layout: "unauthenticated"
-})
-</script>
 <template>
-
   <section class="hero">
     <div class="hero min-h-screen
                 bg-[linear-gradient(rgba(0,0,0,0.2),rgba(0,0,0,0.8)),url('/images/hero-bg.jpg')]
@@ -29,6 +23,4 @@ definePageMeta({
       </div>
     </div>
   </section>
-
-
 </template>

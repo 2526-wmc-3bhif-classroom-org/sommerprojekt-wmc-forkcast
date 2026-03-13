@@ -1,8 +1,11 @@
-<template>
-  <!-- Loading indicator for page switches -->
-  <NuxtLoadingIndicator color="var(--color-primary)" :height="2" :throttle="0" />
+<script setup lang="ts">
+import useAuthService from "~/assets/auth-service";
 
-  <div class="fixed top-0 navbar bg-base-100 shadow-sm">
+const authService = useAuthService()
+</script>
+
+<template>
+  <div class="fixed top-0 navbar shadow-sm">
     <div class="flex-1">
       <NuxtLink to="/" class="btn btn-ghost text-xl"><i class="fa-solid fa-utensils"></i>Forkcast</NuxtLink>
     </div>
@@ -46,7 +49,7 @@
         <ul tabindex="-1" class="menu menu-md dropdown-content bg-base-100 rounded-box z-1 mt-3 p-2 shadow">
           <li><NuxtLink to="/dashboard/account"><i class="fa-solid fa-user"></i>Account</NuxtLink></li>
           <li><NuxtLink to="/dashboard/settings"><i class="fa-solid fa-gear"></i>Settings</NuxtLink></li>
-          <li><NuxtLink to="/auth/logout"><i class="fa-solid fa-arrow-right-from-bracket"></i>Logout</NuxtLink></li>
+          <li><span @click="authService.logout()"><i class="fa-solid fa-arrow-right-from-bracket"></i>Logout</span></li>
         </ul>
       </div>
     </div>

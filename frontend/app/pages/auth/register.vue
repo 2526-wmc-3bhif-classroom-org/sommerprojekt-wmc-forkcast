@@ -1,7 +1,57 @@
 <script setup lang="ts">
-definePageMeta({
-  layout: "minimal",
+import useAuthService from "~/assets/auth-service";
+import useFailureHandler from "~/assets/failure-handler";
+import type {Failure} from "~/assets/model/failure";
+
+const username = ref<HTMLInputElement>()
+const email = ref<HTMLInputElement>()
+const password = ref<HTMLInputElement>()
+const terms = ref<HTMLInputElement>()
+
+const usernameError = ref<HTMLSpanElement>()
+const emailError = ref<HTMLSpanElement>()
+const passwordError = ref<HTMLSpanElement>()
+const mainError = ref<HTMLSpanElement>()
+
+const auth = useAuthService()
+const failureHandler = useFailureHandler()
+
+failureHandler.addHandler("name", (message) => {
+  usernameError.value!!.innerText = message
 })
+
+failureHandler.addHandler("email", (message) => {
+  emailError.value!!.innerText = message
+})
+
+failureHandler.addHandler("password", (message) => {
+  passwordError.value!!.innerText = message
+})
+
+failureHandler.setMainHandler(message => {
+  mainError.value!!.innerText = message
+})
+
+async function register() {
+  if (!username.value?.value || !email.value?.value || !password.value?.value) {
+    failureHandler.fail({ message: "Please fill in all fields." } as Failure)
+    return
+  }
+
+  if (!terms.value?.checked) {
+    failureHandler.fail({ message: "You must accept the Terms of Use to continue." } as Failure)
+    return
+  }
+
+  let failure = await auth.register(username.value.value, email.value.value, password.value.value)
+  if (failure) {
+    failureHandler.fail(failure)
+    return
+  }
+
+  alert("Registered successfully!") //TODO
+}
+
 </script>
 
 <template>
@@ -12,41 +62,62 @@ definePageMeta({
       <div class="text-center lg:text-left lg:ml-24">
         <h1 class="text-3xl md:text-5xl font-bold text-nowrap">
           <i class="fa-solid fa-hand-peace mr-2"/>
-          Glad to have you!
+          <span>Glad to have you!</span>
         </h1>
         <p class="py-6 w-96 m-auto">
           Please enter your username and
           password to create your account.
-          If you already have an account, you can log in to it.
+          If you already have an account, please go to the login page.
           We look forward to seeing you!
         </p>
       </div>
       <div class="card bg-base-100 w-full max-w-sm shrink-0 shadow-2xl">
         <div class="card-body w-full">
-          <fieldset class="fieldset w-full">
+          <form class="fieldset w-full" onsubmit="return false">
             <label class="label">
               <i class="fa-solid fa-user"/>
-              Username
+              <span>Username</span>
             </label>
-            <input type="text" class="input w-full" placeholder="Username" />
+            <label class="label text-error text-wrap">
+              <i v-if="failureHandler.has('name')" class="fa-solid fa-triangle-exclamation"/>
+              <span ref="usernameError"></span>
+            </label>
+            <input ref="username" autocomplete="username" type="text" class="input w-full" placeholder="Username" />
+            <label class="label">
+              <i class="fa-solid fa-at"/>
+              <span>Email</span>
+            </label>
+            <label class="label text-error text-wrap">
+              <i v-if="failureHandler.has('email')" class="fa-solid fa-triangle-exclamation"/>
+              <span ref="emailError"></span>
+            </label>
+            <input ref="email" autocomplete="email" type="email" class="input w-full" placeholder="Email" />
             <label class="label">
               <i class="fa-solid fa-key"/>
-              Password
+              <span>Password</span>
             </label>
-            <input type="password" class="input w-full" placeholder="Password" />
+            <label class="label text-error text-wrap">
+              <i v-if="failureHandler.has('password')" class="fa-solid fa-triangle-exclamation"/>
+              <span ref="passwordError"></span>
+            </label>
+            <input ref="password" autocomplete="current-password" type="password" class="input w-full" placeholder="Password" />
             <label class="label pt-2">
-              <input type="checkbox"  class="checkbox" />
+              <input ref="terms" type="checkbox"  class="checkbox" />
               I accept the
               <NuxtLink to="/terms-of-use" class="link link-hover">
                 <i class="fa-solid fa-up-right-from-square"/>
                 Terms of use
               </NuxtLink>
             </label>
-            <button class="btn btn-primary mt-4">
+            <label class="label text-error">
+              <i v-if="failureHandler.hasMain()" class="fa-solid fa-triangle-exclamation"/>
+              <span ref="mainError"></span>
+            </label>
+            <button class="btn btn-primary mt-4" @click="register">
               <i class="fa-solid fa-arrow-right-to-bracket"/>
-              Register
+              <span>Register</span>
             </button>
-          </fieldset>
+          </form>
         </div>
       </div>
     </div>
