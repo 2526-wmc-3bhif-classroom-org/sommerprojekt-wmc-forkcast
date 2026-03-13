@@ -1,5 +1,5 @@
 @host = http://localhost:3000/api
-@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxIiwiaWF0IjoxNzczMTQ2NDU4LCJleHAiOjE3NzMxNTAwNTh9.slNshP9Q1DvF68PMSuXMsASyjldxCLRZEoInG8kmdNk
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxIiwiaWF0IjoxNzczMTUwNDgyLCJleHAiOjE3NzMxNTQwODJ9.b3K-y1-RWRO4ep3gi5olEHObw6M9ZF5eGfJA5CfHXrI
 @userId = 1
 @friendId = 2
 @recipeId = 1

@@ -17,6 +17,11 @@ import { RemoteRecipeStore } from "./repository/remoteRecipeStore";
 import { parseDurationToMilliseconds } from "./utils";
 
 const PORT = process.env.PORT || "3000";
+const allowedOrigins = (process.env.CORS_ORIGIN ?? "")
+    .split(",")
+    .map((o) => o.trim())
+    .filter(Boolean);
+
 const app = express();
 export const CACHE_TTL_MS =
     parseDurationToMilliseconds(process.env.CACHE_TTL_MS
@@ -36,7 +41,7 @@ setInterval(() => {
 // Initial cleanup on startup
 recipeStore.removeExpiredRecipes().catch(console.error);
 
-app.use(cors());
+app.use(cors({ origin: allowedOrigins, credentials: true }));
 app.use(express.json());
 
 app.use("/api/auth", authRoutes);
