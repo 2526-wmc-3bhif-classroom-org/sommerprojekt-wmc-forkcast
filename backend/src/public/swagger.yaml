@@ -37,6 +37,10 @@ paths:
           description: User registered successfully
         '400':
           description: Invalid input
+        '409':
+          description: Email already exists
+        '500':
+          description: Internal server error
   /auth/login:
     post:
       summary: Login a user
@@ -57,8 +61,10 @@ paths:
           description: Login successful
         '401':
           description: Invalid credentials
+        '500':
+          description: Internal server error
   /auth/validate:
-    post:
+    get:
       summary: Validate a token
       security:
         - bearerAuth: []
@@ -81,6 +87,8 @@ paths:
       responses:
         '200':
           description: List of recipes
+        '500':
+          description: Internal server error
   /recipes/{id}:
     get:
       summary: Get single recipe details
@@ -95,6 +103,8 @@ paths:
           description: Recipe details
         '404':
           description: Recipe not found
+        '500':
+          description: Internal server error
   /users/me:
     get:
       summary: Get current user profile
@@ -109,6 +119,12 @@ paths:
           application/json:
             schema:
               type: object
+              properties:
+                name:
+                  type: string
+                profilePicture:
+                  type: string
+                  format: uri
       responses:
         '200':
           description: Profile updated
@@ -226,7 +242,15 @@ paths:
           required: true
           schema:
             type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                isRead:
+                  type: boolean
       responses:
         '200':
           description: Notification marked as read
-

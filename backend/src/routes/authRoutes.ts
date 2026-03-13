@@ -57,6 +57,6 @@ router.post("/login",
     }
 });
 
-router.post('/validate', authenticateToken);
+router.get('/validate', authenticateToken);
 
 export default router;
