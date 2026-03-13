@@ -44,3 +44,37 @@ export async function loginUser(email: string, password: string) {
         return { message: "An error occurred during login: " + error } as Failure;
     }
 }
+
+export async function logoutUser() {
+    try {
+        const response = await fetch(API_BASE_URL + "/auth/logout", {
+            method: "POST",
+            credentials: "include" // Include cookies in the request
+        });
+
+        if (!response.ok) {
+            return await response.json() as Failure;
+        }
+
+        return null; // Logout successful
+    } catch (error) {
+        return { message: "An error occurred during logout: " + error } as Failure;
+    }
+}
+
+export async function getCurrentUser() {
+    try {
+        const response = await fetch(API_BASE_URL + "/users/me", {
+            method: "GET",
+            credentials: "include" // Include cookies in the request TODO: Backend switch to cookie-based auth
+        });
+
+        if (!response.ok) {
+            return null; // Not authenticated
+        }
+
+        return await response.json() as User;
+    } catch (error) {
+        return null; // Not authenticated or an error occurred
+    }
+}

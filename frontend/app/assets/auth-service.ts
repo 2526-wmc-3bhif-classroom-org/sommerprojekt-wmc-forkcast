@@ -1,23 +1,39 @@
-import {loginUser, registerUser} from "~/assets/api-connector";
+import {getCurrentUser, loginUser, logoutUser, registerUser} from "~/assets/api-connector";
 import type {Failure} from "~/assets/model/failure";
+import type {User} from "~/assets/model/user";
 
 export default function useAuthService() {
-    const cookie = useCookie("jwt", { path: "/" });
+    const user = ref<User | null>(null)
+    const authenticated = computed(() => user.value !== null);
 
-    function isAuthenticated() {
-        console.log(cookie.value) //TODO: #15 Needs removal oh HttpOnly cookie
-        return cookie.value !== undefined;
+    async function logout() {
+        if (!authenticated.value) throw Error("Not authenticated");
+
+        let result = await logoutUser();
+        if (result === null) {
+            user.value = null;
+            return null;
+        } else {
+            return result as Failure;
+        }
     }
 
-    function logout() {
-        cookie.value = null;
+    async function reloadUser() {
+        let result = await getCurrentUser();
+
+        if (result && "id" in result) {
+            user.value = result as User;
+        } else {
+            user.value = null; // Clear user if not authenticated or error occurs
+        }
     }
 
     async function login(email: string, password: string) {
-        if (isAuthenticated()) throw Error("Already authenticated");
+        if (authenticated.value) throw Error("Already authenticated");
 
         let result = await loginUser(email, password);
         if (result && "id" in result) {
+            user.value = result as User;
             return null;
         } else {
             return result as Failure;
@@ -25,7 +41,7 @@ export default function useAuthService() {
     }
 
     async function register(username: string, email: string, password: string) {
-        if (isAuthenticated()) throw Error("Already authenticated");
+        if (authenticated.value) throw Error("Already authenticated");
 
         let result = await registerUser(username, email, password);
         if (result && "id" in result) {
@@ -38,9 +54,11 @@ export default function useAuthService() {
     }
 
     return {
-        isAuthenticated,
+        user,
+        authenticated,
         login,
         logout,
-        register
+        register,
+        reloadUser
     };
 }

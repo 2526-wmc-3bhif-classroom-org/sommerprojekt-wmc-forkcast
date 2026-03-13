@@ -1,6 +1,5 @@
 <script lang="ts" setup>
 import useAuthService from "~/assets/auth-service";
-import type {NuxtLayouts} from "nuxt/app";
 
 useHead({
   script: [
@@ -17,10 +16,10 @@ useHead({
 
 const authService = useAuthService()
 
-const layoutName = ref<keyof NuxtLayouts>('unauthenticated')
+const layoutName = computed(() => authService.authenticated.value ? 'authenticated' : 'unauthenticated')
 
-onMounted(() => {
-  layoutName.value = authService.isAuthenticated() ? 'authenticated' : 'unauthenticated'
+onMounted(async () => {
+  await authService.reloadUser()
 })
 </script>
 
