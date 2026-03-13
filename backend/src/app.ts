@@ -16,7 +16,7 @@ import notificationRoutes from "./routes/notificationRoutes";
 import { RemoteRecipeStore } from "./repository/remoteRecipeStore";
 import { parseDurationToMilliseconds } from "./utils";
 
-const PORT = 3000;
+const PORT = process.env.PORT || "3000";
 const app = express();
 export const CACHE_TTL_MS =
     parseDurationToMilliseconds(process.env.CACHE_TTL_MS
