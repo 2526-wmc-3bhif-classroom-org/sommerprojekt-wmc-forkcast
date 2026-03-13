@@ -57,6 +57,18 @@ paths:
           description: Login successful
         '401':
           description: Invalid credentials
+  /auth/validate:
+    post:
+      summary: Validate a token
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Token is valid
+        '401':
+          description: Token is missing
+        '403':
+          description: Token is invalid
   /recipes:
     get:
       summary: Get all recipes

@@ -4,6 +4,7 @@ import { Unit } from "../db/unit";
 import {StatusCodes} from "http-status-codes";
 import {body} from "express-validator";
 import {validateRequest} from "../middleware/validationMiddleware";
+import {authenticateToken} from "../middleware/authMiddleware";
 
 const router = Router();
 
@@ -55,5 +56,7 @@ router.post("/login",
         }
     }
 });
+
+router.post('/validate', authenticateToken);
 
 export default router;
