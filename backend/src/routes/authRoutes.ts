@@ -11,7 +11,7 @@ const router = Router();
 router.post("/register",
     body("name").notEmpty().withMessage("Username is required"),
     body("email").notEmpty().isEmail().withMessage("Email is required and must be a valid email"),
-    body("password").notEmpty().withMessage("Password is required").isStrongPassword(),
+    body("password").notEmpty().withMessage("Password is required").isStrongPassword().withMessage("Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number and one special character"),
     validateRequest,
     async (req: Request, res: Response) => {
     const unit = new Unit(false);
