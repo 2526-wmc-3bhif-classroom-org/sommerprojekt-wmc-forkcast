@@ -4,6 +4,7 @@ import useApiConnection from "~/assets/util/api-connector";
 export default function useAuthService() {
     const connection = useApiConnection();
 
+    // State to hold the current user information persistently across the application
     const user = useState<User | undefined>("user", () => undefined);
     const authenticated = computed(() => user.value !== undefined);
 
@@ -13,9 +14,9 @@ export default function useAuthService() {
         let result = await logoutUser();
         if (result.ok) {
             user.value = undefined;
-        } else {
-            return result.failure;
         }
+
+        return result
     }
 
     async function reloadUser() {
@@ -26,6 +27,8 @@ export default function useAuthService() {
         } else {
             user.value = undefined; // Clear user if not authenticated or error occurs
         }
+
+        return result
     }
 
     async function login(email: string, password: string) {
@@ -34,9 +37,9 @@ export default function useAuthService() {
         let result = await loginUser(email, password);
         if (result.ok) {
             user.value = result.value;
-        } else {
-            return result.failure;
         }
+
+        return result
     }
 
     async function register(username: string, email: string, password: string) {
@@ -46,9 +49,9 @@ export default function useAuthService() {
         if (result.ok) {
             // Automatically log in the user after successful registration
             await login(email, password);
-        } else {
-            return result.failure;
         }
+
+        return result
     }
 
     function registerUser(name: string, email: string, password: string) {
