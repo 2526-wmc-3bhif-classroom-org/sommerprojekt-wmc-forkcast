@@ -8,12 +8,129 @@ servers:
     description: Local development server
 components:
   securitySchemes:
-    bearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: jwt
+      description: HttpOnly JWT cookie set by `/auth/login`.
+  schemas:
+    User:
+      type: object
+      required:
+        - id
+        - name
+        - email
+        - profilePicture
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        profilePicture:
+          type: string
+          format: uri
+          nullable: true
+    RegisterRequest:
+      type: object
+      required:
+        - name
+        - email
+        - password
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+          description: Must satisfy the backend strong-password validation.
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+    UpdateProfileRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+        profilePicture:
+          type: string
+          format: uri
+    AddFriendRequest:
+      type: object
+      required:
+        - friendId
+      properties:
+        friendId:
+          type: integer
+    AddFavoriteRequest:
+      type: object
+      required:
+        - recipeId
+      properties:
+        recipeId:
+          type: integer
+    AddCalendarEntryRequest:
+      type: object
+      required:
+        - recipeId
+        - date
+      properties:
+        recipeId:
+          type: integer
+        date:
+          type: string
+          format: date-time
+          description: ISO 8601 date string.
+    UpdateNotificationRequest:
+      type: object
+      required:
+        - isRead
+      properties:
+        isRead:
+          type: boolean
+    ValidationErrorItem:
+      type: object
+      properties:
+        type:
+          type: string
+        value:
+          nullable: true
+        msg:
+          type: string
+        path:
+          type: string
+        location:
+          type: string
+    ValidationErrorResponse:
+      type: object
+      properties:
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationErrorItem'
+    MessageResponse:
+      type: object
+      properties:
+        message:
+          type: string
 security:
-  - bearerAuth: []
+  - cookieAuth: []
 paths:
   /auth/register:
     post:
@@ -24,57 +141,79 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                email:
-                  type: string
-                password:
-                  type: string
+              $ref: '#/components/schemas/RegisterRequest'
       responses:
         '201':
           description: User registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
         '400':
           description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
         '409':
           description: Email already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
         '500':
           description: Internal server error
   /auth/login:
     post:
-      summary: Login a user
+      summary: Login a user and set the JWT cookie
       security: []
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                email:
-                  type: string
-                password:
-                  type: string
+              $ref: '#/components/schemas/LoginRequest'
       responses:
         '200':
           description: Login successful
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+              description: Sets the `jwt` HttpOnly authentication cookie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
         '401':
           description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
         '500':
           description: Internal server error
-  /auth/validate:
-    get:
-      summary: Validate a token
-      security:
-        - bearerAuth: []
+  /auth/logout:
+    post:
+      summary: Logout the current user and clear the JWT cookie
       responses:
         '200':
-          description: Token is valid
+          description: Logout successful
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+              description: Clears the `jwt` HttpOnly authentication cookie.
         '401':
-          description: Token is missing
+          description: JWT cookie is missing
         '403':
-          description: Token is invalid
+          description: JWT cookie is invalid
   /recipes:
     get:
       summary: Get all recipes
@@ -83,10 +222,20 @@ paths:
           name: search
           schema:
             type: string
-          description: Search term for recipes
+          description: Search term for recipes.
       responses:
         '200':
           description: List of recipes
+        '400':
+          description: Invalid query parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+        '401':
+          description: JWT cookie is missing
+        '403':
+          description: JWT cookie is invalid
         '500':
           description: Internal server error
   /recipes/{id}:
@@ -101,6 +250,16 @@ paths:
       responses:
         '200':
           description: Recipe details
+        '400':
+          description: Invalid recipe ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+        '401':
+          description: JWT cookie is missing
+        '403':
+          description: JWT cookie is invalid
         '404':
           description: Recipe not found
         '500':
@@ -110,7 +269,19 @@ paths:
       summary: Get current user profile
       responses:
         '200':
-          description: User profile data
+          description: Current user data (same shape as the login response)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: JWT cookie is missing
+        '403':
+          description: JWT cookie is invalid
+        '404':
+          description: User not found
+        '500':
+          description: Internal server error
     put:
       summary: Update current user profile
       requestBody:
@@ -118,22 +289,30 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                profilePicture:
-                  type: string
-                  format: uri
+              $ref: '#/components/schemas/UpdateProfileRequest'
       responses:
-        '200':
-          description: Profile updated
+        '400':
+          description: Invalid request body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+        '409':
+          description: Route is not implemented yet
+        '401':
+          description: JWT cookie is missing
+        '403':
+          description: JWT cookie is invalid
   /users/me/friends:
     get:
       summary: Get friend list
       responses:
-        '200':
-          description: List of friends
+        '409':
+          description: Route is not implemented yet
+        '401':
+          description: JWT cookie is missing
+        '403':
+          description: JWT cookie is invalid
     post:
       summary: Add a friend
       requestBody:
@@ -141,13 +320,20 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                friendId:
-                  type: integer
+              $ref: '#/components/schemas/AddFriendRequest'
       responses:
-        '201':
-          description: Friend added
+        '400':
+          description: Invalid request body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+        '409':
+          description: Route is not implemented yet
+        '401':
+          description: JWT cookie is missing
+        '403':
+          description: JWT cookie is invalid
   /users/me/friends/{friendId}:
     delete:
       summary: Remove a friend
@@ -158,14 +344,22 @@ paths:
           schema:
             type: integer
       responses:
-        '200':
-          description: Friend removed
+        '409':
+          description: Route is not implemented yet
+        '401':
+          description: JWT cookie is missing
+        '403':
+          description: JWT cookie is invalid
   /users/me/favorites:
     get:
       summary: Get favorite recipes
       responses:
-        '200':
-          description: List of favorite recipes
+        '409':
+          description: Route is not implemented yet
+        '401':
+          description: JWT cookie is missing
+        '403':
+          description: JWT cookie is invalid
     post:
       summary: Add recipe to favorites
       requestBody:
@@ -173,13 +367,20 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                recipeId:
-                  type: integer
+              $ref: '#/components/schemas/AddFavoriteRequest'
       responses:
-        '201':
-          description: Recipe added to favorites
+        '400':
+          description: Invalid request body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+        '409':
+          description: Route is not implemented yet
+        '401':
+          description: JWT cookie is missing
+        '403':
+          description: JWT cookie is invalid
   /users/me/favorites/{recipeId}:
     delete:
       summary: Remove recipe from favorites
@@ -190,14 +391,22 @@ paths:
           schema:
             type: integer
       responses:
-        '200':
-          description: Recipe removed from favorites
+        '409':
+          description: Route is not implemented yet
+        '401':
+          description: JWT cookie is missing
+        '403':
+          description: JWT cookie is invalid
   /users/me/calendar:
     get:
       summary: Get calendar entries
       responses:
-        '200':
-          description: List of calendar entries
+        '409':
+          description: Route is not implemented yet
+        '401':
+          description: JWT cookie is missing
+        '403':
+          description: JWT cookie is invalid
     post:
       summary: Add calendar entry
       requestBody:
@@ -205,16 +414,20 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                recipeId:
-                  type: integer
-                date:
-                  type: string
-                  format: date
+              $ref: '#/components/schemas/AddCalendarEntryRequest'
       responses:
-        '201':
-          description: Calendar entry added
+        '400':
+          description: Invalid request body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+        '409':
+          description: Route is not implemented yet
+        '401':
+          description: JWT cookie is missing
+        '403':
+          description: JWT cookie is invalid
   /users/me/calendar/{calendarEntryId}:
     delete:
       summary: Remove calendar entry
@@ -225,14 +438,22 @@ paths:
           schema:
             type: integer
       responses:
-        '200':
-          description: Calendar entry removed
+        '409':
+          description: Route is not implemented yet
+        '401':
+          description: JWT cookie is missing
+        '403':
+          description: JWT cookie is invalid
   /users/me/notifications:
     get:
       summary: Get notifications
       responses:
-        '200':
-          description: List of notifications
+        '409':
+          description: Route is not implemented yet
+        '401':
+          description: JWT cookie is missing
+        '403':
+          description: JWT cookie is invalid
   /users/me/notifications/{notificationId}:
     put:
       summary: Mark notification as read
@@ -247,10 +468,17 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                isRead:
-                  type: boolean
+              $ref: '#/components/schemas/UpdateNotificationRequest'
       responses:
-        '200':
-          description: Notification marked as read
+        '400':
+          description: Invalid request body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+        '409':
+          description: Route is not implemented yet
+        '401':
+          description: JWT cookie is missing
+        '403':
+          description: JWT cookie is invalid
