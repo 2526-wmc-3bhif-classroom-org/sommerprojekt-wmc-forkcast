@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import useAuthService from "~/assets/auth-service";
+import useAuthService from "~/assets/service/auth-service";
 
 const route = useRoute()
 const authService = useAuthService()

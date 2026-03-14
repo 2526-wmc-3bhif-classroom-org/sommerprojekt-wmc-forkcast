@@ -1,7 +1,13 @@
 <script setup lang="ts">
-import useAuthService from "~/assets/auth-service";
+import useAuthService from "~/assets/service/auth-service";
 
+const router = useRouter()
 const authService = useAuthService()
+
+async function logout() {
+  await authService.logout()
+  await router.push("/")
+}
 </script>
 
 <template>
@@ -49,7 +55,7 @@ const authService = useAuthService()
         <ul tabindex="-1" class="menu menu-md dropdown-content bg-base-100 rounded-box z-1 mt-3 p-2 shadow">
           <li><NuxtLink to="/dashboard/account"><i class="fa-solid fa-user"></i>Account</NuxtLink></li>
           <li><NuxtLink to="/dashboard/settings"><i class="fa-solid fa-gear"></i>Settings</NuxtLink></li>
-          <li><span @click="authService.logout()"><i class="fa-solid fa-arrow-right-from-bracket"></i>Logout</span></li>
+          <li><span @click="logout"><i class="fa-solid fa-arrow-right-from-bracket"></i>Logout</span></li>
         </ul>
       </div>
     </div>

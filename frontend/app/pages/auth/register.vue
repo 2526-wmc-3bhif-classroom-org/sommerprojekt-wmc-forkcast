@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import useAuthService from "~/assets/auth-service";
-import useFailureHandler from "~/assets/failure-handler";
+import useAuthService from "~/assets/service/auth-service";
+import useFailureHandler from "~/assets/util/failure-handler";
 import type {Failure} from "~/assets/model/failure";
 
 definePageMeta({
@@ -18,6 +18,7 @@ const emailError = ref<HTMLSpanElement>()
 const passwordError = ref<HTMLSpanElement>()
 const mainError = ref<HTMLSpanElement>()
 
+const router = useRouter()
 const auth = useAuthService()
 const failureHandler = useFailureHandler()
 
@@ -54,7 +55,7 @@ async function register() {
     return
   }
 
-  alert("Registered successfully!") //TODO
+  await router.push("/dashboard")
 }
 
 </script>
