@@ -1,6 +1,7 @@
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 import path from "path";
 import swaggerUi from "swagger-ui-express";
 import YAML from "yamljs";
@@ -41,6 +42,7 @@ setInterval(() => {
 recipeStore.removeExpiredRecipes().catch(console.error);
 
 app.use(cors({ origin: allowedOrigins, credentials: true }));
+app.use(cookieParser());
 app.use(express.json());
 
 app.use("/api/auth", authRoutes);

@@ -5,6 +5,7 @@ import {StatusCodes} from "http-status-codes";
 import {body} from "express-validator";
 import {validateRequest} from "../middleware/validationMiddleware";
 import {authenticateToken} from "../middleware/authMiddleware";
+import {clearJWT} from "../utils/jwtUtils";
 
 const router = Router();
 
@@ -58,5 +59,10 @@ router.post("/login",
 });
 
 router.get('/validate', authenticateToken);
+
+router.post('/logout', authenticateToken, (req: Request, res: Response) => {
+    clearJWT(res);
+    res.sendStatus(StatusCodes.NO_CONTENT);
+});
 
 export default router;

@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { JWT_SECRET } from "../utils/jwtUtils";
+import { StatusCodes } from "http-status-codes";
 
 export interface AuthRequest extends Request {
     user?: {
@@ -10,16 +11,16 @@ export interface AuthRequest extends Request {
 }
 
 export const authenticateToken = (req: AuthRequest, res: Response, next: NextFunction) => {
-    const authHeader = req.headers["authorization"];
-    const token = authHeader && authHeader.split(" ")[1];
+    // Read the JWT from the httpOnly cookie set on login
+    const token = req.cookies?.jwt;
 
     if (!token) {
-        return res.sendStatus(401);
+        return res.sendStatus(StatusCodes.UNAUTHORIZED);
     }
 
     jwt.verify(token, JWT_SECRET, (err: any, user: any) => {
         if (err) {
-            return res.sendStatus(403);
+            return res.sendStatus(StatusCodes.FORBIDDEN);
         }
         req.user = user;
         next();
