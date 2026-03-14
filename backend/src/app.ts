@@ -27,7 +27,6 @@ export const CACHE_TTL_MS =
     parseDurationToMilliseconds(process.env.CACHE_TTL_MS
         ,24 * 60 * 60 * 1000);
 
-console.log(CACHE_TTL_MS)
 // Create db if not exists and ensure tables are created
 const unit = new Unit(true);
 unit.complete(null);
