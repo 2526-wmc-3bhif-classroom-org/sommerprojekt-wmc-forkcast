@@ -9,7 +9,7 @@ type ApiResponse<T> = {
 };
 
 export default function useApiConnection() {
-    const baseUrl = useRuntimeConfig().apiBaseUrl as string;
+    const baseUrl = useRuntimeConfig().app.apiBaseUrl;
 
     async function apiRequest<T>(
         endpoint: string,
