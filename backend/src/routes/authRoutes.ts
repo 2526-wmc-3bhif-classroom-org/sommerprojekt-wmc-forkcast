@@ -58,8 +58,6 @@ router.post("/login",
     }
 });
 
-router.get("/validate", authenticateToken, (req: Request, res: Response) => {
-    res.sendStatus(StatusCodes.OK).json({ valid: true })});
 router.post('/logout', authenticateToken, (req: Request, res: Response) => {
     clearJWT(res);
     res.sendStatus(StatusCodes.OK);

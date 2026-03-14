@@ -8,6 +8,12 @@ export class UserRepository {
         this.unit = unit;
     }
 
+    public findById(id: number): User | undefined {
+        const stmt = this.unit.prepare<User>("SELECT * FROM User WHERE id = :id",
+            { id });
+        return stmt.get();
+    }
+
     public findByEmail(email: string): User | undefined {
         const stmt = this.unit.prepare<User>("SELECT * FROM User WHERE email = :email",
             { email: email });
