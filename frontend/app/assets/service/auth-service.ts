@@ -4,8 +4,11 @@ import useApiConnection from "~/assets/util/api-connector";
 export default function useAuthService() {
     const connection = useApiConnection();
 
+    const userLoaded = useState<boolean>("userLoading", () => false);
+
     // State to hold the current user information persistently across the application
     const user = useState<User | undefined>("user", () => undefined);
+
     const authenticated = computed(() => user.value !== undefined);
 
     async function logout() {
@@ -27,6 +30,8 @@ export default function useAuthService() {
         } else {
             user.value = undefined; // Clear user if not authenticated or error occurs
         }
+
+        userLoaded.value = true
 
         return result
     }
@@ -63,7 +68,7 @@ export default function useAuthService() {
     }
 
     function logoutUser() {
-        return connection.apiRequest<void>("/auth/logout", "POST");
+        return connection.apiRequest<void>("/auth/logout", "POST", undefined, false);
     }
 
     function getCurrentUser() {
@@ -72,6 +77,7 @@ export default function useAuthService() {
 
     return {
         user,
+        userLoaded,
         authenticated,
         login,
         logout,

@@ -2,6 +2,7 @@
 import useAuthService from "~/assets/service/auth-service";
 
 const route = useRoute()
+const router = useRouter()
 const authService = useAuthService()
 
 const title = computed(() => route.meta.title ? "Forkcast - " + route.meta.title : "Forkcast")
@@ -15,10 +16,6 @@ useSeoMeta({
   ogDescription: description,
 })
 
-onMounted(async () => {
-  await authService.reloadUser()
-})
-
 useHead({
   script: [
     {
@@ -30,6 +27,17 @@ useHead({
       type: "module"
     }
   ],
+})
+
+onMounted(async () => {
+  await authService.reloadUser()
+  if (authService.authenticated.value && route.path.startsWith("/auth")) {
+     await router.push("/dashboard");
+  }
+
+  if (!authService.authenticated.value && route.path.startsWith("/dashboard")) {
+    await router.push("/auth/login");
+  }
 })
 
 </script>

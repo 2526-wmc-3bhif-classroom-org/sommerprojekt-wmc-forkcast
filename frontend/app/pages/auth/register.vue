@@ -50,8 +50,8 @@ async function register() {
   }
 
   let failure = await auth.register(username.value.value, email.value.value, password.value.value)
-  if (failure) {
-    failureHandler.fail(failure)
+  if (!failure.ok) {
+    failureHandler.fail(failure.failure as Failure)
     return
   }
 

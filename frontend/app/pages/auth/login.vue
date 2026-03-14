@@ -38,8 +38,8 @@ async function login() {
   }
 
   let failure = await auth.login(email.value.value, password.value.value)
-  if (failure) {
-    failureHandler.fail(failure)
+  if (!failure.ok) {
+    failureHandler.fail(failure.failure as Failure)
     return
   }
 
