@@ -199,16 +199,6 @@ paths:
                 $ref: '#/components/schemas/MessageResponse'
         '500':
           description: Internal server error
-  /auth/validate:
-    get:
-      summary: Validate the JWT cookie
-      responses:
-        '200':
-          description: JWT cookie is valid
-        '401':
-          description: JWT cookie is missing
-        '403':
-          description: JWT cookie is invalid
   /auth/logout:
     post:
       summary: Logout the current user and clear the JWT cookie
