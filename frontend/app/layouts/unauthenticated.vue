@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import FullScreenErrorComponent from "~/components/FullScreenErrorComponent.vue";
-import UnauthenticatedNavbarComponent from "~/components/UnauthenticatedNavbarComponent.vue";
+import useAuthService from "~/assets/service/auth-service";
+
+const authService = useAuthService()
 </script>
 
 <template>
-  <UnauthenticatedNavbarComponent/>
+  <UnauthenticatedNavbarComponent v-if="authService.userLoaded" class="z-100"/>
   <div>
     <NuxtErrorBoundary>
       <slot/>
