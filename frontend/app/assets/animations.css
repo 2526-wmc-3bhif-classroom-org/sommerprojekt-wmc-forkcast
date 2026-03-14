@@ -14,8 +14,8 @@
     to { opacity: 1; transform: translateX(0); }
 }
 @keyframes zoom-in {
-    from { background-size: 110% }
-    to { background-size: 100% }
+    from { background-size: 100% }
+    to { background-size: 110% }
 }
 
 .animate-fade-in {

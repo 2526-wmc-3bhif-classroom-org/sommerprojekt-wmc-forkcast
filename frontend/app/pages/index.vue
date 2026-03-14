@@ -1,13 +1,27 @@
 <script setup lang="ts">
+definePageMeta({
+  description: 'Discover Forkcast, the ultimate meal planning app. Organize weekly meals, discover new recipes, and cook stress free.',
+})
 </script>
 <template>
-    <div class="hero min-h-screen
+  <div class="bg-[#050405]">
+    <div class="hero h-screen
                 bg-[linear-gradient(rgba(0,0,0,0.2),rgba(0,0,0,0.8)),url('/images/hero-bg.jpg')]
-                bg-center bg-fixed bg-no-repeat bg-cover animate-zoom-in">
+                bg-fixed bg-no-repeat bg-cover bg-center animate-zoom-in">
       <div class="hero-content flex-col lg:flex-row">
         <div>
           <h1 class="text-8xl font-bold mb-2.5 opacity-0 animate-fade-in-slide-in-left">Meet Forkcast,</h1>
-          <h1 class="text-5xl font-bold opacity-0 animate-fade-in-slide-in-right-delay">the #1 app for meal planning and cooking</h1>
+          <h1 class="text-5xl font-bold opacity-0 animate-fade-in-slide-in-right-delay">
+            <span>the #1 app for </span>
+            <span class="text-rotate duration-7000">
+              <span class="italic font-extralight text-primary">
+                <span>MEAL PLANNING</span>
+                <span>COOKING</span>
+                <span>RECIPE DISCOVERY</span>
+                <span>HEALTHY EATING</span>
+              </span>
+            </span>
+          </h1>
           <p class="py-6 text-xl opacity-0 animate-fade-in">
             Organize weekly meals, discover new recipes, and cook stress free.
           </p>
@@ -20,8 +34,7 @@
             Login
           </NuxtLink>
         </div>
-        <!--TODO add img/interactive of example meal plan-->
       </div>
     </div>
-
+  </div>
 </template>
