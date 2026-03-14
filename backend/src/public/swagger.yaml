@@ -278,12 +278,20 @@ paths:
     get:
       summary: Get current user profile
       responses:
-        '409':
-          description: Route is not implemented yet
+        '200':
+          description: Current user data (same shape as the login response)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
         '401':
           description: JWT cookie is missing
         '403':
           description: JWT cookie is invalid
+        '404':
+          description: User not found
+        '500':
+          description: Internal server error
     put:
       summary: Update current user profile
       requestBody:
