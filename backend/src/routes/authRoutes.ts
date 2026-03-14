@@ -59,10 +59,10 @@ router.post("/login",
 });
 
 router.get("/validate", authenticateToken, (req: Request, res: Response) => {
-    res.status(200).json({ valid: true })});
+    res.sendStatus(StatusCodes.OK).json({ valid: true })});
 router.post('/logout', authenticateToken, (req: Request, res: Response) => {
     clearJWT(res);
-    res.sendStatus(StatusCodes.NO_CONTENT);
+    res.sendStatus(StatusCodes.OK);
 });
 
 export default router;
