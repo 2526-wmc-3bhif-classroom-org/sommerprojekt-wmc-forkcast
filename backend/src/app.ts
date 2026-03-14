@@ -1,6 +1,7 @@
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 import path from "path";
 import swaggerUi from "swagger-ui-express";
 import YAML from "yamljs";
@@ -21,27 +22,20 @@ const allowedOrigins = (process.env.CORS_ORIGIN ?? "")
     .split(",")
     .map((o) => o.trim())
     .filter(Boolean);
-
-const app = express();
 export const CACHE_TTL_MS =
     parseDurationToMilliseconds(process.env.CACHE_TTL_MS
         ,24 * 60 * 60 * 1000);
 
-console.log(CACHE_TTL_MS)
+const app = express();
+
 // Create db if not exists and ensure tables are created
 const unit = new Unit(true);
 unit.complete(null);
 
-const recipeStore = new RemoteRecipeStore();
-setInterval(() => {
-    console.log("Cleaning up expired recipes...");
-    recipeStore.removeExpiredRecipes().catch(console.error);
-}, CACHE_TTL_MS); // Cleanup
-
-// Initial cleanup on startup
-recipeStore.removeExpiredRecipes().catch(console.error);
+await cleanup();
 
 app.use(cors({ origin: allowedOrigins, credentials: true }));
+app.use(cookieParser());
 app.use(express.json());
 
 app.use("/api/auth", authRoutes);
@@ -58,3 +52,14 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });
+
+async function cleanup() {
+    const recipeStore = new RemoteRecipeStore();
+    setInterval(() => {
+        console.log("Cleaning up expired recipes...");
+        recipeStore.removeExpiredRecipes().catch(console.error);
+    }, CACHE_TTL_MS); // Cleanup
+
+    // Initial cleanup on startup
+    recipeStore.removeExpiredRecipes().catch(console.error);
+}
