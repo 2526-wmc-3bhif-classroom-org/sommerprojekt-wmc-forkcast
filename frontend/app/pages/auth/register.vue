@@ -57,9 +57,9 @@ async function register() {
 <template>
   <div class="hero min-h-screen
                 bg-[linear-gradient(rgba(0,0,0,0.2),rgba(0,0,0,0.8)),url('/images/login-bg.jpg')]
-                bg-center">
+                bg-center bg-fixed bg-no-repeat bg-cover animate-zoom-in">
     <div class="hero-content flex-col lg:flex-row-reverse">
-      <div class="text-center lg:text-left lg:ml-24">
+      <div class="text-center lg:text-left lg:ml-24 opacity-0 animate-fade-in-slide-in-up-delay">
         <h1 class="text-3xl md:text-5xl font-bold text-nowrap">
           <i class="fa-solid fa-hand-peace mr-2"/>
           <span>Glad to have you!</span>
@@ -71,7 +71,7 @@ async function register() {
           We look forward to seeing you!
         </p>
       </div>
-      <div class="card bg-base-100 w-full max-w-sm shrink-0 shadow-2xl">
+      <div class="card bg-base-100 w-full max-w-sm shrink-0 shadow-2xl opacity-0 animate-fade-in-slide-in-up">
         <div class="card-body w-full">
           <form class="fieldset w-full" onsubmit="return false">
             <label class="label">

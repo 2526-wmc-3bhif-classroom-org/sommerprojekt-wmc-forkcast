@@ -3,7 +3,7 @@ import FullScreenErrorComponent from "~/components/FullScreenErrorComponent.vue"
 </script>
 
 <template>
-  <NavbarComponent/>
+  <NavbarComponent class="z-100"/>
   <div>
     <NuxtErrorBoundary>
       <slot/>

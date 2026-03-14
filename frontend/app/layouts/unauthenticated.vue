@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import FullScreenErrorComponent from "~/components/FullScreenErrorComponent.vue";
-import UnauthenticatedNavbarComponent from "~/components/UnauthenticatedNavbarComponent.vue";
 </script>
 
 <template>
-  <UnauthenticatedNavbarComponent/>
+  <UnauthenticatedNavbarComponent class="z-100"/>
   <div>
     <NuxtErrorBoundary>
       <slot/>
