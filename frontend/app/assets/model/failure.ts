@@ -1,4 +1,4 @@
-export interface Failure {
+export type Failure = {
     message: string | null;
     errors: {
         type: string;
@@ -7,5 +7,4 @@ export interface Failure {
         path: string;
         location: string;
     } [] | null;
-
 }

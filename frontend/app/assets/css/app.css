@@ -1,0 +1,9 @@
+html {
+    background-color: #050709 !important;
+}
+
+.navbar-scrolled {
+    background: color-mix(in srgb, var(--color-base-100) 70%, transparent);
+    backdrop-filter: blur(20px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
