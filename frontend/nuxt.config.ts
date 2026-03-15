@@ -6,7 +6,7 @@ const nativeElements = ["calendar-date", "calendar-month"]
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
-  css: ["./app/assets/css/tailwind.css", "./app/assets/css/animations.css", "./app/assets/css/overrides.css"],
+  css: ["./app/assets/css/tailwind.css", "./app/assets/css/animations.css", "./app/assets/css/app.css"],
   modules: ["@nuxtjs/i18n"],
   vite: {
     plugins: [tailwindcss()],

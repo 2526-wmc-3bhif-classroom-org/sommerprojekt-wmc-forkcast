@@ -1,5 +1,20 @@
+<script setup lang="ts">
+const isScrolled = ref(false);
+
+const handleScroll = () => {
+  isScrolled.value = window.scrollY > 0;
+};
+
+onMounted(() => {
+  window.addEventListener('scroll', handleScroll, { passive: true });
+  handleScroll();
+});
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll);
+});
+</script>
 <template>
-  <div class="fixed top-0 navbar bg-transparent shadow-sm">
+  <div :class="['fixed top-0 navbar transition-colors duration-300', { 'navbar-scrolled': isScrolled }, { 'bg-transparent': !isScrolled }]">
     <div class="flex-1">
       <nuxt-link-locale to="/" class="btn btn-ghost text-xl">
         <i class="fa-solid fa-utensils"/>
