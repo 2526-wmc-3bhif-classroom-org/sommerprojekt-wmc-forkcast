@@ -33,15 +33,15 @@ const authService = useAuthService();
           </p>
           <nuxt-link-locale v-if="!authService.authenticated.value" to="/auth/signup" class="btn btn-primary mr-2 opacity-0 animate-fade-in">
             <i class="fa-solid fa-user-plus mr-1"/>
-            {{$t('index.prompt_signup')}}
+            <span>{{$t('index.prompt_signup')}}</span>
           </nuxt-link-locale>
           <nuxt-link-locale v-if="!authService.authenticated.value" to="/auth/login" class="btn btn-outline opacity-0 animate-fade-in">
             <i class="fa-solid fa-user-check mr-1"/>
-            {{$t('index.prompt_login')}}
+            <span>{{$t('index.prompt_login')}}</span>
           </nuxt-link-locale>
           <nuxt-link-locale v-if="authService.authenticated.value" to="/dashboard" class="btn btn-outline opacity-0 animate-fade-in">
             <i class="fa-solid fa-chart-line mr-1"/>
-            {{$t('index.prompt_dashboard')}}
+            <span>{{$t('index.prompt_dashboard')}}</span>
           </nuxt-link-locale>
         </div>
       </div>

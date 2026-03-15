@@ -14,14 +14,10 @@ defineProps(["error", "clearError"]);
         </p>
 
         <button class="btn btn-primary" @click="clearError">
-          <i class="fa-solid fa-arrow-rotate-right"></i>
+          <i class="fa-solid fa-arrow-rotate-right"/>
           {{$t('component.fse.retry')}}
         </button>
       </div>
     </div>
   </div>
 </template>
-
-<style scoped>
-
-</style>
