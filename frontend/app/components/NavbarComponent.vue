@@ -13,7 +13,7 @@ async function logout() {
 <template>
   <div class="fixed top-0 navbar shadow-sm">
     <div class="flex-1">
-      <NuxtLink to="/" class="btn btn-ghost text-xl"><i class="fa-solid fa-utensils"></i>Forkcast</NuxtLink>
+      <nuxt-link-locale to="/" class="btn btn-ghost text-xl"><i class="fa-solid fa-utensils"></i>Forkcast</nuxt-link-locale>
     </div>
     <div class="flex-none">
       <div class="dropdown dropdown-end">
@@ -28,7 +28,7 @@ async function logout() {
           </calendar-date>
 
           <button class="btn btn-primary m-2">
-            <NuxtLink to="/dashboard/schedule"><i class="fa-solid fa-clock mr-1.5"></i>Schedule</NuxtLink>
+            <nuxt-link-locale to="/dashboard/schedule"><i class="fa-solid fa-clock mr-1.5"></i>Schedule</nuxt-link-locale>
           </button>
         </div>
       </div>
@@ -42,9 +42,9 @@ async function logout() {
             <button class="btn btn-ghost btn-circle"><i class="fa-solid fa-trash-can"></i></button>
           </div>
           <ul>
-            <li><NotificationComponent icon="fa-triangle-exclamation" title="Notification 1" description="This is a notification" goto="/"/></li>
-            <li><NotificationComponent title="Notification 2" description="This is a notification" goto="/"/></li>
-            <li><NotificationComponent title="Notification 3" description="This is a notification" goto="/"/></li>
+            <li><notification-component icon="fa-triangle-exclamation" title="Notification 1" description="This is a notification" goto="/"/></li>
+            <li><notification-component title="Notification 2" description="This is a notification" goto="/"/></li>
+            <li><notification-component title="Notification 3" description="This is a notification" goto="/"/></li>
           </ul>
         </div>
       </div>
@@ -53,8 +53,8 @@ async function logout() {
           <i class="fa-solid fa-user"></i>
         </div>
         <ul tabindex="-1" class="menu menu-md dropdown-content bg-base-100 rounded-box z-1 mt-3 p-2 shadow">
-          <li><NuxtLink to="/dashboard/account"><i class="fa-solid fa-user"></i>Account</NuxtLink></li>
-          <li><NuxtLink to="/dashboard/settings"><i class="fa-solid fa-gear"></i>Settings</NuxtLink></li>
+          <li><nuxt-link-locale to="/dashboard/account"><i class="fa-solid fa-user"></i>Account</nuxt-link-locale></li>
+          <li><nuxt-link-locale to="/dashboard/settings"><i class="fa-solid fa-gear"></i>Settings</nuxt-link-locale></li>
           <li><span @click="logout"><i class="fa-solid fa-arrow-right-from-bracket"></i>Logout</span></li>
         </ul>
       </div>

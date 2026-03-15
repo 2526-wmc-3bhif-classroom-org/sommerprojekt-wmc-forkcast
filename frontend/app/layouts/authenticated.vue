@@ -6,14 +6,14 @@ const authService = useAuthService()
 </script>
 
 <template>
-  <NavbarComponent v-if="authService.userLoaded" class="z-100"/>
+  <navbar-component v-if="authService.userLoaded" class="z-100"/>
   <div>
-    <NuxtErrorBoundary>
+    <nuxt-error-boundary>
       <slot/>
       <template #error="{ error, clearError }">
-        <FullScreenErrorComponent :error="error" :clear-error="clearError"/>
+        <full-screen-error-component :error="error" :clear-error="clearError"/>
       </template>
-    </NuxtErrorBoundary>
+    </nuxt-error-boundary>
   </div>
-  <FooterComponent/>
+  <footer-component/>
 </template>

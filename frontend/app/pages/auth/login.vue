@@ -87,7 +87,7 @@ async function login() {
               </label>
               <input ref="password" autocomplete="current-password" type="password" class="input w-full" placeholder="Password" />
               <div>
-                <NuxtLink to="/auth/forgot" class="link link-hover">Forgot password?</NuxtLink>
+                <nuxt-link-locale to="/auth/forgot" class="link link-hover">Forgot password?</nuxt-link-locale>
               </div>
               <label class="label text-error">
                 <i v-if="failureHandler.hasMain()" class="fa-solid fa-triangle-exclamation"/>

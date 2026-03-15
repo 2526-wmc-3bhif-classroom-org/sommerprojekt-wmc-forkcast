@@ -1,19 +1,28 @@
 <script setup lang="ts">
+const { locales, setLocale } = useI18n()
 </script>
 <template>
   <div class="fixed top-0 navbar bg-transparent shadow-sm">
     <div class="flex-1">
-      <NuxtLink to="/" class="btn btn-ghost text-xl"><i class="fa-solid fa-utensils"></i>Forkcast</NuxtLink>
+      <nuxt-link-locale to="/" class="btn btn-ghost text-xl"><i class="fa-solid fa-utensils"></i>Forkcast</nuxt-link-locale>
     </div>
     <div class="flex-none">
-      <NuxtLink to="/auth/register" class="btn btn-primary mr-2">
+      <div class="dropdown dropdown-end mr-2">
+        <div tabindex="0" role="button" class="btn btn-ghost btn-circle">
+          <i class="fa-solid fa-language"></i>
+        </div>
+        <ul tabindex="-1" class="menu menu-md dropdown-content bg-base-100 rounded-box z-1 mt-3 p-2 shadow">
+          <li v-for="locale in locales"><span @click="setLocale(locale.code)"><i class="fa-solid fa-language"></i>{{ locale.name }}</span></li>
+        </ul>
+      </div>
+      <nuxt-link-locale to="/auth/register" class="btn btn-primary mr-2">
         <i class="fa-solid fa-user-plus"/>
         <span class="hidden md:block md:ml-1">Start Planning Free</span>
-      </NuxtLink>
-      <NuxtLink to="/auth/login" class="btn btn-soft">
+      </nuxt-link-locale>
+      <nuxt-link-locale to="/auth/login" class="btn btn-soft">
         <i class="fa-solid fa-user-check"/>
         <span class="hidden md:block md:ml-1">Login</span>
-      </NuxtLink>
+      </nuxt-link-locale>
     </div>
   </div>
 </template>

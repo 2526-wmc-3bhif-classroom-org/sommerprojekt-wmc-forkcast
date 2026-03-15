@@ -12,21 +12,21 @@
     </aside>
     <nav>
       <h6 class="footer-title">Services</h6>
-      <NuxtLink to="/manual" class="link link-hover">Usage Manual</NuxtLink>
-      <NuxtLink to="/documentation" class="link link-hover">Documentation</NuxtLink>
-      <NuxtLink to="/faq" class="link link-hover">FAQ</NuxtLink>
+      <nuxt-link-locale to="/manual" class="link link-hover">Usage Manual</nuxt-link-locale>
+      <nuxt-link-locale to="/documentation" class="link link-hover">Documentation</nuxt-link-locale>
+      <nuxt-link-locale to="/faq" class="link link-hover">FAQ</nuxt-link-locale>
     </nav>
     <nav>
       <h6 class="footer-title">Company</h6>
-      <NuxtLink to="/about" class="link link-hover">About us</NuxtLink>
-      <NuxtLink to="/contact" class="link link-hover">Contact</NuxtLink>
-      <NuxtLink to="/source" class="link link-hover">Source</NuxtLink>
+      <nuxt-link-locale to="/about" class="link link-hover">About us</nuxt-link-locale>
+      <nuxt-link-locale to="/contact" class="link link-hover">Contact</nuxt-link-locale>
+      <nuxt-link-locale to="/source" class="link link-hover">Source</nuxt-link-locale>
     </nav>
     <nav>
       <h6 class="footer-title">Legal</h6>
-      <NuxtLink to="/terms-of-use" class="link link-hover">Terms of use</NuxtLink>
-      <NuxtLink to="/privacy-policy" class="link link-hover">Privacy policy</NuxtLink>
-      <NuxtLink to="/cookie-policy" class="link link-hover">Cookie policy</NuxtLink>
+      <nuxt-link-locale to="/terms-of-use" class="link link-hover">Terms of use</nuxt-link-locale>
+      <nuxt-link-locale to="/privacy-policy" class="link link-hover">Privacy policy</nuxt-link-locale>
+      <nuxt-link-locale to="/cookie-policy" class="link link-hover">Cookie policy</nuxt-link-locale>
     </nav>
   </footer>
 </template>

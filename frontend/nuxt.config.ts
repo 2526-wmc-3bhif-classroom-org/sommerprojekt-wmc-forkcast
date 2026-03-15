@@ -7,26 +7,28 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
   css: ["./app/assets/css/tailwind.css", "./app/assets/css/animations.css", "./app/assets/css/overrides.css"],
-
+  modules: ["@nuxtjs/i18n"],
   vite: {
     plugins: [tailwindcss()],
   },
-
   app: {
     baseURL: '/sommerprojekt-wmc-forkcast'
   },
-
   vue: {
     compilerOptions: {
       isCustomElement: (tag) => nativeElements.includes(tag)
     }
   },
-
   runtimeConfig: {
-    app: {
-      apiBaseUrl: process.env.API_BASE_URL || "http://localhost:3000/api"
+    public: {
+      apiBaseUrl: process.env.API_BASE_URL || 'http://localhost:3000/api'
     }
   },
-
-  modules: ["@nuxtjs/i18n"]
+  i18n: {
+    locales: [
+      { code: 'en', language: 'en-US', name: 'English', file: 'en.json'},
+      { code: 'de', language: 'de-AT', name: 'Deutsch', file: 'de.json'}
+    ],
+    defaultLocale: 'en'
+  }
 })

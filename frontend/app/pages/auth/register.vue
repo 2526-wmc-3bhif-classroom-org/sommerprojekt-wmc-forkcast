@@ -111,10 +111,10 @@ async function register() {
               <label class="label pt-2">
                 <input ref="terms" type="checkbox"  class="checkbox" />
                 I accept the
-                <NuxtLink to="/terms-of-use" class="link link-hover">
+                <nuxt-link-locale to="/terms-of-use" class="link link-hover">
                   <i class="fa-solid fa-up-right-from-square"/>
                   Terms of use
-                </NuxtLink>
+                </nuxt-link-locale>
               </label>
               <label class="label text-error">
                 <i v-if="failureHandler.hasMain()" class="fa-solid fa-triangle-exclamation"/>
