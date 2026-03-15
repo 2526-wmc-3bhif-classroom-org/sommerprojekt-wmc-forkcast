@@ -15,6 +15,7 @@ const emailError = ref<HTMLSpanElement>()
 const passwordError = ref<HTMLSpanElement>()
 const mainError = ref<HTMLSpanElement>()
 
+const localePath = useLocalePath()
 const router = useRouter()
 const auth = useAuthService()
 const failureHandler = useFailureHandler()
@@ -43,7 +44,7 @@ async function login() {
     return
   }
 
-  await router.push("/dashboard")
+  await router.push(localePath("/dashboard"));
 }
 </script>
 
@@ -55,39 +56,35 @@ async function login() {
       <div class="hero-content flex-col lg:flex-row-reverse">
         <div class="text-center lg:text-left lg:ml-24 opacity-0 animate-fade-in-slide-in-up-delay">
           <h1 class="text-3xl md:text-5xl font-bold text-nowrap">
-            <i class="fa-solid fa-hand-peace mr-2"/>
-            <span>Welcome back!</span>
+            {{$t('login.greeting')}}
           </h1>
           <p class="py-6 w-96 m-auto">
-            Please enter your username and
-            password to access your account.
-            If you don't have an account, you can sign up for one.
-            We look forward to seeing you again!
+            {{$t('login.prompt')}}
           </p>
         </div>
-        <div class="card bg-base-100 w-full max-w-sm shrink-0 shadow-2xl opacity-0 animate-fade-in-slide-in-up">
+        <div class="card bg-base-100 rounded-2xl w-full max-w-sm shrink-0 shadow-2xl opacity-0 animate-fade-in-slide-in-up">
           <div class="card-body w-full">
             <form class="fieldset w-full" onsubmit="return false">
               <label class="label">
                 <i class="fa-solid fa-at"/>
-                <span>Email</span>
+                <span>{{$t('login.email')}}</span>
               </label>
               <label class="label text-error text-wrap">
                 <i v-if="failureHandler.has('email')" class="fa-solid fa-triangle-exclamation"/>
                 <span ref="emailError"></span>
               </label>
-              <input ref="email" autocomplete="email" type="text" class="input w-full" placeholder="Email" />
+              <input ref="email" autocomplete="email" type="text" class="input w-full" :placeholder="$t('login.email')" />
               <label class="label">
                 <i class="fa-solid fa-key"/>
-                <span>Password</span>
+                <span>{{$t('login.password')}}</span>
               </label>
               <label class="label text-error text-wrap">
                 <i v-if="failureHandler.has('password')" class="fa-solid fa-triangle-exclamation"/>
                 <span ref="passwordError"></span>
               </label>
-              <input ref="password" autocomplete="current-password" type="password" class="input w-full" placeholder="Password" />
+              <input ref="password" autocomplete="current-password" type="password" class="input w-full" :placeholder="$t('login.password')" />
               <div>
-                <nuxt-link-locale to="/auth/forgot" class="link link-hover">Forgot password?</nuxt-link-locale>
+                <nuxt-link-locale to="/auth/forgot" class="link link-hover">{{$t('login.forgot')}}</nuxt-link-locale>
               </div>
               <label class="label text-error">
                 <i v-if="failureHandler.hasMain()" class="fa-solid fa-triangle-exclamation"/>
@@ -95,7 +92,7 @@ async function login() {
               </label>
               <button class="btn btn-primary mt-4" @click="login">
                 <i class="fa-solid fa-arrow-right-to-bracket"/>
-                <span>Login</span>
+                <span>{{$t('login.submit')}}</span>
               </button>
             </form>
           </div>

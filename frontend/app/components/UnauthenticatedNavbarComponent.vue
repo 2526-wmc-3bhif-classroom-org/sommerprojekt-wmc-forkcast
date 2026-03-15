@@ -4,7 +4,7 @@ const { locales, setLocale } = useI18n()
 <template>
   <div class="fixed top-0 navbar bg-transparent shadow-sm">
     <div class="flex-1">
-      <nuxt-link-locale to="/" class="btn btn-ghost text-xl"><i class="fa-solid fa-utensils"></i>Forkcast</nuxt-link-locale>
+      <nuxt-link-locale to="/" class="btn btn-ghost text-xl"><i class="fa-solid fa-utensils"></i>{{$t('component.navbar.title')}}</nuxt-link-locale>
     </div>
     <div class="flex-none">
       <div class="dropdown dropdown-end mr-2">
@@ -15,13 +15,13 @@ const { locales, setLocale } = useI18n()
           <li v-for="locale in locales"><span @click="setLocale(locale.code)"><i class="fa-solid fa-language"></i>{{ locale.name }}</span></li>
         </ul>
       </div>
-      <nuxt-link-locale to="/auth/register" class="btn btn-primary mr-2">
+      <nuxt-link-locale to="/auth/signup" class="btn btn-primary mr-2">
         <i class="fa-solid fa-user-plus"/>
-        <span class="hidden md:block md:ml-1">Start Planning Free</span>
+        <span class="hidden md:block md:ml-1">{{$t('component.navbar.prompt_signup')}}</span>
       </nuxt-link-locale>
       <nuxt-link-locale to="/auth/login" class="btn btn-soft">
         <i class="fa-solid fa-user-check"/>
-        <span class="hidden md:block md:ml-1">Login</span>
+        <span class="hidden md:block md:ml-1">{{$t('component.navbar.prompt_login')}}</span>
       </nuxt-link-locale>
     </div>
   </div>

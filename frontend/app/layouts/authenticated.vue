@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import FullScreenErrorComponent from "~/components/FullScreenErrorComponent.vue";
 import useAuthService from "~/assets/service/auth-service";
 
 const authService = useAuthService()
