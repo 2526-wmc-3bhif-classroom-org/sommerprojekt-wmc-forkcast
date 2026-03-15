@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import useAuthService from "~/assets/service/auth-service";
 
-const router = useRouter()
-const localePath = useLocalePath()
-const authService = useAuthService()
+const router = useRouter();
+const localePath = useLocalePath();
+const authService = useAuthService();
+const { locales, setLocale } = useI18n();
+
 
 async function logout() {
-  await authService.logout()
+  await authService.logout();
   await router.push(localePath("/"));
 }
 </script>
@@ -17,7 +19,15 @@ async function logout() {
       <nuxt-link-locale to="/" class="btn btn-ghost text-xl"><i class="fa-solid fa-utensils"></i>{{$t('component.navbar.title')}}</nuxt-link-locale>
     </div>
     <div class="flex-none">
-      <div class="dropdown dropdown-end">
+      <div class="dropdown dropdown-hover dropdown-end">
+        <div tabindex="0" role="button" class="btn btn-ghost btn-circle">
+          <i class="fa-solid fa-language"></i>
+        </div>
+        <ul tabindex="-1" class="menu menu-md dropdown-content bg-base-100 rounded-box z-1 mt-3 p-2 shadow">
+          <li v-for="locale in locales"><span @click="setLocale(locale.code)"><i class="fa-solid fa-language"></i>{{ locale.name }}</span></li>
+        </ul>
+      </div>
+      <div class="dropdown dropdown-hover dropdown-end">
         <div tabindex="0" role="button" class="btn btn-ghost btn-circle">
           <i class="fa-solid fa-calendar"></i>
         </div>
@@ -33,7 +43,7 @@ async function logout() {
           </button>
         </div>
       </div>
-      <div class="dropdown dropdown-end">
+      <div class="dropdown dropdown-hover dropdown-end">
         <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar">
           <i class="fa-solid fa-bell"></i>
         </div>
@@ -49,7 +59,7 @@ async function logout() {
           </ul>
         </div>
       </div>
-      <div class="dropdown dropdown-end">
+      <div class="dropdown dropdown-hover dropdown-end">
         <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar">
           <i class="fa-solid fa-user"></i>
         </div>

@@ -2,7 +2,7 @@
 definePageMeta({
   title: 'My Schedule',
   description: 'View and manage your schedule.',
-})
+});
 </script>
 
 <template>

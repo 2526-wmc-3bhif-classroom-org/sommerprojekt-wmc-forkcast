@@ -2,7 +2,7 @@
 definePageMeta({
   title: 'Settings',
   description: 'Manage your account settings and preferences.',
-})
+});
 </script>
 
 <template>

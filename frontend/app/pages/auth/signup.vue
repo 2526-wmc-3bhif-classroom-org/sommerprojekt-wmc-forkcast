@@ -6,54 +6,54 @@ import type {Failure} from "~/assets/model/failure";
 definePageMeta({
   title: 'Register',
   description: 'Create a new account to access our services and enjoy exclusive features. Join us today and be part of our community!',
-})
+});
 
-const username = ref<HTMLInputElement>()
-const email = ref<HTMLInputElement>()
-const password = ref<HTMLInputElement>()
-const terms = ref<HTMLInputElement>()
+const username = ref<HTMLInputElement>();
+const email = ref<HTMLInputElement>();
+const password = ref<HTMLInputElement>();
+const terms = ref<HTMLInputElement>();
 
-const usernameError = ref<HTMLSpanElement>()
-const emailError = ref<HTMLSpanElement>()
-const passwordError = ref<HTMLSpanElement>()
-const mainError = ref<HTMLSpanElement>()
+const usernameError = ref<HTMLSpanElement>();
+const emailError = ref<HTMLSpanElement>();
+const passwordError = ref<HTMLSpanElement>();
+const mainError = ref<HTMLSpanElement>();
 
-const localePath = useLocalePath()
-const router = useRouter()
-const auth = useAuthService()
-const failureHandler = useFailureHandler()
+const localePath = useLocalePath();
+const router = useRouter();
+const auth = useAuthService();
+const failureHandler = useFailureHandler();
 
 failureHandler.addHandler("name", (message) => {
-  usernameError.value!!.innerText = message
-})
+  usernameError.value!!.innerText = message;
+});
 
 failureHandler.addHandler("email", (message) => {
-  emailError.value!!.innerText = message
-})
+  emailError.value!!.innerText = message;
+});
 
 failureHandler.addHandler("password", (message) => {
-  passwordError.value!!.innerText = message
-})
+  passwordError.value!!.innerText = message;
+});
 
 failureHandler.setMainHandler(message => {
-  mainError.value!!.innerText = message
-})
+  mainError.value!!.innerText = message;
+});
 
 async function register() {
   if (!username.value?.value || !email.value?.value || !password.value?.value) {
-    failureHandler.fail({ message: "Please fill in all fields." } as Failure)
-    return
+    failureHandler.fail({ message: "Please fill in all fields." } as Failure);
+    return;
   }
 
   if (!terms.value?.checked) {
-    failureHandler.fail({ message: "You must accept the Terms of Use to continue." } as Failure)
-    return
+    failureHandler.fail({ message: "You must accept the Terms of Use to continue." } as Failure);
+    return;
   }
 
-  let failure = await auth.register(username.value.value, email.value.value, password.value.value)
+  let failure = await auth.register(username.value.value, email.value.value, password.value.value);
   if (!failure.ok) {
-    failureHandler.fail(failure.failure as Failure)
-    return
+    failureHandler.fail(failure.failure as Failure);
+    return;
   }
 
   await router.push(localePath("/dashboard"));

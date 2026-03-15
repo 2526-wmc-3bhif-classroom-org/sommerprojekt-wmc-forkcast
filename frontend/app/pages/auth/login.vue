@@ -6,42 +6,42 @@ import useAuthService from "~/assets/service/auth-service";
 definePageMeta({
   title: 'Login',
   description: 'Login to your account to access your dashboard and manage your settings.',
-})
+});
 
-const email = ref<HTMLInputElement>()
-const password = ref<HTMLInputElement>()
+const email = ref<HTMLInputElement>();
+const password = ref<HTMLInputElement>();
 
-const emailError = ref<HTMLSpanElement>()
-const passwordError = ref<HTMLSpanElement>()
-const mainError = ref<HTMLSpanElement>()
+const emailError = ref<HTMLSpanElement>();
+const passwordError = ref<HTMLSpanElement>();
+const mainError = ref<HTMLSpanElement>();
 
-const localePath = useLocalePath()
-const router = useRouter()
-const auth = useAuthService()
-const failureHandler = useFailureHandler()
+const localePath = useLocalePath();
+const router = useRouter();
+const auth = useAuthService();
+const failureHandler = useFailureHandler();
 
 failureHandler.addHandler("email", (message) => {
-  emailError.value!!.innerText = message
-})
+  emailError.value!!.innerText = message;
+});
 
 failureHandler.addHandler("password", (message) => {
-  passwordError.value!!.innerText = message
-})
+  passwordError.value!!.innerText = message;
+});
 
 failureHandler.setMainHandler(message => {
-  mainError.value!!.innerText = message
-})
+  mainError.value!!.innerText = message;
+});
 
 async function login() {
   if (!email.value?.value || !password.value?.value) {
-    failureHandler.fail({ message: "Please fill in all fields." } as Failure)
-    return
+    failureHandler.fail({ message: "Please fill in all fields." } as Failure);
+    return;
   }
 
-  let failure = await auth.login(email.value.value, password.value.value)
+  let failure = await auth.login(email.value.value, password.value.value);
   if (!failure.ok) {
-    failureHandler.fail(failure.failure as Failure)
-    return
+    failureHandler.fail(failure.failure as Failure);
+    return;
   }
 
   await router.push(localePath("/dashboard"));

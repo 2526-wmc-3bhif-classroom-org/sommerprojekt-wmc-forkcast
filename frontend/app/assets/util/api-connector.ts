@@ -1,11 +1,11 @@
 import type {Failure} from "~/assets/model/failure";
 
-type ApiMethod = "GET" | "POST" | "PUT" | "DELETE";
+export type ApiMethod = "GET" | "POST" | "PUT" | "DELETE";
 
-type ApiResponse<T> = {
-    value?: T
-    failure?: Failure
-    ok: boolean
+export type ApiResponse<T> = {
+    value?: T;
+    failure?: Failure;
+    ok: boolean;
 };
 
 export default function useApiConnection() {
@@ -29,6 +29,7 @@ export default function useApiConnection() {
                 if (!response.ok) {
                     return { ok: false, failure: { message: "Request failed" } as Failure };
                 }
+
                 return { ok: true } as ApiResponse<T>;
             }
 
@@ -45,5 +46,5 @@ export default function useApiConnection() {
 
     return {
         apiRequest,
-    }
+    };
 }

@@ -3,9 +3,9 @@ import useAuthService from "~/assets/service/auth-service";
 
 definePageMeta({
   description: 'Discover Forkcast, the ultimate meal planning app. Organize weekly meals, discover new recipes, and cook stress free.',
-})
+});
 
-const authService = useAuthService()
+const authService = useAuthService();
 </script>
 <template>
   <div class="bg-[#090B0E]">

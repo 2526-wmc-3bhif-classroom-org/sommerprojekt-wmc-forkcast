@@ -1,5 +1,12 @@
 <script setup lang="ts">
-const { locales, setLocale } = useI18n()
+
+const { locales, locale, setLocale } = useI18n();
+
+function changeLanguage(code: any) {
+  if (locale.value == code) return;
+  setLocale(code);
+  (document.activeElement as HTMLElement).blur();
+}
 </script>
 <template>
   <div class="fixed top-0 navbar bg-transparent shadow-sm">
@@ -11,8 +18,8 @@ const { locales, setLocale } = useI18n()
         <div tabindex="0" role="button" class="btn btn-ghost btn-circle">
           <i class="fa-solid fa-language"></i>
         </div>
-        <ul tabindex="-1" class="menu menu-md dropdown-content bg-base-100 rounded-box z-1 mt-3 p-2 shadow">
-          <li v-for="locale in locales"><span @click="setLocale(locale.code)"><i class="fa-solid fa-language"></i>{{ locale.name }}</span></li>
+        <ul tabindex="0" class="menu menu-md dropdown-content bg-base-100 rounded-box z-1 mt-3 p-2 shadow">
+          <li v-for="l in locales"><span :class="locale == l.code ? 'bg-primary' : ''" @click="changeLanguage(l.code)"><i class="fa-solid fa-language"></i>{{ l.name }}</span></li>
         </ul>
       </div>
       <nuxt-link-locale to="/auth/signup" class="btn btn-primary mr-2">

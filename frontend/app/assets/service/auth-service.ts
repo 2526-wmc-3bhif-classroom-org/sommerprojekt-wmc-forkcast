@@ -19,7 +19,7 @@ export default function useAuthService() {
             user.value = undefined;
         }
 
-        return result
+        return result;
     }
 
     async function reloadUser() {
@@ -31,9 +31,9 @@ export default function useAuthService() {
             user.value = undefined; // Clear user if not authenticated or error occurs
         }
 
-        userLoaded.value = true
+        userLoaded.value = true;
 
-        return result
+        return result;
     }
 
     async function login(email: string, password: string) {
@@ -44,7 +44,7 @@ export default function useAuthService() {
             user.value = result.value;
         }
 
-        return result
+        return result;
     }
 
     async function register(username: string, email: string, password: string) {
@@ -56,7 +56,7 @@ export default function useAuthService() {
             await login(email, password);
         }
 
-        return result
+        return result;
     }
 
     function registerUser(name: string, email: string, password: string) {

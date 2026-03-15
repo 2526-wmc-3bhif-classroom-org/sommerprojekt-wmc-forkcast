@@ -1,60 +1,61 @@
 import type {Failure} from "~/assets/model/failure";
 
-interface FailureHandler {
-    handler: (message: string) => void
-    id: string
+export type FailureHandler = {
+    handler: (message: string) => void;
+    id: string;
 }
 
 export default function useFailureHandler() {
-    const activeKeys = ref<string[]>([])
-    const handlers = ref<FailureHandler[]>([])
+    const activeKeys = ref<string[]>([]);
+    const handlers = ref<FailureHandler[]>([]);
 
-    const activeMain = ref(false)
-    const mainHandler = ref<((message: string) => void) | null>(null)
+    const activeMain = ref(false);
+    const mainHandler = ref<((message: string) => void) | null>(null);
 
     function fail(newFailure: Failure) {
-        activeKeys.value = []
-        activeMain.value = false
+        activeKeys.value = [];
+        activeMain.value = false;
 
         handlers.value.forEach(handler => {
-            handler.handler("")
-        })
+            handler.handler("");
+        });
 
-        mainHandler.value?.("")
+        mainHandler.value?.("");
 
 
         if (!newFailure.errors) {
             if (newFailure.message) {
-                activeMain.value = true
-                mainHandler.value?.(newFailure.message)
+                activeMain.value = true;
+                mainHandler.value?.(newFailure.message);
             }
-            return
+
+            return;
         }
 
         newFailure.errors.forEach(error => {
             handlers.value.forEach(handler => {
                 if (handler.id === error.path) {
-                    activeKeys.value.push(error.path)
-                    handler.handler(error.msg)
+                    activeKeys.value.push(error.path);
+                    handler.handler(error.msg);
                 }
-            })
-        })
+            });
+        });
     }
 
     function has(key: string) {
-        return activeKeys.value.includes(key)
+        return activeKeys.value.includes(key);
     }
 
     function hasMain() {
-        return activeMain.value
+        return activeMain.value;
     }
 
     function addHandler(id: string, handler: (message: string) => void) {
-        handlers.value.push({handler, id})
+        handlers.value.push({handler, id});
     }
 
     function setMainHandler(handler: (message: string) => void) {
-        mainHandler.value = handler
+        mainHandler.value = handler;
     }
 
     return {
@@ -63,5 +64,5 @@ export default function useFailureHandler() {
         hasMain,
         addHandler,
         setMainHandler
-    }
+    };
 }

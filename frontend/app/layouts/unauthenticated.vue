@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import useAuthService from "~/assets/service/auth-service";
 
-const authService = useAuthService()
+const authService = useAuthService();
 </script>
 
 <template>
