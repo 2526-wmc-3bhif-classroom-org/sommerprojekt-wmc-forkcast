@@ -68,7 +68,7 @@ export default function useAuthService() {
     }
 
     function logoutUser() {
-        return connection.apiRequest<void>("/auth/logout", "POST", undefined, false);
+        return connection.apiRequest<void>("/auth/logout", "POST");
     }
 
     function getCurrentUser() {
