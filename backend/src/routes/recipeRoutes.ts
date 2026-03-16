@@ -1,12 +1,12 @@
-import { Router, Request, Response } from "express";
+import { Router, Response } from "express";
 import {StatusCodes} from "http-status-codes";
 import { query, param } from "express-validator";
-import {RemoteRecipeStore} from "../repository/remoteRecipeStore";
+import { RecipeService } from "../services/recipeService";
 import { validateRequest } from "../middleware/validationMiddleware";
 import {AuthRequest} from "../middleware/authMiddleware";
 
 const router = Router();
-const remoteRecipeStore = new RemoteRecipeStore();
+const recipeService = new RecipeService();
 
 router.get("/",
     query("search").optional().isString().trim().escape(),
@@ -22,7 +22,7 @@ router.get("/",
             return;
         }
 
-        const recipes = await remoteRecipeStore.searchRecipes(search);
+        const recipes = await recipeService.searchRecipes(search, req.ip);
         res.json(recipes);
     } catch (e) {
         console.error(e);
@@ -36,7 +36,7 @@ router.get("/:id",
     async (req: AuthRequest, res: Response) => {
     try {
         const { id } = req.params;
-        const recipe = await remoteRecipeStore.getRecipeById(Number(id));
+        const recipe = await recipeService.getRecipeById(Number(id), req.ip);
         if (!recipe) {
             res.sendStatus(StatusCodes.NOT_FOUND);
             return;

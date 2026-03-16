@@ -14,7 +14,7 @@ import favoriteRoutes from "./routes/favoriteRoutes";
 import profileRoutes from "./routes/profileRoutes";
 import calendarRoutes from "./routes/calendarRoutes";
 import notificationRoutes from "./routes/notificationRoutes";
-import { RemoteRecipeStore } from "./repository/remoteRecipeStore";
+import { RecipeService } from "./services/recipeService";
 import { parseDurationToMilliseconds } from "./utils";
 import rateLimit from "express-rate-limit";
 import { apiQuotaLimiter } from "./middleware/apiQuotaLimiter";
@@ -49,7 +49,7 @@ app.use(rateLimit({
 }))
 
 app.use("/api/auth", authRoutes);
-app.use("/api/recipes", authenticateToken, apiQuotaLimiter(recipeRoutes));
+app.use("/api/recipes", authenticateToken, apiQuotaLimiter, recipeRoutes);
 app.use("/api/users/me", authenticateToken, profileRoutes);
 app.use("/api/users/me/friends", authenticateToken, friendRoutes);
 app.use("/api/users/me/favorites", authenticateToken, favoriteRoutes);
@@ -64,12 +64,12 @@ app.listen(PORT, () => {
 });
 
 async function cleanup() {
-    const recipeStore = new RemoteRecipeStore();
+    const recipeService = new RecipeService();
     setInterval(() => {
         console.log("Cleaning up expired recipes...");
-        recipeStore.removeExpiredRecipes().catch(console.error);
+        recipeService.removeExpiredRecipes().catch(console.error);
     }, CACHE_TTL_MS); // Cleanup
 
     // Initial cleanup on startup
-    recipeStore.removeExpiredRecipes().catch(console.error);
+    recipeService.removeExpiredRecipes().catch(console.error);
 }
