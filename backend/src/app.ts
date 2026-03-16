@@ -16,6 +16,8 @@ import calendarRoutes from "./routes/calendarRoutes";
 import notificationRoutes from "./routes/notificationRoutes";
 import { RemoteRecipeStore } from "./repository/remoteRecipeStore";
 import { parseDurationToMilliseconds } from "./utils";
+import rateLimit from "express-rate-limit";
+import { apiQuotaLimiter } from "./middleware/apiQuotaLimiter";
 
 const PORT = process.env.PORT || "3000";
 const allowedOrigins = (process.env.CORS_ORIGIN ?? "")
@@ -37,9 +39,17 @@ await cleanup();
 app.use(cors({ origin: allowedOrigins, credentials: true }));
 app.use(cookieParser());
 app.use(express.json());
+app.use(rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    limit: 100, // Limit each IP to 100 requests per time window
+    standardHeaders: 'draft-8', // draft-6: `RateLimit-*` headers; draft-7 & draft-8: combined `RateLimit` header
+    legacyHeaders: false, // Disable the `X-RateLimit-*` headers.
+    ipv6Subnet: 56, // Set to 60 or 64 to be less aggressive, or 52 or 48 to be more aggressive
+    message: "Too many requests, please try again later."
+}))
 
 app.use("/api/auth", authRoutes);
-app.use("/api/recipes", authenticateToken, recipeRoutes);
+app.use("/api/recipes", authenticateToken, apiQuotaLimiter(recipeRoutes));
 app.use("/api/users/me", authenticateToken, profileRoutes);
 app.use("/api/users/me/friends", authenticateToken, friendRoutes);
 app.use("/api/users/me/favorites", authenticateToken, favoriteRoutes);
