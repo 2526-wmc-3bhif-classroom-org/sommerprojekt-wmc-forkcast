@@ -1,0 +1,7 @@
+node_modules
+.env
+.git
+npm-debug.log
+test
+jest.config.js
+api
