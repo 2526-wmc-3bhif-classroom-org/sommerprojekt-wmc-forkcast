@@ -58,7 +58,7 @@ async function login() {
           <h1 class="text-3xl md:text-5xl font-bold text-nowrap">
             {{$t('login.greeting')}}
           </h1>
-          <p class="py-6 w-96 m-auto">
+          <p class="py-6 w-80 md:w-96 m-auto">
             {{$t('login.prompt')}}
           </p>
         </div>

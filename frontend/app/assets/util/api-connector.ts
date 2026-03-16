@@ -6,6 +6,7 @@ export type ApiResponse<T> = {
     value?: T;
     failure?: Failure;
     ok: boolean;
+    needsAuth: boolean;
 };
 
 export default function useApiConnection() {
@@ -27,7 +28,11 @@ export default function useApiConnection() {
 
             if (!parseBody) {
                 if (!response.ok) {
-                    return { ok: false, failure: { message: "Request failed" } as Failure };
+                    if (response.status === 401) {
+                        return { ok: false, needsAuth: true, failure: { message: "Unauthorized" } as Failure };
+                    }
+
+                    return { ok: false, needsAuth: false, failure: { message: "Request failed" } as Failure };
                 }
 
                 return { ok: true } as ApiResponse<T>;
@@ -36,11 +41,11 @@ export default function useApiConnection() {
             const data = await response.json();
 
             if (!response.ok) {
-                return { ok: false, failure: data as Failure };
+                return { ok: false, needsAuth: false, failure: data as Failure };
             }
-            return { ok: true, value: data as T };
+            return { ok: true, needsAuth: false, value: data as T };
         } catch (error) {
-            return { ok: false, failure: { message: "Network error: " + error } as Failure };
+            return { ok: false, needsAuth: false, failure: { message: "Network error: " + error } as Failure };
         }
     }
 
