@@ -60,7 +60,7 @@ router.post("/login",
 
 router.post('/logout', authenticateToken, (req: Request, res: Response) => {
     clearJWT(res);
-    res.sendStatus(StatusCodes.OK);
+    res.status(StatusCodes.OK).json({});
 });
 
 export default router;
