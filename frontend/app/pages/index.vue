@@ -14,10 +14,10 @@ const authService = useAuthService();
                 bg-fixed bg-no-repeat bg-cover bg-center animate-zoom-in">
       <div class="hero-content flex-col lg:flex-row">
         <div>
-          <h1 class="text-8xl font-bold mb-2.5 opacity-0 animate-fade-in-slide-in-left">
+          <h1 class="text-6xl md:text-8xl font-bold mb-2.5 opacity-0 animate-fade-in-slide-in-left">
             {{$t('index.title')}}
           </h1>
-          <h1 class="text-5xl font-bold opacity-0 animate-fade-in-slide-in-right-delay">
+          <h1 class="text-3xl md:text-5xl font-bold opacity-0 animate-fade-in-slide-in-right-delay">
             <span>{{$t('index.nr1') + " "}}</span>
             <span class="text-rotate duration-7000">
               <span class="italic font-extralight text-primary">
@@ -28,7 +28,7 @@ const authService = useAuthService();
               </span>
             </span>
           </h1>
-          <p class="py-6 text-xl opacity-0 animate-fade-in">
+          <p class="py-6 text-md md:text-xl opacity-0 animate-fade-in">
             {{$t('index.subtitle')}}
           </p>
           <nuxt-link-locale v-if="!authService.authenticated.value" to="/auth/signup" class="btn btn-primary mr-2 opacity-0 animate-fade-in">
