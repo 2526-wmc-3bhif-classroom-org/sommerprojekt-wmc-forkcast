@@ -23,6 +23,9 @@ const router = useRouter();
 const auth = useAuthService();
 const failureHandler = useFailureHandler();
 
+const img = useImage();
+const bgImage = img('/images/signup-bg.jpg', { quality: 90, format: 'webp' });
+
 failureHandler.addHandler("name", (message) => {
   usernameError.value!!.innerText = message;
 });
@@ -63,9 +66,10 @@ async function register() {
 
 <template>
   <div class="bg-[#070709]">
-    <div class="hero min-h-screen
-                bg-[linear-gradient(rgba(0,0,0,0.2),rgba(0,0,0,0.8)),url('/images/login-bg.jpg')]
-                bg-fixed bg-no-repeat bg-cover bg-bottom animate-zoom-in">
+    <div
+        class="hero h-screen bg-fixed bg-no-repeat bg-cover bg-center animate-zoom-in"
+        :style="`background-image: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.8)), url('${bgImage}');`"
+    >
       <div class="hero-content flex-col lg:flex-row-reverse">
         <div class="text-center lg:text-left lg:ml-24 opacity-0 animate-fade-in-slide-in-up-delay">
           <h1 class="text-3xl md:text-5xl font-bold text-nowrap">

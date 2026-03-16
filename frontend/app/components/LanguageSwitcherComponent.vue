@@ -10,7 +10,7 @@ function changeLanguage(code: any) {
 
 <template>
   <div class="dropdown dropdown-end">
-    <div tabindex="0" role="button" class="btn btn-ghost btn-circle">
+    <div tabindex="0" role="button" aria-label="Language" class="btn btn-ghost btn-circle">
       <i class="fa-solid fa-language"/>
     </div>
     <ul tabindex="0" class="menu menu-md dropdown-content bg-base-100 rounded-box z-1 mt-3 p-2 shadow">

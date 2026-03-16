@@ -6,13 +6,17 @@ definePageMeta({
 });
 
 const authService = useAuthService();
+
+const img = useImage();
+const bgImage = img('/images/hero-bg.jpg', { quality: 90, format: 'webp' });
 </script>
 <template>
   <div class="bg-[#090B0E]">
-    <div class="hero h-screen
-                bg-[linear-gradient(rgba(0,0,0,0.2),rgba(0,0,0,0.8)),url('/images/hero-bg.jpg')]
-                bg-fixed bg-no-repeat bg-cover bg-center animate-zoom-in">
-      <div class="hero-content flex-col lg:flex-row">
+    <div
+        class="hero h-screen bg-fixed bg-no-repeat bg-cover bg-center animate-zoom-in"
+        :style="`background-image: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.8)), url('${bgImage}');`"
+    >
+      <div role="main" class="hero-content flex-col lg:flex-row">
         <div>
           <h1 class="text-6xl md:text-8xl font-bold mb-2.5 opacity-0 animate-fade-in-slide-in-left">
             {{$t('index.title')}}
