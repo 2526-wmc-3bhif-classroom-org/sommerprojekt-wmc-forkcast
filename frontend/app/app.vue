@@ -1,20 +1,21 @@
 <script lang="ts" setup>
 import useAuthService from "~/assets/service/auth-service";
 
-const route = useRoute()
-const router = useRouter()
-const authService = useAuthService()
+const route = useRoute();
+const router = useRouter();
+const { locale } = useI18n();
+const authService = useAuthService();
 
-const title = computed(() => route.meta.title ? "Forkcast - " + route.meta.title : "Forkcast")
-const description = computed(() => route.meta.description ? route.meta.description as string : "Forkcast is the #1 solution for meal planning and cooking.")
-const layoutName = computed(() => authService.authenticated.value ? 'authenticated' : 'unauthenticated')
+const title = computed(() => route.meta.title ? "Forkcast - " + route.meta.title : "Forkcast");
+const description = computed(() => route.meta.description ? route.meta.description as string : "Forkcast is the #1 solution for meal planning and cooking.");
+const layoutName = computed(() => authService.authenticated.value ? 'authenticated' : 'unauthenticated');
 
 useSeoMeta({
   title: title,
   ogTitle: title,
   description: description,
   ogDescription: description,
-})
+});
 
 useHead({
   script: [
@@ -27,7 +28,10 @@ useHead({
       type: "module"
     }
   ],
-})
+  htmlAttrs: {
+    lang: locale
+  }
+});
 
 onMounted(async () => {
   await authService.reloadUser()
@@ -38,7 +42,7 @@ onMounted(async () => {
   if (!authService.authenticated.value && route.path.startsWith("/dashboard")) {
     await router.push("/auth/login");
   }
-})
+});
 
 </script>
 

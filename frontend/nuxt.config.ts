@@ -7,7 +7,7 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
   css: ["./app/assets/css/tailwind.css", "./app/assets/css/animations.css", "./app/assets/css/app.css"],
-  modules: ["@nuxtjs/i18n"],
+  modules: ["@nuxtjs/i18n", '@nuxt/image'],
   vite: {
     plugins: [tailwindcss()],
   },
@@ -30,5 +30,8 @@ export default defineNuxtConfig({
       { code: 'de', language: 'de-AT', name: 'Deutsch', file: 'de.json'}
     ],
     defaultLocale: 'en'
+  },
+  image: {
+
   }
 })
