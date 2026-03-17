@@ -34,7 +34,8 @@ useHead({
 });
 
 onMounted(async () => {
-  await authService.reloadUser()
+  await authService.loadUserWithExistingJwt()
+
   if (authService.authenticated.value && route.path.startsWith("/auth")) {
      await router.push("/dashboard");
   }

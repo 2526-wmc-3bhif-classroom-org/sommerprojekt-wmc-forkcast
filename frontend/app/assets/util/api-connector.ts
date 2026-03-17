@@ -15,14 +15,22 @@ export default function useApiConnection() {
     async function apiRequest<T>(
         endpoint: string,
         method: ApiMethod = "GET",
+        jwt?: string,
         body?: object,
-        parseBody: boolean = true // Add this parameter
+        parseBody: boolean = true
     ): Promise<ApiResponse<T>> {
         try {
+            const headers: Record<string, string> = {};
+            if (body) {
+                headers["Content-Type"] = "application/json";
+            }
+            if (jwt) {
+                headers["Authorization"] = `Bearer ${jwt}`;
+            }
+
             const response = await fetch(baseUrl + endpoint, {
                 method,
-                credentials: "include",
-                headers: body ? { "Content-Type": "application/json" } : undefined,
+                headers: headers,
                 body: body ? JSON.stringify(body) : undefined,
             });
 

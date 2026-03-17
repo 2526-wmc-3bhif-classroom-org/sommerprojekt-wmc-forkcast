@@ -1,11 +1,7 @@
 <script setup lang="ts">
-import useAuthService from "~/assets/service/auth-service";
-
-const authService = useAuthService();
 </script>
-
 <template>
-  <unauthenticated-navbar-component v-if="authService.userLoaded" class="z-100"/>
+  <unauthenticated-navbar-component class="z-100"/>
   <div>
     <nuxt-error-boundary>
       <slot/>
