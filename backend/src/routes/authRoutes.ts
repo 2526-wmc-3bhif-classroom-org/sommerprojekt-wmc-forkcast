@@ -4,6 +4,7 @@ import { Unit } from "../db/unit";
 import {StatusCodes} from "http-status-codes";
 import {body} from "express-validator";
 import {validateRequest} from "../middleware/validationMiddleware";
+import {sendEmail, verifyCode} from "../services/emailValidationService";
 
 const router = Router();
 
@@ -18,8 +19,9 @@ router.post("/register",
         const { name, email, password } = req.body;
 
         const authService = new AuthService(unit);
-        const user = await authService.register(name, email, password);
+        const user = await authService.register(name, email, password); // TODO: only save in memory until email is verified
         unit.complete(true);
+        await sendEmail(email)
         res.status(StatusCodes.CREATED).json(user);
     } catch (error: any) {
         unit.complete(false);
@@ -56,6 +58,28 @@ router.post("/login",
             console.error("Login error:", error);
             res.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR);
         }
+    }
+});
+
+router.post("/verify",
+    body("email").notEmpty().isEmail().withMessage("Email is required and must be a valid email"),
+    body("code").notEmpty().isNumeric().isLength({ min: 6, max: 6 }).withMessage("Code is required and must a 6-digit number"),
+    validateRequest,
+    async (req: Request, res: Response) => {
+    try {
+        const { email, code } = req.body;
+
+        if (!verifyCode(email, code)) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Invalid code" });
+        }
+
+        // TODO: actually save the user in the db
+
+        res.status(StatusCodes.OK).json({ message: "Code verified successfully" });
+    }
+    catch (error: any) {
+        console.error("Verify error:", error);
+        res.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR);
     }
 });
 
