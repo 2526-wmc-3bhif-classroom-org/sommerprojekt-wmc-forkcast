@@ -24,11 +24,14 @@ Content-Type: application/json
   "password": "DeinPasswort123!"
 }
 
-### Authentication - Validate Token
-GET {{host}}/auth/validate
+### Authentication - Verify Email
+POST {{host}}/auth/verify
+Content-Type: application/json
 
-### Authentication - Logout
-POST {{host}}/auth/logout
+{
+  "email": "dein@email.de",
+  "code": "402589"
+}
 
 ### Users - Get Current User Profile
 GET {{host}}/users/me
