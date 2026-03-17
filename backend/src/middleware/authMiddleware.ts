@@ -11,8 +11,7 @@ export interface AuthRequest extends Request {
 }
 
 export const authenticateToken = (req: AuthRequest, res: Response, next: NextFunction) => {
-    // Read the JWT from the httpOnly cookie set on login
-    const token = req.cookies?.jwt;
+    const token = req.header("Authorization")?.replace("Bearer ", "")
 
     if (!token) {
         return res.sendStatus(StatusCodes.UNAUTHORIZED);
