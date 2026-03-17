@@ -32,7 +32,7 @@ export class AuthService {
         return userWithoutPassword;
     }
 
-    public async login(res: Response, email: string, password: string): Promise<Omit<User, "password">> {
+    public async login(res: Response, email: string, password: string) {
         const user = this.userRepository.findByEmail(email);
         if (!user) {
             throw new Error("Invalid credentials");
@@ -43,10 +43,13 @@ export class AuthService {
             throw new Error("Invalid credentials");
         }
 
-        generateJWT(res, user.id.toString()); // Assuming user.id is a number, convert to string for jwtUtils
+        const token = generateJWT(user.id.toString());
         
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { password: _, ...userWithoutPassword } = user;
-        return userWithoutPassword;
+        return {
+            user: userWithoutPassword,
+            token
+        }
     }
 }
