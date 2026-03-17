@@ -8,11 +8,10 @@ servers:
     description: Local development server
 components:
   securitySchemes:
-    cookieAuth:
-      type: apiKey
-      in: cookie
-      name: jwt
-      description: HttpOnly JWT cookie set by `/auth/login`.
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
   schemas:
     User:
       type: object
@@ -33,6 +32,17 @@ components:
           type: string
           format: uri
           nullable: true
+    LoginResponse:
+      type: object
+      required:
+        - user
+        - token
+      properties:
+        user:
+          $ref: '#/components/schemas/User'
+        token:
+          type: string
+          description: JWT Bearer token
     RegisterRequest:
       type: object
       required:
@@ -61,6 +71,19 @@ components:
         password:
           type: string
           format: password
+    VerifyRequest:
+      type: object
+      required:
+        - email
+        - code
+      properties:
+        email:
+          type: string
+          format: email
+        code:
+          type: string
+          pattern: '^\d{6}$'
+          description: 6-digit verification code
     UpdateProfileRequest:
       type: object
       required:
@@ -130,7 +153,7 @@ components:
         message:
           type: string
 security:
-  - cookieAuth: []
+  - bearerAuth: []
 paths:
   /auth/register:
     post:
@@ -144,7 +167,7 @@ paths:
               $ref: '#/components/schemas/RegisterRequest'
       responses:
         '201':
-          description: User registered successfully
+          description: User registered successfully (Pending Verification)
           content:
             application/json:
               schema:
@@ -165,7 +188,7 @@ paths:
           description: Internal server error
   /auth/login:
     post:
-      summary: Login a user and set the JWT cookie
+      summary: Login a user and return a JWT token
       security: []
       requestBody:
         required: true
@@ -176,15 +199,10 @@ paths:
       responses:
         '200':
           description: Login successful
-          headers:
-            Set-Cookie:
-              schema:
-                type: string
-              description: Sets the `jwt` HttpOnly authentication cookie.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                $ref: '#/components/schemas/LoginResponse'
         '400':
           description: Invalid input
           content:
@@ -199,21 +217,37 @@ paths:
                 $ref: '#/components/schemas/MessageResponse'
         '500':
           description: Internal server error
-  /auth/logout:
+  /auth/verify:
     post:
-      summary: Logout the current user and clear the JWT cookie
+      summary: Verify email with code
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyRequest'
       responses:
         '200':
-          description: Logout successful
-          headers:
-            Set-Cookie:
+          description: Code verified successfully
+          content:
+            application/json:
               schema:
-                type: string
-              description: Clears the `jwt` HttpOnly authentication cookie.
+                $ref: '#/components/schemas/MessageResponse'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
         '401':
-          description: JWT cookie is missing
-        '403':
-          description: JWT cookie is invalid
+          description: Invalid code
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '500':
+          description: Internal server error
   /recipes:
     get:
       summary: Get all recipes
@@ -233,9 +267,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/ValidationErrorResponse'
         '401':
-          description: JWT cookie is missing
+          description: Missing or invalid authentication
         '403':
-          description: JWT cookie is invalid
+          description: Forbidden
         '500':
           description: Internal server error
   /recipes/{id}:
@@ -257,9 +291,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/ValidationErrorResponse'
         '401':
-          description: JWT cookie is missing
+          description: Missing or invalid authentication
         '403':
-          description: JWT cookie is invalid
+          description: Forbidden
         '404':
           description: Recipe not found
         '500':
@@ -269,15 +303,15 @@ paths:
       summary: Get current user profile
       responses:
         '200':
-          description: Current user data (same shape as the login response)
+          description: Current user data
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/User'
         '401':
-          description: JWT cookie is missing
+          description: Missing or invalid authentication
         '403':
-          description: JWT cookie is invalid
+          description: Forbidden
         '404':
           description: User not found
         '500':
@@ -300,9 +334,9 @@ paths:
         '409':
           description: Route is not implemented yet
         '401':
-          description: JWT cookie is missing
+          description: Missing or invalid authentication
         '403':
-          description: JWT cookie is invalid
+          description: Forbidden
   /users/me/friends:
     get:
       summary: Get friend list
@@ -310,9 +344,9 @@ paths:
         '409':
           description: Route is not implemented yet
         '401':
-          description: JWT cookie is missing
+          description: Missing or invalid authentication
         '403':
-          description: JWT cookie is invalid
+          description: Forbidden
     post:
       summary: Add a friend
       requestBody:
@@ -331,9 +365,9 @@ paths:
         '409':
           description: Route is not implemented yet
         '401':
-          description: JWT cookie is missing
+          description: Missing or invalid authentication
         '403':
-          description: JWT cookie is invalid
+          description: Forbidden
   /users/me/friends/{friendId}:
     delete:
       summary: Remove a friend
@@ -347,9 +381,9 @@ paths:
         '409':
           description: Route is not implemented yet
         '401':
-          description: JWT cookie is missing
+          description: Missing or invalid authentication
         '403':
-          description: JWT cookie is invalid
+          description: Forbidden
   /users/me/favorites:
     get:
       summary: Get favorite recipes
@@ -357,9 +391,9 @@ paths:
         '409':
           description: Route is not implemented yet
         '401':
-          description: JWT cookie is missing
+          description: Missing or invalid authentication
         '403':
-          description: JWT cookie is invalid
+          description: Forbidden
     post:
       summary: Add recipe to favorites
       requestBody:
@@ -378,9 +412,9 @@ paths:
         '409':
           description: Route is not implemented yet
         '401':
-          description: JWT cookie is missing
+          description: Missing or invalid authentication
         '403':
-          description: JWT cookie is invalid
+          description: Forbidden
   /users/me/favorites/{recipeId}:
     delete:
       summary: Remove recipe from favorites
@@ -394,9 +428,9 @@ paths:
         '409':
           description: Route is not implemented yet
         '401':
-          description: JWT cookie is missing
+          description: Missing or invalid authentication
         '403':
-          description: JWT cookie is invalid
+          description: Forbidden
   /users/me/calendar:
     get:
       summary: Get calendar entries
@@ -404,9 +438,9 @@ paths:
         '409':
           description: Route is not implemented yet
         '401':
-          description: JWT cookie is missing
+          description: Missing or invalid authentication
         '403':
-          description: JWT cookie is invalid
+          description: Forbidden
     post:
       summary: Add calendar entry
       requestBody:
@@ -425,9 +459,9 @@ paths:
         '409':
           description: Route is not implemented yet
         '401':
-          description: JWT cookie is missing
+          description: Missing or invalid authentication
         '403':
-          description: JWT cookie is invalid
+          description: Forbidden
   /users/me/calendar/{calendarEntryId}:
     delete:
       summary: Remove calendar entry
@@ -441,9 +475,9 @@ paths:
         '409':
           description: Route is not implemented yet
         '401':
-          description: JWT cookie is missing
+          description: Missing or invalid authentication
         '403':
-          description: JWT cookie is invalid
+          description: Forbidden
   /users/me/notifications:
     get:
       summary: Get notifications
@@ -451,9 +485,9 @@ paths:
         '409':
           description: Route is not implemented yet
         '401':
-          description: JWT cookie is missing
+          description: Missing or invalid authentication
         '403':
-          description: JWT cookie is invalid
+          description: Forbidden
   /users/me/notifications/{notificationId}:
     put:
       summary: Mark notification as read
@@ -479,6 +513,6 @@ paths:
         '409':
           description: Route is not implemented yet
         '401':
-          description: JWT cookie is missing
+          description: Missing or invalid authentication
         '403':
-          description: JWT cookie is invalid
+          description: Forbidden
