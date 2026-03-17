@@ -3,11 +3,6 @@ import useFailureHandler from "~/assets/util/failure-handler";
 import type {Failure} from "~/assets/model/failure";
 import useAuthService from "~/assets/service/auth-service";
 
-definePageMeta({
-  title: 'Login',
-  description: 'Login to your account to access your dashboard and manage your settings.',
-});
-
 const email = ref<HTMLInputElement>();
 const password = ref<HTMLInputElement>();
 

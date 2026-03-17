@@ -3,11 +3,6 @@ import useAuthService from "~/assets/service/auth-service";
 import useFailureHandler from "~/assets/util/failure-handler";
 import type {Failure} from "~/assets/model/failure";
 
-definePageMeta({
-  title: 'Register',
-  description: 'Create a new account to access our services and enjoy exclusive features. Join us today and be part of our community!',
-});
-
 const username = ref<HTMLInputElement>();
 const email = ref<HTMLInputElement>();
 const password = ref<HTMLInputElement>();
