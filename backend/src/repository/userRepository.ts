@@ -22,12 +22,13 @@ export class UserRepository {
 
     public create(user: Omit<User, "id">): User {
         const stmt = this.unit.prepare(
-            "INSERT INTO User (name, email, password, profilePicture) VALUES (:name, :email, :password, :profilePicture)",
+            "INSERT INTO User (name, email, password, profilePicture, isVerified) VALUES (:name, :email, :password, :profilePicture, :isVerified)",
             {
                 name: user.name,
                 email: user.email,
                 password: user.password,
-                profilePicture: user.profilePicture || null
+                profilePicture: user.profilePicture || null,
+                isVerified: user.isVerified ? 1 : 0
             });
         stmt.run();
         const newUser = this.findByEmail(user.email);
@@ -35,5 +36,18 @@ export class UserRepository {
             throw new Error("Failed to create user");
         }
         return newUser;
+    }
+    
+    public updateVerificationStatus(email: string, isVerified: boolean): void {
+        const stmt = this.unit.prepare(
+            "UPDATE User SET isVerified = :isVerified WHERE email = :email",
+            {
+                isVerified: isVerified ? 1 : 0,
+                email: email
+            });
+        const result = stmt.run();
+        if (result.changes === 0) {
+            throw new Error("User not found to update verification status");
+        }
     }
 }

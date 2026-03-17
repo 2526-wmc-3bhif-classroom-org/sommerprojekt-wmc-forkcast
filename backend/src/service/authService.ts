@@ -3,7 +3,7 @@ import { UserRepository } from "../repository/userRepository";
 import { User } from "../types";
 import { hashPassword, comparePassword } from "../utils";
 import { generateJWT } from "../utils/jwtUtils";
-import { Response } from "express";
+import {sendEmail} from "../services/emailValidationService";
 
 export class AuthService {
     private userRepository: UserRepository;
@@ -24,8 +24,11 @@ export class AuthService {
             name,
             email,
             password: hashedPassword,
-            profilePicture: null
+            profilePicture: null,
+            isVerified: false
         });
+
+        await sendEmail(email)
 
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { password: _, ...userWithoutPassword } = newUser;
@@ -42,6 +45,10 @@ export class AuthService {
         if (!isPasswordValid) {
             throw new Error("Invalid credentials");
         }
+        
+        if (!user.isVerified) {
+            throw new Error("Account not verified. Please check your email.");
+        }
 
         const token = generateJWT(user.id.toString());
         
@@ -51,5 +58,13 @@ export class AuthService {
             user: userWithoutPassword,
             token
         }
+    }
+
+    public async verifyUser(email: string): Promise<void> {
+        const user = this.userRepository.findByEmail(email);
+        if (!user) {
+            throw new Error("User not found");
+        }
+        this.userRepository.updateVerificationStatus(email, true);
     }
 }
