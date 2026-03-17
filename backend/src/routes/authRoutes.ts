@@ -42,7 +42,7 @@ router.post("/login",
         const { email, password } = req.body;
 
         const authService = new AuthService(unit);
-        const { user, token } = await authService.login(res, email, password); // Pass res and expect user object
+        const { user, token } = await authService.login(email, password);
         unit.complete(true);
         return res.status(StatusCodes.OK).json({
             user: user,
