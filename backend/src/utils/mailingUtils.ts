@@ -118,8 +118,8 @@ export const sendVerificationEmail = async (to: string, code: string, lang: stri
     const subject = t.verificationEmail?.subject || "Your Verification Code";
     const textTemplate = t.verificationEmail?.text || "Your code is: {{code}}";
     const logoAttachment = {
-        path: path.join(process.cwd(), "src/templates/logo.svg"),
-        filename: "logo.svg",
+        path: path.join(process.cwd(), "src/templates/logo.png"),
+        filename: "logo.png",
         cid: "logo"
     }
     
