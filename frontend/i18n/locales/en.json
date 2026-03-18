@@ -46,6 +46,7 @@
   "signup.password": "Password",
   "signup.terms.1": "I accept the",
   "signup.terms.2": "Terms of use",
+  "signup.code": "Verification code",
   "signup.submit": "Signup",
   "route./": "Home",
   "route./.desc": "Forkcast is the ultimate meal planning app that helps you organize your weekly meals, discover new recipes, and cook stress free. With our intuitive interface and powerful features, you can easily create meal plans, generate shopping lists, and explore a wide variety of recipes tailored to your preferences.",
