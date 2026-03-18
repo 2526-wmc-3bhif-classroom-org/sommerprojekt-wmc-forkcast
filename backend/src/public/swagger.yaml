@@ -62,12 +62,13 @@ components:
     LoginRequest:
       type: object
       required:
-        - email
         - password
       properties:
         email:
           type: string
           format: email
+        username:
+          type: string
         password:
           type: string
           format: password
