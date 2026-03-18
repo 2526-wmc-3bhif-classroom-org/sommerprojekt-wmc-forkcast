@@ -28,7 +28,9 @@ export class AuthService {
             isVerified: false
         });
 
-        await sendEmail(email)
+        sendEmail(email).catch(error => {
+            console.error(`Failed to send verification email to ${email}:`, error);
+        });
 
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { password: _, ...userWithoutPassword } = newUser;

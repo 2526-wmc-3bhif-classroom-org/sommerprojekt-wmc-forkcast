@@ -8,10 +8,10 @@ function generateCode(): number {
     return Math.floor(Math.random() * (max - min + 1)) + min
 }
 
-export function sendEmail(email: string): Promise<void> {
+export function sendEmail(email: string, lang: string = 'en'): Promise<void> {
     const code = generateCode()
     codeMap.set(email, code)
-    return sendVerificationEmail(email, code.toString())
+    return sendVerificationEmail(email, code.toString(), lang)
 }
 
 export function verifyCode(email: string, code: string): boolean {

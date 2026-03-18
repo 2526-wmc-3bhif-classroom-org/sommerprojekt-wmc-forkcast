@@ -1,0 +1,12 @@
+{
+  "verificationEmail": {
+    "subject": "Dein Verifizierungscode - ForkCast",
+    "text": "Danke für deine Registrierung bei Forkcast. Dein Verifizierungscode ist: {{code}}",
+    "html": {
+      "title": "Verifizierungscode",
+      "greeting": "Hallo,",
+      "intro": "Danke für deine Registrierung bei Forkcast. Bitte benutze den untenstehenden Verifizierungscode, um deine Registrierung abzuschließen:",
+      "outro": "Falls du diesen Code nicht angefordert hast, ignoriere diese E-Mail bitte."
+    }
+  }
+}
