@@ -37,8 +37,8 @@ export class AuthService {
         return userWithoutPassword;
     }
 
-    public async login(email: string, password: string) {
-        const user = this.userRepository.findByEmail(email);
+    public async login(identifier: string, password: string) {
+        const user = this.userRepository.findByIdentifier(identifier);
         if (!user) {
             throw new Error("Invalid credentials");
         }
