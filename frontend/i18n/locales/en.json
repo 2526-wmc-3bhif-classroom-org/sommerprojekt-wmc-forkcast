@@ -80,5 +80,10 @@
   "route./source": "Source code",
   "route./source.desc": "Explore the source code of Forkcast on our GitHub repository.",
   "route./terms-of-use": "Terms of use",
-  "route./terms-of-use.desc": "Read the terms of use for Forkcast to understand your rights and responsibilities when using our app."
+  "route./terms-of-use.desc": "Read the terms of use for Forkcast to understand your rights and responsibilities when using our app.",
+
+
+  "privacy-policy.site.header": "Privacy Policy",
+  "privacy-policy.site.lastUpdated": "Last updated: ",
+  "privacy-policy.introduction.header": "1. Introduction"
 }

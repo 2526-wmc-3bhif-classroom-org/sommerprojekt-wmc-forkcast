@@ -1,7 +1,21 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 import tailwindcss from "@tailwindcss/vite";
+import fs from 'node:fs';
+import path from 'node:path';
 
 const nativeElements = ["calendar-date", "calendar-month"]
+
+const privacyPolicyPath = path.resolve('./app/pages/privacy-policy.vue');
+let privacyPolicyLastUpdated = new Date().toISOString(); 
+
+try {
+  if (fs.existsSync(privacyPolicyPath)) {
+    const stats = fs.statSync(privacyPolicyPath);
+    privacyPolicyLastUpdated = stats.mtime.toISOString();
+  }
+} catch (e) {
+  console.warn('Could not read privacy policy file stats:', e);
+}
 
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
@@ -27,6 +41,7 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     public: {
+      privacyPolicyLastUpdated,
       apiBaseUrl: process.env.API_BASE_URL || 'http://localhost:3000/api'
     }
   },

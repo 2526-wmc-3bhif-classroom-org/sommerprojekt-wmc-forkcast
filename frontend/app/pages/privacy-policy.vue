@@ -1,18 +1,30 @@
 <script setup lang="ts">
 const img = useImage();
 const bgImage = img('/images/hero-bg.jpg', {quality: 90, format: 'webp'});
+
+const config = useRuntimeConfig();
+const { locale } = useI18n();
+
+const lastUpdatedDate = computed(() => {
+  const date = new Date(config.public.privacyPolicyLastUpdated as string);
+  return date.toLocaleDateString(locale.value, {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+});
 </script>
 
 <template>
   <div class="container mx-auto px-4 py-24 flex justify-center">
     <div class="card-body">
-      <h1 class="card-title text-4xl mb-2">Privacy Policy</h1>
-      <p class="text-sm opacity-70 mb-6">Last updated: March 18, 2026</p>
+      <h1 class="card-title text-4xl mb-2">{{$t('privacy-policy.site.header')}}</h1>
+      <p class="text-sm opacity-70 mb-6">{{$t('privacy-policy.site.lastUpdated')}}{{ lastUpdatedDate }}</p>
 
       <div class="divider"></div>
 
       <section class="mb-6">
-        <h2 class="text-2xl font-bold mb-3">1. Introduction</h2>
+        <h2 class="text-2xl font-bold mb-3">{{$t('privacy-policy.introduction.header')}}</h2>
         <p>
           This website, “Forkcast”, is a school project developed by Forkcast Solutions at HTL Leonding, Upper
           Austria. The website is provided free of charge and can be used by anyone. As this is a work in
