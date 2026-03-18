@@ -34,7 +34,14 @@ useHead({
   ],
   htmlAttrs: {
     lang: locale
-  }
+  },
+  link: [
+    {
+      rel: "icon",
+      type: "image/svg+xml",
+      href: "/logo.svg"
+    }
+  ]
 });
 
 onMounted(async () => {

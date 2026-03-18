@@ -38,8 +38,9 @@ function onCalendarClick(event: Event) {
 <template>
   <div :class="['fixed top-0 navbar transition-colors duration-300', { 'navbar-scrolled': isScrolled }, { 'bg-transparent': !isScrolled }]">
     <div class="flex-1">
-      <nuxt-link-locale to="/" class="btn btn-ghost text-xl"><i class="fa-solid fa-utensils"/>
-        {{$t('component.navbar.title')}}
+      <nuxt-link-locale to="/" class="btn btn-ghost text-xl">
+        <nuxt-img src="/logo.svg" width="30px" />
+        <span>{{$t('component.navbar.title')}}</span>
       </nuxt-link-locale>
     </div>
     <div class="flex-none">
