@@ -1,24 +1,6 @@
-<script setup lang="ts">
-const img = useImage();
-const bgImage = img('/images/hero-bg.jpg', {quality: 90, format: 'webp'});
-
-const config = useRuntimeConfig();
-const {locale} = useI18n();
-
-const lastUpdatedDate = computed(() => {
-  const date = new Date(config.public.privacyPolicyLastUpdated as string);
-  return date.toLocaleDateString(locale.value, {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
-});
-</script>
-
 <template>
   <LegalPagesComponent>
     <h1 class="card-title text-4xl mb-2">{{ $t('privacy-policy.site.header') }}</h1>
-    <p class="text-sm opacity-70 mb-6">{{ $t('privacy-policy.site.lastUpdated') }}{{ lastUpdatedDate }}</p>
 
     <div class="divider"></div>
 
