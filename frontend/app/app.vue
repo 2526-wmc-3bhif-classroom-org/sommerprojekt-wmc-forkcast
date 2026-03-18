@@ -6,8 +6,12 @@ const router = useRouter();
 const { locale } = useI18n();
 const authService = useAuthService();
 
-const title = computed(() => route.meta.title ? "Forkcast - " + route.meta.title : "Forkcast");
-const description = computed(() => route.meta.description ? route.meta.description as string : "Forkcast is the #1 solution for meal planning and cooking.");
+const titleTranslation = computed(() => $t("route." + route.path));
+const descriptionTranslation = computed(() => $t("route." + route.path + ".desc"));
+
+
+const title = computed(() => titleTranslation.value ? "Forkcast - " + titleTranslation.value : "Forkcast");
+const description = computed(() => descriptionTranslation.value ? descriptionTranslation.value as string : "");
 const layoutName = computed(() => authService.authenticated.value ? 'authenticated' : 'unauthenticated');
 
 useSeoMeta({
@@ -34,7 +38,8 @@ useHead({
 });
 
 onMounted(async () => {
-  await authService.reloadUser()
+  await authService.loadUserWithExistingJwt()
+
   if (authService.authenticated.value && route.path.startsWith("/auth")) {
      await router.push("/dashboard");
   }

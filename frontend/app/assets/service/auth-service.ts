@@ -1,38 +1,42 @@
 import type {User} from "~/assets/model/user";
 import useApiConnection from "~/assets/util/api-connector";
+import type {AuthResponse} from "~/assets/model/auth-response";
+import {useJwtStore} from "~/assets/store/jwt-store";
+import {useUserStore} from "~/assets/store/user-store";
 
 export default function useAuthService() {
     const connection = useApiConnection();
+    const jwtStore = useJwtStore();
+    const userStore = useUserStore();
 
-    const userLoaded = useState<boolean>("userLoading", () => false);
+    const authenticated = computed(() => !userStore.loading && jwtStore.jwt !== undefined);
 
-    // State to hold the current user information persistently across the application
-    const user = useState<User | undefined>("user", () => undefined);
+    async function clearAuthState() {
+        userStore.user = undefined
+        jwtStore.jwt = undefined;
+    }
 
-    const authenticated = computed(() => user.value !== undefined);
+    async function setAuthState(res: AuthResponse) {
+        userStore.user = res.user;
+        jwtStore.jwt = res.token;
+    }
 
     async function logout() {
         if (!authenticated.value) throw Error("Not authenticated");
 
-        let result = await logoutUser();
-        if (result.ok) {
-            user.value = undefined;
-        }
-
-        return result;
+        await clearAuthState();
     }
 
-    async function reloadUser() {
-        let result = await getCurrentUser();
+    async function loadUserWithExistingJwt() {
+        let result = await getUserWithExistingJwt();
 
         if (result.ok) {
-            user.value = result.value;
+            userStore.user = result.value as User;
         } else {
-            user.value = undefined; // Clear user if not authenticated or error occurs
+            await clearAuthState(); // If the JWT is invalid or expired, clear the auth state to prevent using an invalid token
         }
 
-        userLoaded.value = true;
-
+        userStore.loading = false; // Set loading to false after attempting to load the user
         return result;
     }
 
@@ -41,7 +45,7 @@ export default function useAuthService() {
 
         let result = await loginUser(email, password);
         if (result.ok) {
-            user.value = result.value;
+            await setAuthState(result.value as AuthResponse);
         }
 
         return result;
@@ -60,28 +64,22 @@ export default function useAuthService() {
     }
 
     function registerUser(name: string, email: string, password: string) {
-        return connection.apiRequest<User>("/auth/register", "POST", { name, email, password });
+        return connection.apiRequest<User>("/auth/register", "POST", undefined, { name, email, password });
     }
 
     function loginUser(email: string, password: string) {
-        return connection.apiRequest<User>("/auth/login", "POST", { email, password });
+        return connection.apiRequest<AuthResponse>("/auth/login", "POST", undefined, { email, password });
     }
 
-    function logoutUser() {
-        return connection.apiRequest<void>("/auth/logout", "POST");
-    }
-
-    function getCurrentUser() {
-        return connection.apiRequest<User>("/users/me", "GET");
+    function getUserWithExistingJwt() {
+        return connection.apiRequest<User>("/users/me", "GET", jwtStore.jwt);
     }
 
     return {
-        user,
-        userLoaded,
         authenticated,
         login,
         logout,
         register,
-        reloadUser
+        loadUserWithExistingJwt
     };
 }
