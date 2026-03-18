@@ -38,7 +38,7 @@ The collected data is used solely to
 ## 4. Data Storage
 
 All data is stored in a database. Appropriate technical measures are taken to protect the data within the scope of this
-school project. However, as this is a non commercial project, no guarantees regarding data security can be provided.
+school project. However, as this is a non-commercial project, no guarantees regarding data security can be provided.
 
 ---
 
