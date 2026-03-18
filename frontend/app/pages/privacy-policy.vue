@@ -1,91 +1,23 @@
+<script setup lang="ts">
+const route = useRoute();
+
+const { data, error } = await useAsyncData('privacy-policy-legal', () => {
+  return queryCollection('legal').path('/privacy-policy').first()
+})
+</script>
+
 <template>
   <LegalPagesComponent>
-    <h1 class="card-title text-4xl mb-2">{{ $t('privacy-policy.site.header') }}</h1>
+    <div v-if="error" class="alert alert-error mb-4">
+      <span>Error loading content: {{ error }}</span>
+    </div>
 
-    <div class="divider"></div>
+    <ContentRenderer v-if="data" :value="data" />
 
-    <section class="mb-6">
-      <h2 class="text-2xl font-bold mb-3">{{ $t('privacy-policy.introduction.header') }}</h2>
-      <p>
-        {{ $t('privacy-policy.introduction.text') }}
-      </p>
-    </section>
-
-    <section class="mb-6">
-      <h2 class="text-2xl font-bold mb-3">{{ $t('privacy-policy.data_collection.header') }}</h2>
-      <p>{{ $t('privacy-policy.data_collection.text') }}</p>
-      <ul class="list-disc list-inside ml-4 space-y-1">
-        <li>{{ $t('privacy-policy.data_collection.list.username') }}</li>
-        <li>{{ $t('privacy-policy.data_collection.list.email') }}</li>
-        <li>{{ $t('privacy-policy.data_collection.list.credentials') }}</li>
-        <li>{{ $t('privacy-policy.data_collection.list.recipes') }}</li>
-        <li>{{ $t('privacy-policy.data_collection.list.favorites') }}</li>
-      </ul>
-      <p>{{ $t('privacy-policy.data_collection.payment_note') }}</p>
-    </section>
-
-    <section class="mb-6">
-      <h2 class="text-2xl font-bold mb-3">{{ $t('privacy-policy.purpose.header') }}</h2>
-      <p>
-        {{ $t('privacy-policy.purpose.text') }}
-      </p>
-      <ul class="list-disc list-inside ml-4 space-y-1">
-        <li>{{ $t('privacy-policy.purpose.list.account') }}</li>
-        <li>{{ $t('privacy-policy.purpose.list.planner') }}</li>
-        <li>{{ $t('privacy-policy.purpose.list.preferences') }}</li>
-        <li>{{ $t('privacy-policy.purpose.list.security') }}</li>
-      </ul>
-    </section>
-
-    <section class="mb-6">
-      <h2 class="text-2xl font-bold mb-3">{{ $t('privacy-policy.storage.header') }}</h2>
-      <p>
-        {{ $t('privacy-policy.storage.text') }}
-      </p>
-    </section>
-
-    <section class="mb-6">
-      <h2 class="text-2xl font-bold mb-3">{{ $t('privacy-policy.rights.header') }}</h2>
-      <p>
-        {{ $t('privacy-policy.rights.text') }}
-      </p>
-    </section>
-
-    <section class="mb-6">
-      <h2 class="text-2xl font-bold mb-3">{{ $t('privacy-policy.sharing.header') }}</h2>
-      <p>
-        {{ $t('privacy-policy.sharing.text') }}
-      </p>
-    </section>
-
-    <section class="mb-6">
-      <h2 class="text-2xl font-bold mb-3">{{ $t('privacy-policy.cookies.header') }}</h2>
-      <p>
-        {{ $t('privacy-policy.cookies.text') }}
-      </p>
-    </section>
-
-    <section class="mb-6">
-      <h2 class="text-2xl font-bold mb-3">{{ $t('privacy-policy.liability.header') }}</h2>
-      <p>
-        {{ $t('privacy-policy.liability.text') }}
-      </p>
-    </section>
-
-    <section class="mb-6">
-      <h2 class="text-2xl font-bold mb-3">{{ $t('privacy-policy.changes.header') }}</h2>
-      <p>
-        {{ $t('privacy-policy.changes.text') }}
-      </p>
-    </section>
-
-
-    <section>
-      <h2 class="text-2xl font-bold mb-3">{{ $t('privacy-policy.contact.header') }}</h2>
-      <p>{{ $t('privacy-policy.contact.text') }}</p>
-      <p>{{ $t('privacy-policy.contact.email_label') }}<a href="mailto:n.haider@students.htl-leonding.ac.at"
-                                                          class="link link-primary">n.haider@students.htl-leonding.ac.at</a>
-      </p>
-    </section>
+    <div v-else class="text-center py-12 opacity-60">
+      <h3 class="font-bold text-lg">Content Unavailable</h3>
+      <p class="mt-2">If you actully see this message, please restart your development server.</p>
+      <p class="text-xs mt-1 font-mono">Collection: legal | Path: /privacy-policy</p>
+    </div>
   </LegalPagesComponent>
 </template>
