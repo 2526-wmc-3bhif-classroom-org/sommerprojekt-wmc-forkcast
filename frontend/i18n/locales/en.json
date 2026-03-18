@@ -18,6 +18,7 @@
   "component.fse.retry": "Retry",
   "component.navbar.title": "Forkcast",
   "component.navbar.calendar.schedule": "Schedule",
+  "component.navbar.user.dashboard": "Dashboard",
   "component.navbar.user.account": "Account",
   "component.navbar.user.settings": "Settings",
   "component.navbar.user.logout": "Logout",
