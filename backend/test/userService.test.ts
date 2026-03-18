@@ -58,6 +58,7 @@ describe("AuthService — JWT Workflow Tests", () => {
         const unit1 = new Unit(false);
         const authService1 = new AuthService(unit1);
         await authService1.register("Charlie", "charlie@example.com", "password123");
+        await authService1.verifyUser("charlie@example.com");
         unit1.complete(true);
 
         // Login
