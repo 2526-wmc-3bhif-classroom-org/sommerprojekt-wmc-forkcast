@@ -94,7 +94,8 @@ class DB {
                 name TEXT NOT NULL,
                 email TEXT NOT NULL UNIQUE,
                 password TEXT NOT NULL,
-                profilePicture TEXT
+                profilePicture TEXT,
+                isVerified BOOLEAN NOT NULL DEFAULT 0
             );
 
             CREATE TABLE IF NOT EXISTS Recipe (

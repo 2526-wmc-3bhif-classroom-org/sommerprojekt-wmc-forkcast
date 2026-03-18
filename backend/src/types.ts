@@ -4,6 +4,7 @@ export interface User {
     email: string;
     password: string;
     profilePicture: string | null;
+    isVerified: boolean;
 }
 
 export interface Recipe {

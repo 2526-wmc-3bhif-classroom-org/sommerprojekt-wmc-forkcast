@@ -1,0 +1,71 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Verification Code</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eeeeee;
+        }
+        .header h1 {
+            color: #333333;
+            margin: 0;
+        }
+        .content {
+            padding: 20px 0;
+            text-align: center;
+        }
+        .code {
+            font-size: 32px;
+            font-weight: bold;
+            color: #007bff;
+            letter-spacing: 5px;
+            margin: 20px 0;
+            padding: 10px;
+            background-color: #eef7ff;
+            border-radius: 4px;
+            display: inline-block;
+        }
+        .footer {
+            text-align: center;
+            font-size: 12px;
+            color: #999999;
+            margin-top: 20px;
+            border-top: 1px solid #eeeeee;
+            padding-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Forkcast</h1>
+        </div>
+        <div class="content">
+            <p>Hello,</p>
+            <p>Thank you for registering with Forkcast. Please use the verification code below to complete your registration:</p>
+            <div class="code">{{code}}</div>
+            <p>If you did not request this code, please ignore this email.</p>
+        </div>
+        <div class="footer">
+            <p>&copy; 2026 Forkcast Solutions. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>
