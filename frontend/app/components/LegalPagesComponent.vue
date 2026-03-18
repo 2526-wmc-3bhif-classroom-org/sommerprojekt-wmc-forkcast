@@ -1,5 +1,4 @@
 <script setup lang="ts">
-const config = useRuntimeConfig();
 const {locale} = useI18n();
 const route = useRoute();
 
