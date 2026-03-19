@@ -84,6 +84,15 @@ components:
           type: string
           pattern: '^\d{6}$'
           description: 6-digit verification code
+    ResetPasswordRequest:
+      type: object
+      required:
+        - password
+      properties:
+        password:
+          type: string
+          format: password
+          description: Must satisfy the backend strong-password validation.
     UpdateProfileRequest:
       type: object
       required:
@@ -239,6 +248,39 @@ paths:
                 $ref: '#/components/schemas/ValidationErrorResponse'
         '401':
           description: Invalid code
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '500':
+          description: Internal server error
+  /auth/password/reset:
+    post:
+      summary: Reset the user's password
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetPasswordRequest'
+      responses:
+        '200':
+          description: Password reset successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+        '401':
+          description: Missing or invalid authentication
+        '404':
+          description: User not found
           content:
             application/json:
               schema:
