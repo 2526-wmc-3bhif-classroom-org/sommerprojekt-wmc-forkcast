@@ -40,10 +40,10 @@ export default function useAuthService() {
         return result;
     }
 
-    async function login(email: string, password: string) {
+    async function login(identifier: string, password: string) {
         if (authenticated.value) throw Error("Already authenticated");
 
-        let result = await loginUser(email, password);
+        let result = await loginUser(identifier, password);
         if (result.ok) {
             await setAuthState(result.value as AuthResponse);
         }
@@ -72,8 +72,8 @@ export default function useAuthService() {
         return connection.apiRequest<User>("/auth/register", "POST", undefined, { name, email, password });
     }
 
-    function loginUser(email: string, password: string) {
-        return connection.apiRequest<AuthResponse>("/auth/login", "POST", undefined, { email, password });
+    function loginUser(identifier: string, password: string) {
+        return connection.apiRequest<AuthResponse>("/auth/login", "POST", undefined, { identifier, password });
     }
 
     function verifyUser(email: string, code: string) {
