@@ -47,7 +47,8 @@ const getTransporter = async () => {
 // For simplicity in this project, we create it once or lazily.
 let transporterPromise = getTransporter();
 
-export const sendEmail = async (to: string, subject: string, text: string, html?: string) => {
+export const sendEmail = async (to: string, subject: string, text: string, html?: string,
+                                attachments: {path: string, filename: string, cid: string}[] = []) => {
     try {
         const transporter = await transporterPromise;
         const info = await transporter.sendMail({
@@ -56,6 +57,7 @@ export const sendEmail = async (to: string, subject: string, text: string, html?
             subject,
             text,
             html,
+            attachments
         });
 
         console.log("Message sent: %s", info.messageId);
@@ -115,13 +117,18 @@ export const sendVerificationEmail = async (to: string, code: string, lang: stri
     // We can also use mustache for the text fallback!
     const subject = t.verificationEmail?.subject || "Your Verification Code";
     const textTemplate = t.verificationEmail?.text || "Your code is: {{code}}";
+    const logoAttachment = {
+        path: path.join(process.cwd(), "src/templates/logo.svg"),
+        filename: "logo.svg",
+        cid: "logo"
+    }
     
     const context = {
         code,
         title: t.verificationEmail?.html?.title || "Verification Code",
         greeting: t.verificationEmail?.html?.greeting || "Hello,",
         intro: t.verificationEmail?.html?.intro || "Please use the verification code below:",
-        outro: t.verificationEmail?.html?.outro || "If you didn't request this code, ignore this email."
+        outro: t.verificationEmail?.html?.outro || "If you didn't request this code, ignore this email.",
     };
     
     const text = mustache.render(textTemplate, context);
@@ -130,7 +137,7 @@ export const sendVerificationEmail = async (to: string, code: string, lang: stri
         const htmlTemplate = await getTemplate("verificationEmail");
         const html = mustache.render(htmlTemplate, context);
         
-        await sendEmail(to, subject, text, html);
+        await sendEmail(to, subject, text, html, [logoAttachment]);
     } catch (error) {
         console.error("Error sending verification email: ", error);
         // Fallback to plain text if template fails

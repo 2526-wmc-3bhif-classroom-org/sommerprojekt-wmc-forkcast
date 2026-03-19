@@ -8,6 +8,7 @@ const props = defineProps(["enteredEmail", "enteredPassword"]);
 
 const code = ref(["", "", "", "", "", ""]);
 const codeRefs = ref<(HTMLInputElement | null)[]>([null, null, null, null, null, null]);
+const isPasting = ref(false);
 
 const mainError = ref<HTMLSpanElement>();
 
@@ -80,8 +81,8 @@ function onInput(e: Event, idx: number) {
     focusInput(5);
   }
 
-  // If all boxes are filled, trigger verify
-  if (code.value.every(c => c.length === 1)) {
+  // If all boxes are filled, trigger verify, but skip if pasting
+  if (!isPasting.value && code.value.every(c => c.length === 1)) {
     verify();
   }
 }
@@ -140,10 +141,13 @@ function onPaste(e: ClipboardEvent) {
   if (!paste) return;
 
   const chars = paste.replace(/\D/g, "").slice(0, 6).split("");
+  isPasting.value = true;
   chars.forEach((c, i) => {
     code.value[i] = c;
     if (codeRefs.value[i]) codeRefs.value[i]!.value = c;
   });
+  // Keep isPasting true until after all input events from paste are processed
+  setTimeout(() => { isPasting.value = false }, 0);
 
   // Focus the first empty field after paste, or last if all filled
   const nextIdx = getFirstEmptyIdx();
