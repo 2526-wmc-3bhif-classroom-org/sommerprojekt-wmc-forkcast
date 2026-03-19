@@ -1,3 +1,3 @@
 <template>
-  <LegalPagesComponent />
+  <legal-pages-component src="privacy-policy"/>
 </template>

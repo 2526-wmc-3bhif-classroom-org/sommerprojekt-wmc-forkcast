@@ -1,5 +1,7 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 import tailwindcss from "@tailwindcss/vite";
+import path from "node:path";
+import * as fs from "node:fs";
 
 const nativeElements = ["calendar-date", "calendar-month"]
 
@@ -38,5 +40,11 @@ export default defineNuxtConfig({
         ],
         defaultLocale: 'en'
     },
-    image: {}
+    nitro: {
+        prerender: {
+            routes: fs.readdirSync(path.resolve(__dirname, 'app/content'))
+                .filter(file => file.endsWith('.md'))
+                .map(file => `/${file.replace('.md', '')}`)
+        }
+    }
 })
