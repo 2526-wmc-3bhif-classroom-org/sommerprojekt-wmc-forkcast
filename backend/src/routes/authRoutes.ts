@@ -34,16 +34,18 @@ router.post("/register",
 });
 
 router.post("/login",
-    body("email").notEmpty().isEmail().withMessage("Email is required and must be a valid email"),
+    body("identifier").notEmpty().withMessage("Email or Username is required"),
+    body("email").optional().isEmail().withMessage("If provided, email must be a valid email"),
+    body("username").optional().isString().withMessage("If provided, username must be a string"),
     body("password").notEmpty().withMessage("Password is required"),
     validateRequest,
     async (req: Request, res: Response) => {
     const unit = new Unit(false);
     try {
-        const { email, password } = req.body;
+        const { identifier, password } = req.body;
 
         const authService = new AuthService(unit);
-        const { user, token } = await authService.login(email, password);
+        const { user, token } = await authService.login(identifier, password);
         unit.complete(true);
         return res.status(StatusCodes.OK).json({
             user: user,
