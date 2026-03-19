@@ -34,12 +34,7 @@ router.post("/register",
 });
 
 router.post("/login",
-    body().custom((value) => {
-        if (!value.email && !value.username) {
-            throw new Error("Either email or username is required");
-        }
-        return true;
-    }),
+    body("identifier").notEmpty().withMessage("Email or Username is required"),
     body("email").optional().isEmail().withMessage("If provided, email must be a valid email"),
     body("username").optional().isString().withMessage("If provided, username must be a string"),
     body("password").notEmpty().withMessage("Password is required"),
@@ -47,9 +42,7 @@ router.post("/login",
     async (req: Request, res: Response) => {
     const unit = new Unit(false);
     try {
-        const { email, username, password } = req.body;
-        // The identifier can be either the provided email or username
-        const identifier = email || username;
+        const { identifier, password } = req.body;
 
         const authService = new AuthService(unit);
         const { user, token } = await authService.login(identifier, password);

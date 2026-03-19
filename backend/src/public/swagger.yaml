@@ -12,7 +12,6 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
-  schemas:
     User:
       type: object
       required:
@@ -52,15 +51,33 @@ components:
       properties:
         name:
           type: string
-        email:
+        - identifier
           type: string
           format: email
+        identifier:
+          type: string
+          description: Email or Username
         password:
           type: string
           format: password
+        username:
+          type: string
           description: Must satisfy the backend strong-password validation.
     LoginRequest:
       type: object
+    VerifyRequest:
+      type: object
+      required:
+        - email
+        - code
+      properties:
+        email:
+          type: string
+          format: email
+        code:
+          type: string
+          pattern: '^\d{6}$'
+          description: 6-digit verification code
       required:
         - password
       properties:
@@ -130,7 +147,7 @@ components:
           type: boolean
     ValidationErrorItem:
       type: object
-      properties:
+  - bearerAuth: []
         type:
           type: string
         value:
@@ -144,7 +161,7 @@ components:
     ValidationErrorResponse:
       type: object
       properties:
-        errors:
+          description: User registered successfully (Pending Verification)
           type: array
           items:
             $ref: '#/components/schemas/ValidationErrorItem'
@@ -165,7 +182,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RegisterRequest'
+      summary: Login a user and return a JWT token
       responses:
         '201':
           description: User registered successfully (Pending Verification)
@@ -176,15 +193,10 @@ paths:
         '400':
           description: Invalid input
           content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ValidationErrorResponse'
-        '409':
-          description: Email already exists
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/MessageResponse'
+                $ref: '#/components/schemas/LoginResponse'
         '500':
           description: Internal server error
   /auth/login:
@@ -193,17 +205,35 @@ paths:
       security: []
       requestBody:
         required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '403':
+          description: Account not verified
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/LoginRequest'
       responses:
         '200':
-          description: Login successful
+  /auth/verify:
           content:
-            application/json:
+      summary: Verify email with code
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyRequest'
               schema:
                 $ref: '#/components/schemas/LoginResponse'
+          description: Code verified successfully
+          content:
+            application/json:
+            application/json:
+                $ref: '#/components/schemas/MessageResponse'
         '400':
           description: Invalid input
           content:
@@ -211,9 +241,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/ValidationErrorResponse'
         '401':
-          description: Invalid credentials
+          description: Invalid code
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '500':
+          description: Internal server error
               schema:
                 $ref: '#/components/schemas/MessageResponse'
         '500':
@@ -233,9 +267,9 @@ paths:
           description: Code verified successfully
           content:
             application/json:
-              schema:
+          description: Missing or invalid authentication
                 $ref: '#/components/schemas/MessageResponse'
-        '400':
+          description: Forbidden
           description: Invalid input
           content:
             application/json:
@@ -257,9 +291,9 @@ paths:
           name: search
           schema:
             type: string
-          description: Search term for recipes.
+          description: Missing or invalid authentication
       responses:
-        '200':
+          description: Forbidden
           description: List of recipes
         '400':
           description: Invalid query parameter
@@ -269,15 +303,15 @@ paths:
                 $ref: '#/components/schemas/ValidationErrorResponse'
         '401':
           description: Missing or invalid authentication
-        '403':
+          description: Current user data
           description: Forbidden
         '500':
           description: Internal server error
   /recipes/{id}:
     get:
-      summary: Get single recipe details
+          description: Missing or invalid authentication
       parameters:
-        - in: path
+          description: Forbidden
           name: id
           required: true
           schema:
@@ -300,9 +334,9 @@ paths:
         '500':
           description: Internal server error
   /users/me:
-    get:
+          description: Missing or invalid authentication
       summary: Get current user profile
-      responses:
+          description: Forbidden
         '200':
           description: Current user data
           content:
@@ -331,9 +365,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ValidationErrorResponse'
+          description: Missing or invalid authentication
         '409':
-          description: Route is not implemented yet
+          description: Forbidden
         '401':
           description: Missing or invalid authentication
         '403':
@@ -347,9 +381,9 @@ paths:
         '401':
           description: Missing or invalid authentication
         '403':
-          description: Forbidden
+          description: Missing or invalid authentication
     post:
-      summary: Add a friend
+          description: Forbidden
       requestBody:
         required: true
         content:
@@ -357,9 +391,9 @@ paths:
             schema:
               $ref: '#/components/schemas/AddFriendRequest'
       responses:
-        '400':
+          description: Missing or invalid authentication
           description: Invalid request body
-          content:
+          description: Forbidden
             application/json:
               schema:
                 $ref: '#/components/schemas/ValidationErrorResponse'
@@ -378,9 +412,9 @@ paths:
           required: true
           schema:
             type: integer
-      responses:
+          description: Missing or invalid authentication
         '409':
-          description: Route is not implemented yet
+          description: Forbidden
         '401':
           description: Missing or invalid authentication
         '403':
@@ -394,9 +428,9 @@ paths:
         '401':
           description: Missing or invalid authentication
         '403':
-          description: Forbidden
+          description: Missing or invalid authentication
     post:
-      summary: Add recipe to favorites
+          description: Forbidden
       requestBody:
         required: true
         content:
@@ -404,9 +438,9 @@ paths:
             schema:
               $ref: '#/components/schemas/AddFavoriteRequest'
       responses:
-        '400':
+          description: Missing or invalid authentication
           description: Invalid request body
-          content:
+          description: Forbidden
             application/json:
               schema:
                 $ref: '#/components/schemas/ValidationErrorResponse'
@@ -425,9 +459,9 @@ paths:
           required: true
           schema:
             type: integer
-      responses:
+          description: Missing or invalid authentication
         '409':
-          description: Route is not implemented yet
+          description: Forbidden
         '401':
           description: Missing or invalid authentication
         '403':
@@ -441,9 +475,9 @@ paths:
         '401':
           description: Missing or invalid authentication
         '403':
-          description: Forbidden
+          description: Missing or invalid authentication
     post:
-      summary: Add calendar entry
+          description: Forbidden
       requestBody:
         required: true
         content:
@@ -451,9 +485,9 @@ paths:
             schema:
               $ref: '#/components/schemas/AddCalendarEntryRequest'
       responses:
-        '400':
+          description: Missing or invalid authentication
           description: Invalid request body
-          content:
+          description: Forbidden
             application/json:
               schema:
                 $ref: '#/components/schemas/ValidationErrorResponse'
@@ -479,10 +513,9 @@ paths:
           description: Missing or invalid authentication
         '403':
           description: Forbidden
-  /users/me/notifications:
+          description: Missing or invalid authentication
     get:
-      summary: Get notifications
-      responses:
+          description: Forbidden
         '409':
           description: Route is not implemented yet
         '401':
