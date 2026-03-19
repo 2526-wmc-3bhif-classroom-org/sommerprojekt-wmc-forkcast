@@ -1,9 +1,7 @@
-<script setup lang="ts">
-</script>
 <template>
   <div class="hero min-h-screen">
     <div class="hero-content text-center flex flex-col gap-10">
-      <h1 class="text-5xl font-bold ">What shall we cook today?</h1>
+      <h1 class="text-5xl font-bold">What shall we cook today?</h1>
 
       <div class="inline-flex space-x-20">
         <recipe-card-component

@@ -50,7 +50,8 @@ const props = defineProps(["image", "title", "id", "popular", "rating"]);
       </ul>
 
       <div class="mt-auto">
-        <nuxt-link-locale :to="`/cook/${id}`" class="btn btn-primary btn-block mt-3">
+        <!--nuxt-link-locale :to="`/cook/${id}`" class="btn btn-primary btn-block mt-3"-->
+        <nuxt-link-locale :to="`/`" class="btn btn-primary btn-block mt-3">
           <i class="fa-solid fa-utensils"/>
           <span>Open in Cooking View</span>
         </nuxt-link-locale>
