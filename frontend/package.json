@@ -23,6 +23,7 @@
   "devDependencies": {
     "@nuxt/image": "^2.0.0",
     "@nuxtjs/i18n": "^10.2.3",
+    "@tailwindcss/typography": "^0.5.19",
     "@types/node": "^25.5.0",
     "daisyui": "^5.5.18"
   }
