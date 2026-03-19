@@ -83,3 +83,5 @@ For any questions, or to request data modification or deletion, please contact
 
 Email  
 [n.haider@students.htl-leonding.ac.at](mailto:n.haider@students.htl-leonding.ac.at)
+
+Last updated: 18. March 2026
