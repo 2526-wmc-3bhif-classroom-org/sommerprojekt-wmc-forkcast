@@ -9,17 +9,19 @@
         <recipe-card-component
             image="https://img.spoonacular.com/recipes/716429-312x231.jpg"
             title="Pasta with Garlic, Scallions, Cauliflower & Breadcrumbs"
-            id="716429"
+            :id="716429"
             :popular="true"
+            :rating="4"
         />
         <div class="divider divider-horizontal">OR</div>
 
         <recipe-card-component
             image="https://img.spoonacular.com/recipes/715538-312x231.jpg"
             title="What to make for dinner tonight?? Bruschetta Style Pork & Pasta"
-            id="712429"
+            :id="712429"
             :popular="false"
             :isAlternate="true"
+            :rating="2"
         />
       </div>
     </div>
