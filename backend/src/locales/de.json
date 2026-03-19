@@ -10,6 +10,16 @@
     }
   },
   "resetPasswordEmail": {
+    "subject": "Passwort zurücksetzen - ForkCast",
+    "text": "Du hast angefordert, dein Passwort zurückzusetzen. Dein Code ist: {{code}}",
+    "html": {
+      "title": "Code zum Zurücksetzen",
+      "greeting": "Hallo,",
+      "intro": "Du hast angefordert, dein Passwort zurückzusetzen. Bitte benutze den folgenden Code:",
+      "outro": "Falls du diese Änderung nicht angefordert hast, ignoriere diese E-Mail bitte."
+    }
+  },
+  "resetPasswordSuccessEmail": {
     "subject": "Dein Passwort wurde zurückgesetzt - ForkCast",
     "text": "Dein Passwort wurde erfolgreich zurückgesetzt. Falls du dies nicht warst, kontaktiere bitte umgehend den Support.",
     "html": {

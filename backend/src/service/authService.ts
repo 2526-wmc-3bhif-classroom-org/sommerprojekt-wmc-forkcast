@@ -1,10 +1,10 @@
 import { Unit } from "../db/unit";
 import { UserRepository } from "../repository/userRepository";
 import { User } from "../types";
-import { hashPassword, comparePassword } from "../utils";
+import {hashPassword, comparePassword, generateCode} from "../utils";
 import { generateJWT } from "../utils/jwtUtils";
-import { sendEmail } from "../services/emailValidationService";
-import { sendResetPasswordEmail } from "../utils/mailingUtils";
+import { sendEmail } from "../services/codeValidationService";
+import {sendPasswordResetSuccessEmail, sendResetPasswordEmail} from "../utils/mailingUtils";
 
 export class AuthService {
     private userRepository: UserRepository;
@@ -76,17 +76,21 @@ export class AuthService {
         this.userRepository.updateVerificationStatus(email, true);
     }
 
-    public async resetPassword(userId: number, newPassword: string): Promise<void> {
-        const user = this.userRepository.findById(userId);
+    public checkUserExists(email: string): boolean {
+        return !!this.userRepository.findByEmail(email);
+    }
+
+    public async resetPasswordByEmail(email: string, newPassword: string): Promise<void> {
+        const user = this.userRepository.findByEmail(email);
         if (!user) {
             throw new Error("User not found");
         }
 
         const hashedPassword = await hashPassword(newPassword);
-        this.userRepository.updatePassword(userId, hashedPassword);
+        this.userRepository.updatePassword(user.id, hashedPassword);
 
-        sendResetPasswordEmail(user.email).catch(error => {
-            console.error(`Failed to send reset password email to ${user.email}:`, error);
+        sendPasswordResetSuccessEmail(user.email).catch((error: any) => {
+            console.error(`Failed to send reset password success email to ${user.email}:`, error);
         });
     }
 }

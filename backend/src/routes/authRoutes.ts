@@ -4,8 +4,7 @@ import { Unit } from "../db/unit";
 import {StatusCodes} from "http-status-codes";
 import {body} from "express-validator";
 import {validateRequest} from "../middleware/validationMiddleware";
-import {verifyCode} from "../services/emailValidationService";
-import {authenticateToken, AuthRequest} from "../middleware/authMiddleware";
+import {verifyCode, sendPasswordResetEmail, verifyPasswordResetCode} from "../services/codeValidationService";
 
 const router = Router();
 
@@ -92,20 +91,45 @@ router.post("/verify",
     }
 });
 
-router.post("/password/reset",
-    body('password').notEmpty().withMessage("New password is required").isStrongPassword().withMessage("Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number and one special character"),
+router.post("/password/forgot",
+    body("email").optional().isEmail().withMessage("If provided, email must be a valid email"),
     validateRequest,
-    authenticateToken,
-    async (req: AuthRequest, res: Response) => {
+    async (req: Request, res: Response) => {
+    try {
+        const { email } = req.body;
+
+        // Even if user isn't found, we return 200 so an attacker can't enumerate emails.
+        const unit = new Unit(false);
+        const authService = new AuthService(unit);
+        const userExists = authService.checkUserExists(email);
+        unit.complete(true);
+
+        if (userExists) {
+            sendPasswordResetEmail(email).catch(console.error);
+        }
+
+        res.status(StatusCodes.OK).json({ message: "If an account with that email exists, a reset code has been sent." });
+    } catch (error: any) {
+        console.error("Password reset request error:", error);
+        return res.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR);
+    }
+});
+router.post("/password/reset",
+    body("email").notEmpty().isEmail().withMessage("Email is required"),
+    body("code").notEmpty().isLength({ min: 6, max: 6 }).withMessage("Code is required and must a 6-digit number"),
+    body("password").notEmpty().withMessage("Password is required").isStrongPassword().withMessage("Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number and one special character"),
+    validateRequest,
+    async (req: Request, res: Response) => {
     const unit = new Unit(false);
     try {
-        const { password } = req.body;
-        // TODO: make a middleware for this
-        // userId is stored as a string in the JWT payload, so we parse it to an integer
-        const userId = parseInt(req.user!.userId as unknown as string, 10);
-        
+        const { email, code, password } = req.body;
+
+        if (!verifyPasswordResetCode(email, code)) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Invalid code" });
+        }
+
         const authService = new AuthService(unit);
-        await authService.resetPassword(userId, password);
+        await authService.resetPasswordByEmail(email, password);
         unit.complete(true);
 
         return res.status(StatusCodes.OK).json({ message: "Password reset successfully" });

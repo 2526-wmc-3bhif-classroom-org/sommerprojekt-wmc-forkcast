@@ -151,9 +151,13 @@ const sendTemplatedEmail = async (
 };
 
 export const sendVerificationEmail = async (to: string, code: string, lang: string = 'en') => {
-    await sendTemplatedEmail(to, "verificationEmail", "verificationEmail", { code }, lang);
+    await sendTemplatedEmail(to, "codeEmail", "verificationEmail", { code }, lang);
 };
 
-export const sendResetPasswordEmail = async (to: string, lang: string = 'en') => {
-    await sendTemplatedEmail(to, "resetPassword", "resetPasswordEmail", {}, lang);
+export const sendResetPasswordEmail = async (to: string, code: string, lang: string = 'en') => {
+    await sendTemplatedEmail(to, "codeEmail", "resetPasswordEmail", { code }, lang);
+};
+
+export const sendPasswordResetSuccessEmail = async (to: string, lang: string = 'en') => {
+    await sendTemplatedEmail(to, "confirmationEmail", "resetPasswordSuccessEmail", {}, lang);
 };
