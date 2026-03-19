@@ -14,9 +14,20 @@ export class UserRepository {
         return stmt.get();
     }
 
+    public findByIdentifier(identifier: string): User | undefined {
+        const stmt = this.unit.prepare<User>("SELECT * FROM User WHERE email = :identifier OR name = :identifier", { identifier: identifier });
+        return stmt.get();
+    }
+
     public findByEmail(email: string): User | undefined {
         const stmt = this.unit.prepare<User>("SELECT * FROM User WHERE email = :email",
             { email: email });
+        return stmt.get();
+    }
+
+    public findByName(name: string): User | undefined {
+        const stmt = this.unit.prepare<User>("SELECT * FROM User WHERE name = :name",
+            { name });
         return stmt.get();
     }
 
