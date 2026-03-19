@@ -13,9 +13,14 @@ export class AuthService {
     }
 
     public async register(name: string, email: string, password: string): Promise<Omit<User, "password">> {
-        const existingUser = this.userRepository.findByEmail(email);
-        if (existingUser) {
+        const existingUserByEmail = this.userRepository.findByEmail(email);
+        if (existingUserByEmail) {
             throw new Error("User with this email already exists");
+        }
+
+        const existingUserByName = this.userRepository.findByName(name);
+        if (existingUserByName) {
+            throw new Error("User with this username already exists");
         }
 
         const hashedPassword = await hashPassword(password);

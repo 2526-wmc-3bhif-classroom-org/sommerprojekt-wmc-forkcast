@@ -25,6 +25,12 @@ export class UserRepository {
         return stmt.get();
     }
 
+    public findByName(name: string): User | undefined {
+        const stmt = this.unit.prepare<User>("SELECT * FROM User WHERE name = :name",
+            { name });
+        return stmt.get();
+    }
+
     public create(user: Omit<User, "id">): User {
         const stmt = this.unit.prepare(
             "INSERT INTO User (name, email, password, profilePicture, isVerified) VALUES (:name, :email, :password, :profilePicture, :isVerified)",

@@ -91,7 +91,7 @@ class DB {
         connection.exec(`
             CREATE TABLE IF NOT EXISTS User (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL,
+                name TEXT NOT NULL UNIQUE,
                 email TEXT NOT NULL UNIQUE,
                 password TEXT NOT NULL,
                 profilePicture TEXT,

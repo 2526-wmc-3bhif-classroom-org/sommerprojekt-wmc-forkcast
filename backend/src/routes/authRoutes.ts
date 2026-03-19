@@ -24,7 +24,7 @@ router.post("/register",
         res.status(StatusCodes.CREATED).json(user);
     } catch (error: any) {
         unit.complete(false);
-        if (error.message.includes("email already exists")) {
+        if (error.message.includes("email already exists") || error.message.includes("username already exists")) {
             res.status(StatusCodes.CONFLICT).json({ message: error.message });
         } else {
             console.error("Register error:", error);
