@@ -1,9 +1,3 @@
----
-title: 'Privacy Policy'
-path: '/privacy-policy'
-description: 'Privacy Policy for Forkcast'
----
-
 # Privacy Policy
 
 ---
