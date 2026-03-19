@@ -13,7 +13,7 @@ export default defineNuxtConfig({
         '@pinia/nuxt',
         'pinia-plugin-persistedstate/nuxt',
         'pinia-plugin-persistedstate',
-        '@nuxt/content'
+        '@nuxtjs/mdc'
     ],
     vite: {
         plugins: [tailwindcss()],
