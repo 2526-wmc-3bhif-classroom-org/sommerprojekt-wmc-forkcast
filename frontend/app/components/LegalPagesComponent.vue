@@ -2,47 +2,39 @@
 const {locale} = useI18n();
 const route = useRoute();
 
-const {data: lastUpdated} = await useAsyncData(`last-updated-${route.path}`, async () => {
-  if (import.meta.server) {
-    try {
-      const fs = await import('node:fs');
-      const path = await import('node:path');
+const md = ref<string | undefined>(undefined);
 
-      let page = route.path;
-      if (page === '/') {
-        page = '/index';
-      }
-
-      // Assuming md docs are located in frontend/app/content relative to the project root, no frontend/ before app bc cwd is in frontend already
-      const filePath = path.resolve(process.cwd(), 'app/content' + page + '.md');
-
-      if (fs.existsSync(filePath)) {
-        const stats = fs.statSync(filePath);
-        return stats.mtime.toISOString();
-      }
-    } catch (e) {
-      console.warn('Could not read file stats:', e);
+onMounted(async () => {
+  try {
+    let page = route.path;
+    if (page === '/') {
+      page = '/index';
     }
-    return new Date().toISOString();
+
+    const filePath = '/content' + page + '.md';
+
+    const response = await fetch(filePath);
+    if (response.ok) {
+      md.value = await response.text();
+    }
+
+  } catch (e) {
+    console.warn('Could not read file stats:', e);
   }
 });
-
-const lastUpdatedDate = computed(() => {
-  const dateStr = lastUpdated.value || new Date().toISOString();
-  const date = new Date(dateStr);
-  return date.toLocaleDateString(locale.value, {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
-});
+        //TODO REFACTOR FASTER LOADING -> Erik
 </script>
 
 <template>
   <div class="container mx-auto px-4 pt-24 pb-0 flex justify-center">
     <div class="card-body">
-      <slot/>
-      <p class="text-sm opacity-70 mt-18">{{ $t('legalPage.site.lastUpdated') }}{{ lastUpdatedDate }}</p>
+      <MDC class="prose lg:prose-xl" v-if="md" :value="md"/>
+      <div v-else class="flex w-52 flex-col gap-4">
+        <div class="skeleton h-32 w-100"></div>
+        <div class="skeleton h-8 w-40"></div>
+        <div class="skeleton h-8 w-30"></div>
+        <div class="skeleton h-8 w-30"></div>
+      </div>
     </div>
   </div>
 </template>
