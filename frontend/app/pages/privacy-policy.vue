@@ -11,6 +11,6 @@ const {data: md} = await useAsyncData('privacy-policy-md', async () => {
 
 <template>
   <LegalPagesComponent>
-    <MDC v-if="md" :value="md"/>
+    <MDC class="prose lg:prose-xl" v-if="md" :value="md"/>
   </LegalPagesComponent>
 </template>
