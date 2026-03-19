@@ -106,6 +106,12 @@ function onCalendarClick(event: Event) {
         </div>
         <ul tabindex="-1" class="menu menu-md dropdown-content bg-base-100 rounded-box z-1 mt-3 p-2 shadow">
           <li>
+            <nuxt-link-locale @click="blur" to="/dashboard">
+              <i class="fa-solid fa-house"/>
+              <span>{{$t('component.navbar.user.dashboard')}}</span>
+            </nuxt-link-locale>
+          </li>
+          <li>
             <nuxt-link-locale @click="blur" to="/dashboard/account">
               <i class="fa-solid fa-user"/>
               <span>{{$t('component.navbar.user.account')}}</span>
