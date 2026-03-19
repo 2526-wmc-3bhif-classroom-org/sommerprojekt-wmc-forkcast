@@ -3,31 +3,29 @@ const {locale} = useI18n();
 const route = useRoute();
 
 const {data: lastUpdated} = await useAsyncData(`last-updated-${route.path}`, async () => {
-          if (import.meta.server) {
-            try {
-              const fs = await import('node:fs');
-              const path = await import('node:path');
+  if (import.meta.server) {
+    try {
+      const fs = await import('node:fs');
+      const path = await import('node:path');
 
-              let page = route.path;
-              if (page === '/') {
-                page = '/index';
-              }
+      let page = route.path;
+      if (page === '/') {
+        page = '/index';
+      }
 
-              // Assuming md docs are located in frontend/app/content relative to the project root, no frontend/ before app bc cwd is in frontend already
-              const filePath = path.resolve(process.cwd(), 'app/content' + page + '.md');
+      // Assuming md docs are located in frontend/app/content relative to the project root, no frontend/ before app bc cwd is in frontend already
+      const filePath = path.resolve(process.cwd(), 'app/content' + page + '.md');
 
-              if (fs.existsSync(filePath)) {
-                const stats = fs.statSync(filePath);
-                return stats.mtime.toISOString();
-              }
-            } catch (e) {
-              console.warn('Could not read file stats:', e);
-            }
-            return new Date().toISOString();
-          }
-        }
-    )
-;
+      if (fs.existsSync(filePath)) {
+        const stats = fs.statSync(filePath);
+        return stats.mtime.toISOString();
+      }
+    } catch (e) {
+      console.warn('Could not read file stats:', e);
+    }
+    return new Date().toISOString();
+  }
+});
 
 const lastUpdatedDate = computed(() => {
   const dateStr = lastUpdated.value || new Date().toISOString();
