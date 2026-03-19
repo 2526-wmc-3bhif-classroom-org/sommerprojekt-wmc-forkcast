@@ -51,8 +51,5 @@ export default defineNuxtConfig({
       { code: 'de', language: 'de-AT', name: 'Deutsch', file: 'de.json'}
     ],
     defaultLocale: 'en'
-  },
-  image: {
-
   }
 })

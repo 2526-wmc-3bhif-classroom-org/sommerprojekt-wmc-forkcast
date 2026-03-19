@@ -51,16 +51,21 @@ export default function useAuthService() {
         return result;
     }
 
-    async function register(username: string, email: string, password: string) {
+    async function verify(email: string, password: string, code: string) {
         if (authenticated.value) throw Error("Already authenticated");
 
-        let result = await registerUser(username, email, password);
+        let result = await verifyUser(email, code);
         if (result.ok) {
-            // Automatically log in the user after successful registration
-            await login(email, password);
+            await login(email, password); // Automatically log in the user after successful verification
         }
 
         return result;
+    }
+
+    async function signup(username: string, email: string, password: string) {
+        if (authenticated.value) throw Error("Already authenticated");
+
+        return await registerUser(username, email, password);
     }
 
     function registerUser(name: string, email: string, password: string) {
@@ -71,6 +76,10 @@ export default function useAuthService() {
         return connection.apiRequest<AuthResponse>("/auth/login", "POST", undefined, { email, password });
     }
 
+    function verifyUser(email: string, code: string) {
+        return connection.apiRequest("/auth/verify", "POST", undefined, { email, code });
+    }
+
     function getUserWithExistingJwt() {
         return connection.apiRequest<User>("/users/me", "GET", jwtStore.jwt);
     }
@@ -79,7 +88,8 @@ export default function useAuthService() {
         authenticated,
         login,
         logout,
-        register,
+        signup,
+        verify,
         loadUserWithExistingJwt
     };
 }

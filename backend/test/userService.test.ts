@@ -58,6 +58,7 @@ describe("AuthService — JWT Workflow Tests", () => {
         const unit1 = new Unit(false);
         const authService1 = new AuthService(unit1);
         await authService1.register("Charlie", "charlie@example.com", "password123");
+        await authService1.verifyUser("charlie@example.com");
         unit1.complete(true);
 
         // Login
@@ -90,6 +91,30 @@ describe("AuthService — JWT Workflow Tests", () => {
         await expect(authService2.login("dave@example.com", "wrongpassword"))
             .rejects.toThrow("Invalid credentials");
         unit2.complete(false);
+    });
+
+    it("should login successfully with username and return a JWT token", async () => {
+        // Register first
+        const unit1 = new Unit(false);
+        const authService1 = new AuthService(unit1);
+        await authService1.register("Eve", "dave2@example.com", "password123");
+        await authService1.verifyUser("dave2@example.com");
+        unit1.complete(true);
+
+        // Login using username
+        const unit2 = new Unit(false);
+        const authService2 = new AuthService(unit2);
+        const result = await authService2.login("Eve", "password123");
+        unit2.complete(true);
+
+        expect(result).toHaveProperty("user");
+        expect(result).toHaveProperty("token");
+        expect(typeof result.token).toBe("string");
+
+        const loggedInUser = result.user;
+        expect(loggedInUser.name).toBe("Eve");
+        expect(loggedInUser.email).toBe("dave2@example.com");
+        expect(loggedInUser).not.toHaveProperty("password");
     });
 
     it("should fail to login with non-existent email", async () => {

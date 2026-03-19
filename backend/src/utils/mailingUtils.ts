@@ -1,6 +1,7 @@
 import nodemailer from "nodemailer";
 import fs from "fs";
 import path from "path";
+import mustache from "mustache";
 
 const getTransporter = async () => {
     // If we are in test mode or missing credentials, we could use Ethereal (optional)
@@ -46,7 +47,8 @@ const getTransporter = async () => {
 // For simplicity in this project, we create it once or lazily.
 let transporterPromise = getTransporter();
 
-export const sendEmail = async (to: string, subject: string, text: string, html?: string) => {
+export const sendEmail = async (to: string, subject: string, text: string, html?: string,
+                                attachments: {path: string, filename: string, cid: string}[] = []) => {
     try {
         const transporter = await transporterPromise;
         const info = await transporter.sendMail({
@@ -55,6 +57,7 @@ export const sendEmail = async (to: string, subject: string, text: string, html?
             subject,
             text,
             html,
+            attachments
         });
 
         console.log("Message sent: %s", info.messageId);
@@ -72,16 +75,69 @@ export const sendEmail = async (to: string, subject: string, text: string, html?
     }
 };
 
-export const sendVerificationEmail = async (to: string, code: string) => {
-    const subject = "Your Verification Code - ForkCast";
-    const text = `Thank you for registering with Forkcast. Your verification code is: ${code}`;
-    
+// Simple caching maps
+const localesCache: Record<string, any> = {};
+const templateCache: Record<string, string> = {};
+
+const loadTranslations = async (lang: string) => {
+    if (localesCache[lang]) {
+        return localesCache[lang];
+    }
+
     try {
-        const templatePath = path.join(process.cwd(), "src/templates/verificationEmail.html");
-        let html = fs.readFileSync(templatePath, "utf8");
-        html = html.replace("{{code}}", code);
+        const localePath = path.join(process.cwd(), `src/locales/${lang}.json`);
+        const data = await fs.promises.readFile(localePath, "utf8");
+        localesCache[lang] = JSON.parse(data);
+        return localesCache[lang];
+    } catch (e) {
+        console.warn(`Could not load translations for ${lang}`, e);
         
-        await sendEmail(to, subject, text, html);
+        // Fallback to en if not already trying 'en'
+        if (lang !== 'en') {
+            return loadTranslations('en');
+        }
+        return {};
+    }
+};
+
+const getTemplate = async (templateName: string) => {
+    if (templateCache[templateName]) {
+        return templateCache[templateName];
+    }
+
+    const templatePath = path.join(process.cwd(), `src/templates/${templateName}.html`);
+    const html = await fs.promises.readFile(templatePath, "utf8");
+    templateCache[templateName] = html;
+    return html;
+};
+
+export const sendVerificationEmail = async (to: string, code: string, lang: string = 'en') => {
+    const t = await loadTranslations(lang);
+    
+    // We can also use mustache for the text fallback!
+    const subject = t.verificationEmail?.subject || "Your Verification Code";
+    const textTemplate = t.verificationEmail?.text || "Your code is: {{code}}";
+    const logoAttachment = {
+        path: path.join(process.cwd(), "src/templates/logo.svg"),
+        filename: "logo.svg",
+        cid: "logo"
+    }
+    
+    const context = {
+        code,
+        title: t.verificationEmail?.html?.title || "Verification Code",
+        greeting: t.verificationEmail?.html?.greeting || "Hello,",
+        intro: t.verificationEmail?.html?.intro || "Please use the verification code below:",
+        outro: t.verificationEmail?.html?.outro || "If you didn't request this code, ignore this email.",
+    };
+    
+    const text = mustache.render(textTemplate, context);
+
+    try {
+        const htmlTemplate = await getTemplate("verificationEmail");
+        const html = mustache.render(htmlTemplate, context);
+        
+        await sendEmail(to, subject, text, html, [logoAttachment]);
     } catch (error) {
         console.error("Error sending verification email: ", error);
         // Fallback to plain text if template fails

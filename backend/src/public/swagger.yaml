@@ -62,12 +62,12 @@ components:
     LoginRequest:
       type: object
       required:
-        - email
+        - identifier
         - password
       properties:
-        email:
+        identifier:
           type: string
-          format: email
+          description: Email or Username
         password:
           type: string
           format: password
@@ -158,6 +158,7 @@ paths:
   /auth/register:
     post:
       summary: Register a new user
+      tags: [Auth]
       security: []
       requestBody:
         required: true
@@ -178,17 +179,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ValidationErrorResponse'
-        '409':
-          description: Email already exists
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/MessageResponse'
         '500':
           description: Internal server error
   /auth/login:
     post:
       summary: Login a user and return a JWT token
+      tags: [Auth]
       security: []
       requestBody:
         required: true
@@ -203,14 +199,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/LoginResponse'
-        '400':
-          description: Invalid input
+        '401':
+          description: Invalid credentials
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ValidationErrorResponse'
-        '401':
-          description: Invalid credentials
+                $ref: '#/components/schemas/MessageResponse'
+        '403':
+          description: Account not verified
           content:
             application/json:
               schema:
@@ -220,6 +216,7 @@ paths:
   /auth/verify:
     post:
       summary: Verify email with code
+      tags: [Auth]
       security: []
       requestBody:
         required: true
@@ -251,30 +248,34 @@ paths:
   /recipes:
     get:
       summary: Get all recipes
+      tags: [Recipes]
       parameters:
         - in: query
           name: search
           schema:
             type: string
-          description: Search term for recipes.
+          description: Search term
       responses:
         '200':
           description: List of recipes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                   type: object
         '400':
           description: Invalid query parameter
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ValidationErrorResponse'
-        '401':
-          description: Missing or invalid authentication
-        '403':
-          description: Forbidden
         '500':
           description: Internal server error
   /recipes/{id}:
     get:
-      summary: Get single recipe details
+      summary: Get recipe details
+      tags: [Recipes]
       parameters:
         - in: path
           name: id
@@ -287,13 +288,9 @@ paths:
         '400':
           description: Invalid recipe ID
           content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ValidationErrorResponse'
-        '401':
-          description: Missing or invalid authentication
-        '403':
-          description: Forbidden
+             application/json:
+               schema:
+                 $ref: '#/components/schemas/ValidationErrorResponse'
         '404':
           description: Recipe not found
         '500':
@@ -301,6 +298,7 @@ paths:
   /users/me:
     get:
       summary: Get current user profile
+      tags: [User]
       responses:
         '200':
           description: Current user data
@@ -310,14 +308,11 @@ paths:
                 $ref: '#/components/schemas/User'
         '401':
           description: Missing or invalid authentication
-        '403':
-          description: Forbidden
-        '404':
-          description: User not found
         '500':
           description: Internal server error
     put:
       summary: Update current user profile
+      tags: [User]
       requestBody:
         required: true
         content:
@@ -325,30 +320,38 @@ paths:
             schema:
               $ref: '#/components/schemas/UpdateProfileRequest'
       responses:
+        '200':
+          description: Profile updated
         '400':
           description: Invalid request body
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ValidationErrorResponse'
-        '409':
-          description: Route is not implemented yet
+                 $ref: '#/components/schemas/ValidationErrorResponse'
         '401':
           description: Missing or invalid authentication
-        '403':
-          description: Forbidden
+        '500':
+          description: Internal server error
   /users/me/friends:
     get:
       summary: Get friend list
+      tags: [Friends]
       responses:
-        '409':
-          description: Route is not implemented yet
+        '200':
+          description: Friend list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
         '401':
           description: Missing or invalid authentication
-        '403':
-          description: Forbidden
+        '500':
+          description: Internal server error
     post:
       summary: Add a friend
+      tags: [Friends]
       requestBody:
         required: true
         content:
@@ -356,21 +359,24 @@ paths:
             schema:
               $ref: '#/components/schemas/AddFriendRequest'
       responses:
+        '200':
+          description: Friend added
         '400':
           description: Invalid request body
           content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ValidationErrorResponse'
-        '409':
-          description: Route is not implemented yet
+             application/json:
+               schema:
+                 $ref: '#/components/schemas/ValidationErrorResponse'
         '401':
           description: Missing or invalid authentication
-        '403':
-          description: Forbidden
+        '409':
+          description: Already friends or pending
+        '500':
+          description: Internal server error
   /users/me/friends/{friendId}:
     delete:
       summary: Remove a friend
+      tags: [Friends]
       parameters:
         - in: path
           name: friendId
@@ -378,24 +384,34 @@ paths:
           schema:
             type: integer
       responses:
-        '409':
-          description: Route is not implemented yet
+        '200':
+          description: Friend removed
+        '400':
+          description: Invalid friend ID
         '401':
           description: Missing or invalid authentication
-        '403':
-          description: Forbidden
+        '500':
+          description: Internal server error
   /users/me/favorites:
     get:
       summary: Get favorite recipes
+      tags: [Favorites]
       responses:
-        '409':
-          description: Route is not implemented yet
+        '200':
+           description: Favorite recipes
+           content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
         '401':
           description: Missing or invalid authentication
-        '403':
-          description: Forbidden
+        '500':
+          description: Internal server error
     post:
       summary: Add recipe to favorites
+      tags: [Favorites]
       requestBody:
         required: true
         content:
@@ -403,21 +419,22 @@ paths:
             schema:
               $ref: '#/components/schemas/AddFavoriteRequest'
       responses:
+        '200':
+          description: Added to favorites
         '400':
           description: Invalid request body
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ValidationErrorResponse'
-        '409':
-          description: Route is not implemented yet
         '401':
           description: Missing or invalid authentication
-        '403':
-          description: Forbidden
+        '500':
+          description: Internal server error
   /users/me/favorites/{recipeId}:
     delete:
       summary: Remove recipe from favorites
+      tags: [Favorites]
       parameters:
         - in: path
           name: recipeId
@@ -425,24 +442,28 @@ paths:
           schema:
             type: integer
       responses:
-        '409':
-          description: Route is not implemented yet
+        '200':
+          description: Removed from favorites
+        '400':
+          description: Invalid recipe ID
         '401':
           description: Missing or invalid authentication
-        '403':
-          description: Forbidden
+        '500':
+          description: Internal server error
   /users/me/calendar:
     get:
       summary: Get calendar entries
+      tags: [Calendar]
       responses:
-        '409':
-          description: Route is not implemented yet
+        '200':
+           description: Calendar entries
         '401':
           description: Missing or invalid authentication
-        '403':
-          description: Forbidden
+        '500':
+          description: Internal server error
     post:
       summary: Add calendar entry
+      tags: [Calendar]
       requestBody:
         required: true
         content:
@@ -450,21 +471,22 @@ paths:
             schema:
               $ref: '#/components/schemas/AddCalendarEntryRequest'
       responses:
+        '200':
+          description: Calendar entry added
         '400':
-          description: Invalid request body
-          content:
+           description: Invalid request body
+           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ValidationErrorResponse'
-        '409':
-          description: Route is not implemented yet
         '401':
           description: Missing or invalid authentication
-        '403':
-          description: Forbidden
+        '500':
+          description: Internal server error
   /users/me/calendar/{calendarEntryId}:
     delete:
       summary: Remove calendar entry
+      tags: [Calendar]
       parameters:
         - in: path
           name: calendarEntryId
@@ -472,25 +494,36 @@ paths:
           schema:
             type: integer
       responses:
-        '409':
-          description: Route is not implemented yet
+        '200':
+          description: Removed calendar entry
+        '400':
+           description: Invalid ID
         '401':
           description: Missing or invalid authentication
-        '403':
-          description: Forbidden
-  /users/me/notifications:
+        '500':
+          description: Internal server error
     get:
-      summary: Get notifications
+      summary: Get calendar entry
+      tags: [Calendar]
+      parameters:
+        - in: path
+          name: calendarEntryId
+          required: true
+          schema:
+            type: integer
       responses:
-        '409':
-          description: Route is not implemented yet
+        '200':
+          description: Calendar entry details
+        '404':
+          description: Not found
         '401':
-          description: Missing or invalid authentication
-        '403':
-          description: Forbidden
+           description: Missing or invalid authentication
+        '500':
+           description: Internal server error
   /users/me/notifications/{notificationId}:
     put:
       summary: Mark notification as read
+      tags: [Notifications]
       parameters:
         - in: path
           name: notificationId
@@ -504,15 +537,15 @@ paths:
             schema:
               $ref: '#/components/schemas/UpdateNotificationRequest'
       responses:
+        '200':
+          description: Notification updated
         '400':
-          description: Invalid request body
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ValidationErrorResponse'
-        '409':
-          description: Route is not implemented yet
+           description: Invalid request body
+           content:
+             application/json:
+               schema:
+                 $ref: '#/components/schemas/ValidationErrorResponse'
         '401':
           description: Missing or invalid authentication
-        '403':
-          description: Forbidden
+        '500':
+          description: Internal server error

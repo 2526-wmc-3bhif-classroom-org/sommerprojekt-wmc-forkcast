@@ -1,7 +1,9 @@
+<script setup lang="ts">
+</script>
 <template>
   <footer class="footer sm:footer-horizontal bg-base-200 text-base-content p-10">
     <aside>
-      <i class="fa-solid fa-utensils text-5xl"/>
+      <nuxt-img src="/logo-white.svg" width="60px" class="pr-5"/>
       <p>
         <strong>{{$t('component.footer.title')}}</strong>
         <br />
