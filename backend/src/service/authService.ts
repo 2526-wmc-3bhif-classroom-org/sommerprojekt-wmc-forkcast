@@ -3,7 +3,8 @@ import { UserRepository } from "../repository/userRepository";
 import { User } from "../types";
 import { hashPassword, comparePassword } from "../utils";
 import { generateJWT } from "../utils/jwtUtils";
-import {sendEmail} from "../services/emailValidationService";
+import { sendEmail } from "../services/emailValidationService";
+import { sendResetPasswordEmail } from "../utils/mailingUtils";
 
 export class AuthService {
     private userRepository: UserRepository;
@@ -73,5 +74,19 @@ export class AuthService {
             throw new Error("User not found");
         }
         this.userRepository.updateVerificationStatus(email, true);
+    }
+
+    public async resetPassword(userId: number, newPassword: string): Promise<void> {
+        const user = this.userRepository.findById(userId);
+        if (!user) {
+            throw new Error("User not found");
+        }
+
+        const hashedPassword = await hashPassword(newPassword);
+        this.userRepository.updatePassword(userId, hashedPassword);
+
+        sendResetPasswordEmail(user.email).catch(error => {
+            console.error(`Failed to send reset password email to ${user.email}:`, error);
+        });
     }
 }

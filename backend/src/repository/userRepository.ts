@@ -61,4 +61,17 @@ export class UserRepository {
             throw new Error("User not found to update verification status");
         }
     }
+
+    public updatePassword(id: number, passwordHash: string): void {
+        const stmt = this.unit.prepare(
+            "UPDATE User SET password = :password WHERE id = :id",
+            {
+                password: passwordHash,
+                id: id
+            });
+        const result = stmt.run();
+        if (result.changes === 0) {
+            throw new Error("User not found to update password");
+        }
+    }
 }
