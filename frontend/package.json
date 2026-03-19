@@ -10,6 +10,7 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
+    "@nuxtjs/mdc": "^0.20.2",
     "@pinia/nuxt": "^0.11.3",
     "@tailwindcss/vite": "^4.1.18",
     "nuxt": "^4.3.0",
@@ -20,9 +21,9 @@
     "vue-router": "^4.6.4"
   },
   "devDependencies": {
-    "@formkit/auto-animate": "^0.9.0",
     "@nuxt/image": "^2.0.0",
     "@nuxtjs/i18n": "^10.2.3",
+    "@tailwindcss/typography": "^0.5.19",
     "@types/node": "^25.5.0",
     "daisyui": "^5.5.18"
   }
