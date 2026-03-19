@@ -9,7 +9,6 @@ const authService = useAuthService();
 const titleTranslation = computed(() => $t("route." + route.path));
 const descriptionTranslation = computed(() => $t("route." + route.path + ".desc"));
 
-
 const title = computed(() => titleTranslation.value ? "Forkcast - " + titleTranslation.value : "Forkcast");
 const description = computed(() => descriptionTranslation.value ? descriptionTranslation.value as string : "");
 const layoutName = computed(() => authService.authenticated.value ? 'authenticated' : 'unauthenticated');
@@ -39,7 +38,7 @@ useHead({
     {
       rel: "icon",
       type: "image/svg+xml",
-      href: "/logo.svg"
+      href: "/sommerprojekt-wmc-forkcast/logo.svg"
     }
   ]
 });
