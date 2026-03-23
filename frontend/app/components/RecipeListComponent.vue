@@ -54,34 +54,18 @@ const legend = computed(() => {
 </script>
 
 <template>
-  <div class="card bg-base-100 w-96 max-h-full shadow-sm">
-    <figure>
-      <!-- Do not use nuxt-image here as the image will come from external -->
-      <img :src="data.image" :alt="`Image for: ${data.title}`" class="object-cover h-60 w-full"/>
-    </figure>
-    <div class="card-body text-left">
-      <div class="inline-flex">
-        <div>
-          <div class="inline-flex space-x-1">
-            <!-- We cannot use concatenation here, because tailwind does not detect it and does not generate the required classes -->
-            <span v-for="tag in data.tags" :class="`badge badge-xs ${tag.color == 'primary' ? 'badge-primary' : tag.color == 'error' ? 'badge-error' : tag.color == 'success' ? 'badge-success' : tag.color == 'warning' ? 'badge-warning' : 'badge-neutral'}`" class="inline-flex items-center gap-1">
-              <i :class="`fa-solid fa-${tag.icon}`"/>
-              <span>{{tag.text}}</span>
-            </span>
-          </div>
-          <div class="flex justify-between">
-            <h2 class="text-2xl font-bold">{{data.title}}</h2>
-          </div>
-        </div>
-        <div :class="`tooltip ml-auto ${tooltipColor}`">
-          <div class="tooltip-content">
-            <span class="font-semibold">{{data.effort}} - {{legend}}</span>
-          </div>
-          <div :class="`radial-progress radial-progress-sm text-primary-content ${color} text-xs border-2`"
-               :style="`--value:${data.effort}; --size: 2.6rem`" :aria-valuenow="data.effort" role="progressbar">
-            <span class="font-bold">{{data.effort}}</span>
-          </div>
-        </div>
+  <li class="list-row min-w-140 bg-base-100">
+    <div>
+      <img :src="data.image" :alt="`Image for: ${data.title}`" class="object-cover rounded-box size-40"/>
+    </div>
+    <div class="text-left flex flex-col space-y-2">
+      <div class="text-left text-xl font-bold">{{data.title}}</div>
+      <div class="inline-flex space-x-1">
+        <!-- We cannot use concatenation here, because tailwind does not detect it and does not generate the required classes -->
+        <span v-for="tag in data.tags" :class="`badge badge-xs ${tag.color == 'primary' ? 'badge-primary' : tag.color == 'error' ? 'badge-error' : tag.color == 'success' ? 'badge-success' : tag.color == 'warning' ? 'badge-warning' : 'badge-neutral'}`" class="inline-flex items-center gap-1">
+          <i :class="`fa-solid fa-${tag.icon}`"/>
+          <span>{{tag.text}}</span>
+        </span>
       </div>
 
       <div class="inline-flex gap-2">
@@ -103,14 +87,24 @@ const legend = computed(() => {
           <span>{{attribute.text}}</span>
         </li>
       </ul>
+    </div>
 
-      <div class="mt-auto">
-        <!--nuxt-link-locale :to="`/cook/${id}`" class="btn btn-primary btn-block mt-3"-->
-        <nuxt-link-locale :to="`/`" class="btn btn-primary btn-block mt-3">
-          <i class="fa-solid fa-utensils"/>
-          <span>Open in Cooking View</span>
-        </nuxt-link-locale>
+    <div>
+      <div :class="`tooltip ml-auto ${tooltipColor} tooltip-left`">
+        <div class="tooltip-content">
+          <span class="font-semibold">{{data.effort}} - {{legend}}</span>
+        </div>
+        <div :class="`radial-progress radial-progress-sm text-primary-content ${color} text-xs border-2`"
+             :style="`--value:${data.effort}; --size: 2.6rem`" :aria-valuenow="data.effort" role="progressbar">
+          <span class="font-bold">{{data.effort}}</span>
+        </div>
       </div>
     </div>
-  </div>
+
+
+  </li>
 </template>
+
+<style scoped>
+
+</style>

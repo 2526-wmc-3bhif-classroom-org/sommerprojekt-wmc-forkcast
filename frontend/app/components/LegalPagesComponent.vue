@@ -1,6 +1,7 @@
 <script setup lang="ts">
 const props = defineProps(["src"])
 
+// This will be pre-rendered in the production build.
 const { data: md } = await useAsyncData(`content-${props.src.value}`, () => {
   return $fetch('/api/get-content', {query: { src: props.src }})
 }, {

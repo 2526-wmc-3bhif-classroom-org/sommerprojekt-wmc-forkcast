@@ -2,6 +2,7 @@ export type RecipePreview = {
     image: string;
     title: string;
     id: number;
+    effort: number;
     rating: RecipePreviewRating;
     attributes: RecipePreviewAttribute[];
     tags: RecipePreviewTag[];
