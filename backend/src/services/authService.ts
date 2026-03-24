@@ -3,7 +3,7 @@ import { UserRepository } from "../repository/userRepository";
 import { User } from "../types";
 import { hashPassword, comparePassword } from "../utils";
 import { generateJWT } from "../utils/jwtUtils";
-import {sendEmail} from "../services/emailValidationService";
+import { sendEmail } from "./emailValidationService";
 
 export class AuthService {
     private userRepository: UserRepository;
