@@ -500,6 +500,8 @@ paths:
            description: Invalid ID
         '401':
           description: Missing or invalid authentication
+        '404':
+          description: Not found
         '500':
           description: Internal server error
     get:
