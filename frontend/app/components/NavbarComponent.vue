@@ -118,12 +118,6 @@ function onCalendarClick(event: Event) {
             </nuxt-link-locale>
           </li>
           <li>
-            <nuxt-link-locale @click="blur" to="/dashboard/settings">
-              <i class="fa-solid fa-gear"/>
-              <span>{{$t('component.navbar.user.settings')}}</span>
-            </nuxt-link-locale>
-          </li>
-          <li>
             <span @click="logout">
               <i class="fa-solid fa-arrow-right-from-bracket"/>
               <span>{{$t('component.navbar.user.logout')}}</span>

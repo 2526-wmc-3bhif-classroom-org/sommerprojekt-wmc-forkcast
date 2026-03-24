@@ -18,7 +18,8 @@
     "pinia-plugin-persistedstate": "^4.7.1",
     "tailwindcss": "^4.1.18",
     "vue": "^3.5.27",
-    "vue-router": "^4.6.4"
+    "vue-router": "^4.6.4",
+    "vuedraggable": "^4.1.0"
   },
   "devDependencies": {
     "@nuxt/image": "^2.0.0",

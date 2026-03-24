@@ -20,7 +20,6 @@
   "component.navbar.calendar.schedule": "Schedule",
   "component.navbar.user.dashboard": "Dashboard",
   "component.navbar.user.account": "Account",
-  "component.navbar.user.settings": "Settings",
   "component.navbar.user.logout": "Logout",
   "component.navbar.prompt_signup": "Start Planning Free",
   "component.navbar.prompt_login": "Login",

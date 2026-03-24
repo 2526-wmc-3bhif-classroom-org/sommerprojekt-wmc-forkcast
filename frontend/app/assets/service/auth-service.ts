@@ -9,6 +9,7 @@ export default function useAuthService() {
     const jwtStore = useJwtStore();
     const userStore = useUserStore();
 
+    const loading = computed(() => userStore.loading);
     const authenticated = computed(() => !userStore.loading && jwtStore.jwt !== undefined);
 
     async function clearAuthState() {
@@ -86,6 +87,7 @@ export default function useAuthService() {
 
     return {
         authenticated,
+        loading,
         login,
         logout,
         signup,
