@@ -34,9 +34,27 @@ router.post('/',
             res.status(StatusCodes.CREATED).json(newEntry);
         } catch (error) {
             unit.complete(false);
-            res.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR);
+            res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({});
         }
     });
+
+router.get('/:calendarEntryId', authenticateToken, (req: AuthRequest, res) => {
+   const unit = new Unit(true);
+   try {
+       const calendarService = new CalendarService(unit);
+       const id = parseInt(req.params.calendarEntryId as string);
+       const entry = calendarService.getCalendarEntryById(id);
+       unit.complete(true)
+       if (!entry) {
+           return res.status(StatusCodes.NOT_FOUND).json({});
+       }
+       return res.status(StatusCodes.OK).json(entry);
+   }
+   catch (error) {
+       unit.complete(false);
+       return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({});
+   }
+});
 
 router.delete('/:calendarEntryId', authenticateToken, (req: AuthRequest, res) => {
     const unit = new Unit(false);
@@ -46,14 +64,14 @@ router.delete('/:calendarEntryId', authenticateToken, (req: AuthRequest, res) =>
         const success = calendarService.removeCalendarEntry(req.user!.userId, calendarEntryId);
         if (success) {
             unit.complete(true);
-            res.sendStatus(StatusCodes.OK);
+            res.status(StatusCodes.OK).json({});
         } else {
             unit.complete(false);
-            res.sendStatus(StatusCodes.NOT_FOUND);
+            res.status(StatusCodes.NOT_FOUND).json({});
         }
     } catch (error) {
         unit.complete(false);
-        res.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR);
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({});
     }
 });
 
