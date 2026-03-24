@@ -8,7 +8,7 @@ import { Unit } from "../db/unit";
 
 const router = Router();
 
-router.get('/', authenticateToken, (req: AuthRequest, res) => {
+router.get('/', authenticateToken, async (req: AuthRequest, res) => {
     const unit = new Unit(false);
     try {
         // userId is stored as a string in the JWT payload, so we parse it to an integer
@@ -33,11 +33,28 @@ router.get('/', authenticateToken, (req: AuthRequest, res) => {
 
 router.put('/',
     authenticateToken,
-    body('name').notEmpty().withMessage('Name is required'),
-    body('profilePicture').optional().isURL().withMessage('Profile picture must be a valid URL'),
+    body('profilePicture').notEmpty().withMessage('Profile picture is required').isBase64().withMessage('Profile picture has to be base64'),
     validateRequest,
-    (req: AuthRequest, res) => {
-        res.sendStatus(StatusCodes.CONFLICT);
-    });
+    async (req: AuthRequest, res) => {
+        const unit = new Unit(false);
+        try {
+            const userId = parseInt(req.user!.userId as unknown as string, 10);
+            const userRepo = new UserRepository(unit);
+
+            const updatedUser = userRepo.updateProfilePicture(userId, req.body.profilePicture);
+            unit.complete(true);
+            
+            const { password: _, ...userDto } = updatedUser;
+            return res.status(StatusCodes.OK).json(userDto);
+        }
+        catch (error: any) {
+            unit.complete(false);
+            if (error.message.includes("User not found")) {
+                return res.sendStatus(StatusCodes.NOT_FOUND);
+            }
+            console.error("Update profile error:", error);
+            return res.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR);
+        }
+});
 
 export default router;
