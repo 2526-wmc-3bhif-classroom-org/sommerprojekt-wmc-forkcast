@@ -1,5 +1,5 @@
 import { Router, Request, Response } from "express";
-import { AuthService } from "../service/authService";
+import { AuthService } from "../services/authService";
 import { Unit } from "../db/unit";
 import {StatusCodes} from "http-status-codes";
 import {body} from "express-validator";

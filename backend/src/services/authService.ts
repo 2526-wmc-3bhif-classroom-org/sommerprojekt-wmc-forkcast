@@ -3,7 +3,7 @@ import { UserRepository } from "../repository/userRepository";
 import { User } from "../types";
 import { hashPassword, comparePassword } from "../utils";
 import { generateJWT } from "../utils/jwtUtils";
-import {sendEmail} from "../services/emailValidationService";
+import { sendEmail } from "./emailValidationService";
 
 export class AuthService {
     private userRepository: UserRepository;
@@ -57,7 +57,7 @@ export class AuthService {
             throw new Error("Account not verified. Please check your email.");
         }
 
-        const token = generateJWT(user.id.toString());
+        const token = generateJWT(user.id);
         
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { password: _, ...userWithoutPassword } = user;
