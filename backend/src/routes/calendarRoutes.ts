@@ -44,15 +44,16 @@ router.get('/:calendarEntryId', authenticateToken, (req: AuthRequest, res) => {
        const calendarService = new CalendarService(unit);
        const id = parseInt(req.params.calendarEntryId as string);
        const entry = calendarService.getCalendarEntryById(id);
-       unit.complete(true)
        if (!entry) {
            return res.status(StatusCodes.NOT_FOUND).json({});
        }
        return res.status(StatusCodes.OK).json(entry);
    }
    catch (error) {
-       unit.complete(false);
        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({});
+   }
+   finally {
+       unit.complete();
    }
 });
 

@@ -57,7 +57,7 @@ export class AuthService {
             throw new Error("Account not verified. Please check your email.");
         }
 
-        const token = generateJWT(user.id.toString());
+        const token = generateJWT(user.id);
         
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { password: _, ...userWithoutPassword } = user;
