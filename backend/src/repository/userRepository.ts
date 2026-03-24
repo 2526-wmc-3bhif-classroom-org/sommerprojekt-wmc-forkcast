@@ -48,6 +48,20 @@ export class UserRepository {
         }
         return newUser;
     }
+
+    public updateProfilePicture(id: number, profilePicture: string): User {
+        const stmt = this.unit.prepare<User>( "UPDATE User SET profilePicture = :profilePicture WHERE id = :id RETURNING *", {
+            id: id,
+            profilePicture: profilePicture
+        });
+
+        const user = stmt.get();
+        if (!user) {
+            throw new Error("User not found to update profile picture");
+        }
+
+        return user;
+    }
     
     public updateVerificationStatus(email: string, isVerified: boolean): void {
         const stmt = this.unit.prepare(
