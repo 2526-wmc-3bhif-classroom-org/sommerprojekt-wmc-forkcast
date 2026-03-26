@@ -1,7 +1,9 @@
 <script setup lang="ts">
-
 import draggable from 'vuedraggable';
 
+definePageMeta({
+  showFooter: false
+})
 
 const data1 = {
   title: "Spaghetti Carbonara",
@@ -77,20 +79,9 @@ const datas = ref([
 const holder = ref([]);
 
 function onMainListAdd(evt: any) {
-  // If the item came from the holder, remove it from holder and prevent adding to main list
   if (evt.from !== evt.to && evt.from.dataset.zone === 'holder') {
-    // Remove from holder (already removed by vuedraggable)
-    // Remove from main list (undo the add)
     datas.value.splice(evt.newIndex, 1);
   }
-}
-
-function onMainListMove(evt: any) {
-  // Prevent dropping from holder to main list (removal zone)
-  if (evt.from !== evt.to && evt.from.dataset.zone === 'holder') {
-    return true; // allow drop, but we'll remove in @add
-  }
-  return true;
 }
 
 </script>
@@ -98,25 +89,29 @@ function onMainListMove(evt: any) {
 <template>
   <div class="grid grid-rows-[4rem_1fr] grid-cols-[32.5rem_1fr] row-end-auto w-screen h-screen">
     <div class="col-span-2"></div>
-    <div class="w-120 bg-base-100 overflow-y-scroll">
-      <draggable
-        v-model="datas"
-        :animation="300"
-        :sort="false"
-        :group="{ name: 'items', pull: 'clone', put: true }"
-        tag="ul"
-        item-key="id"
-        class="list"
-        ghost-class="hidden"
-        @add="onMainListAdd"
-        :move="onMainListMove"
-        :data-zone="'main'"
-      >
-        <template #item="{ element: data }">
-          <recipe-list-component :data="data"/>
-        </template>
-      </draggable>
+    <div class="w-125 bg-base-100 rounded-tr-2xl col-span-1">
+      <div>
+        <recipe-search-component class="m-3 w-[stretch]"/>
+
+        <draggable
+            v-model="datas"
+            :animation="300"
+            :sort="false"
+            :group="{ name: 'items', pull: 'clone', put: true }"
+            tag="ul"
+            item-key="id"
+            class="list  overflow-y-scroll h-[calc(100vh-8rem)]"
+            ghost-class="hidden"
+            @add="onMainListAdd"
+            :data-zone="'main'"
+        >
+          <template #item="{ element: data }">
+            <recipe-list-component :data="data"/>
+          </template>
+        </draggable>
+      </div>
     </div>
+
     <div class="col-span-1">
       <draggable
         v-model="holder"
@@ -125,7 +120,7 @@ function onMainListMove(evt: any) {
         tag="ul"
         item-key="id"
         ghost-class="opacity-25"
-        class="list bg-base-100 min-h-100 min-w-100"
+        class="list bg-base-100 h-full w-full rounded-tl-2xl"
         :data-zone="'holder'"
       >
         <template #item="{ element: data }">

@@ -29,6 +29,11 @@ export default function useAuthService() {
     }
 
     async function loadUserWithExistingJwt() {
+        if (!jwtStore.jwt) {
+            userStore.loading = false;
+            return { ok: false, error: "No JWT found" };
+        }
+
         let result = await getUserWithExistingJwt();
 
         if (result.ok) {

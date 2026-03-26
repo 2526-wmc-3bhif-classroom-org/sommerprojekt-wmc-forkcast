@@ -17,9 +17,9 @@ const effortTooltipColors = {
 }
 
 const effortLegend = {
-  low: "Low Effort",
-  medium: "Medium Effort",
-  high: "High Effort",
+  low: $t("component.recipe.low_effort"),
+  medium: $t("component.recipe.medium_effort"),
+  high: $t("component.recipe.high_effort"),
 }
 
 const color = computed(() => {
@@ -108,7 +108,7 @@ const legend = computed(() => {
         <!--nuxt-link-locale :to="`/cook/${id}`" class="btn btn-primary btn-block mt-3"-->
         <nuxt-link-locale :to="`/`" class="btn btn-primary btn-block mt-3">
           <i class="fa-solid fa-utensils"/>
-          <span>Open in Cooking View</span>
+          <span>{{$t("component.recipe.card.open")}}</span>
         </nuxt-link-locale>
       </div>
     </div>

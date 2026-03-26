@@ -87,13 +87,13 @@ const data2 = {
 <template>
   <div class="hero min-h-screen">
     <div class="hero-content text-center flex flex-col gap-10">
-      <h1 class="text-5xl font-bold">What shall we cook today?</h1>
+      <h1 class="text-5xl font-bold">{{$t("dashboard.welcome")}}</h1>
 
       <div class="inline-flex space-x-20">
         <recipe-card-component
             :data="data1"
         />
-        <div class="divider divider-horizontal">OR</div>
+        <div class="divider divider-horizontal">{{$t("dashboard.divider")}}</div>
         <recipe-card-component
             :data="data2"
         />
