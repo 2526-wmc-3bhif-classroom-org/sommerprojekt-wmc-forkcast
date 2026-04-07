@@ -6,6 +6,8 @@ import {validateRequest} from "../middleware/validationMiddleware";
 import { Unit } from "../db/unit";
 import { FavoriteService } from "../services/favoriteService";
 
+import { RecipeService } from "../services/recipeService";
+
 const router = Router();
 
 router.get('/', authenticateToken, (req: AuthRequest, res) => {
@@ -27,24 +29,27 @@ router.post('/',
     authenticateToken,
     body('recipeId').notEmpty().withMessage('recipeId is required').isInt().withMessage('recipeId must be an integer').toInt(),
     validateRequest,
-    (req: AuthRequest, res) => {
+    async (req: AuthRequest, res) => {
+        const userId = parseInt(req.user!.userId as unknown as string, 10);
+        const { recipeId } = req.body;
+
+        // Ensure the recipe exists in the local cache to satisfy the foreign key constraint
+        const recipeService = new RecipeService();
+        const recipe = await recipeService.getRecipeById(recipeId, req.ip);
+        if (!recipe) {
+            return res.status(StatusCodes.NOT_FOUND).json({ message: "Recipe not found." });
+        }
+
         const unit = new Unit(false);
         try {
             const favoriteService = new FavoriteService(unit);
-            const userId = parseInt(req.user!.userId as unknown as string, 10);
-            const { recipeId } = req.body;
-            
             const newFavorite = favoriteService.addFavorite(userId, recipeId);
             unit.complete(true);
             res.status(StatusCodes.CREATED).json(newFavorite);
         } catch (error: any) {
             unit.complete(false);
-            if (error.message && error.message.includes('FOREIGN KEY constraint failed')) {
-                res.status(StatusCodes.BAD_REQUEST).json({ message: "Recipe not found in local database." });
-            } else {
-                console.error("Add favorite error:", error);
-                res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({});
-            }
+            console.error("Add favorite error:", error);
+            res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({});
         }
 });
 
