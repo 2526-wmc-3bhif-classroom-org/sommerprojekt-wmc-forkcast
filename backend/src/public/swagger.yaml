@@ -322,6 +322,10 @@ paths:
       responses:
         '200':
           description: Profile updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
         '400':
           description: Invalid request body
           content:
@@ -330,6 +334,8 @@ paths:
                  $ref: '#/components/schemas/ValidationErrorResponse'
         '401':
           description: Missing or invalid authentication
+        '404':
+          description: User not found
         '500':
           description: Internal server error
   /users/me/friends:
@@ -500,6 +506,8 @@ paths:
            description: Invalid ID
         '401':
           description: Missing or invalid authentication
+        '404':
+          description: Not found
         '500':
           description: Internal server error
     get:
