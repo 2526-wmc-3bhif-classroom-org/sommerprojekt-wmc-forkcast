@@ -13,9 +13,20 @@ router.get('/', authenticateToken, (req: AuthRequest, res) => {
     const unit = new Unit(true);
     try {
         const friendService = new FriendService(unit);
+        const userRepo = new UserRepository(unit);
         const userId = parseInt(req.user!.userId as unknown as string, 10);
         const friends = friendService.getFriends(userId);
-        res.status(StatusCodes.OK).json(friends);
+        
+        const friendProfiles = friends.map(f => {
+            const user = userRepo.findById(f.friendId);
+            if (user) {
+                const { password, email, ...publicProfile } = user;
+                return publicProfile;
+            }
+            return null;
+        }).filter(Boolean);
+
+        res.status(StatusCodes.OK).json(friendProfiles);
     } catch (error) {
         console.error("Get friends error:", error);
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({});
@@ -47,8 +58,8 @@ router.get('/:friendId',
                 return res.status(StatusCodes.NOT_FOUND).json({ message: "User not found" });
             }
 
-            // Strip the password before returning the user profile
-            const { password: _, ...userDto } = user;
+            // Strip the password and email before returning the user profile
+            const { password: _, email: __, ...userDto } = user;
             res.status(StatusCodes.OK).json(userDto);
         } catch (error) {
             console.error("Get friend profile error:", error);

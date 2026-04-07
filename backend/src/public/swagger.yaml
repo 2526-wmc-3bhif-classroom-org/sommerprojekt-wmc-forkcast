@@ -13,6 +13,23 @@ components:
       scheme: bearer
       bearerFormat: JWT
   schemas:
+    PublicUser:
+      type: object
+      required:
+        - id
+        - name
+        - profilePicture
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        profilePicture:
+          type: string
+          format: uri
+          nullable: true
+        isVerified:
+          type: boolean
     Friend:
       type: object
       properties:
@@ -354,7 +371,7 @@ paths:
           description: Internal server error
   /users/me/friends:
     get:
-      summary: Get friend list (raw mappings)
+      summary: Get friend list
       tags: [Friends]
       responses:
         '200':
@@ -364,7 +381,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Friend'
+                  $ref: '#/components/schemas/PublicUser'
         '401':
           description: Missing or invalid authentication
         '500':
@@ -411,7 +428,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                $ref: '#/components/schemas/PublicUser'
         '400':
           description: Invalid friend ID
         '401':
