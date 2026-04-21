@@ -64,16 +64,32 @@ const data3 = {
   ]
 };
 
+let sourceItemCounter = 0;
+
+function createSourceRecipe(recipe: Record<string, unknown>) {
+  return {
+    ...recipe,
+    __sourceItemId: `source-recipe-${sourceItemCounter++}`
+  };
+}
+
+function cloneRecipeForDrop(recipe: Record<string, unknown>) {
+  return {
+    ...recipe,
+    __dropItemId: `day-recipe-clone-${sourceItemCounter++}`
+  };
+}
+
 const datas = ref([
-  data1,
-  data2,
-  data3,
-  data2,
-  data3,
-  data2,
-  data3,
-  data2,
-  data3
+  createSourceRecipe(data1),
+  createSourceRecipe(data2),
+  createSourceRecipe(data3),
+  createSourceRecipe(data2),
+  createSourceRecipe(data3),
+  createSourceRecipe(data2),
+  createSourceRecipe(data3),
+  createSourceRecipe(data2),
+  createSourceRecipe(data3)
 ]);
 
 const holder = ref([]);
@@ -96,23 +112,26 @@ function onMainListAdd(evt: any) {
         <draggable
             v-model="datas"
             :animation="300"
+            :clone="cloneRecipeForDrop"
             :sort="false"
-            :group="{ name: 'items', pull: 'clone', put: true }"
+            :group="{ name: 'items', pull: 'clone', put: false }"
             tag="ul"
-            item-key="id"
+            item-key="__sourceItemId"
             class="list  overflow-y-scroll h-[calc(100vh-8rem)]"
             ghost-class="hidden"
             @add="onMainListAdd"
             :data-zone="'main'"
         >
           <template #item="{ element: data }">
-            <recipe-list-component :data="data"/>
+            <div class="cursor-grab active:cursor-grabbing touch-none">
+              <recipe-list-component :data="data"/>
+            </div>
           </template>
         </draggable>
       </div>
     </div>
-
-    <div class="col-span-1">
+    <schedule-calendar-component />
+    <!--div class="col-span-1">
       <draggable
         v-model="holder"
         :animation="300"
@@ -127,7 +146,7 @@ function onMainListAdd(evt: any) {
           <recipe-list-component :data="data"/>
         </template>
       </draggable>
-    </div>
+    </div-->
   </div>
 </template>
 
