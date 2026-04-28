@@ -21,7 +21,14 @@ entity "Recipe" {
   id : integer <<PK>>
   name : string
   image : string
-  updateAt : datetime
+  readyInMinutes : integer
+  calories : integer
+  servings : integer
+  vegetarian : boolean
+  vegan : boolean
+  glutenFree : boolean
+  dairyFree : boolean
+  updatedAt : datetime
 }
 
 entity "CalenderEntry" {

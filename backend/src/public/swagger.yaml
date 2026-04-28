@@ -183,6 +183,56 @@ components:
       properties:
         message:
           type: string
+    RecipePreviewRating:
+      type: object
+      properties:
+        rating:
+          type: number
+        count:
+          type: integer
+    RecipePreviewAttribute:
+      type: object
+      properties:
+        icon:
+          type: string
+        text:
+          type: string
+    RecipePreviewTag:
+      type: object
+      properties:
+        icon:
+          type: string
+        text:
+          type: string
+        color:
+          type: string
+          enum: [primary, error, success, warning, neutral]
+    RecipePreview:
+      type: object
+      required: [id, title, image, effort, rating, attributes, tags]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        image:
+          type: string
+          format: uri
+        effort:
+          type: integer
+          minimum: 0
+          maximum: 100
+          description: Ready time in minutes, capped at 100
+        rating:
+          $ref: '#/components/schemas/RecipePreviewRating'
+        attributes:
+          type: array
+          items:
+            $ref: '#/components/schemas/RecipePreviewAttribute'
+        tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/RecipePreviewTag'
 security:
   - bearerAuth: []
 paths:
@@ -294,7 +344,7 @@ paths:
               schema:
                 type: array
                 items:
-                   type: object
+                  $ref: '#/components/schemas/RecipePreview'
         '400':
           description: Invalid query parameter
           content:
@@ -316,6 +366,10 @@ paths:
       responses:
         '200':
           description: Recipe details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecipePreview'
         '400':
           description: Invalid recipe ID
           content:
