@@ -115,16 +115,14 @@ components:
           type: string
           pattern: '^\d{6}$'
           description: 6-digit verification code
-    UpdateProfileRequest:
+    UpdatePictureRequest:
       type: object
       required:
-        - name
+        - profilePicture
       properties:
-        name:
-          type: string
         profilePicture:
           type: string
-          format: uri
+          description: Base64 encoded image string
     UpdateNameRequest:
       type: object
       required:
@@ -146,6 +144,7 @@ components:
           type: string
           format: password
           minLength: 8
+          description: Must contain at least one uppercase letter, one lowercase letter, one number and one special character
     AddFriendRequest:
       type: object
       required:
@@ -362,18 +361,19 @@ paths:
           description: Missing or invalid authentication
         '500':
           description: Internal server error
-    put:
-      summary: Update current user profile
+  /users/me/picture:
+    patch:
+      summary: Update current user's profile picture
       tags: [User]
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdateProfileRequest'
+              $ref: '#/components/schemas/UpdatePictureRequest'
       responses:
         '200':
-          description: Profile updated
+          description: Profile picture updated successfully
           content:
             application/json:
               schema:
