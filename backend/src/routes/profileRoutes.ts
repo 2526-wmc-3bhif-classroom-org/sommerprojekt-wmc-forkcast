@@ -2,9 +2,10 @@ import {authenticateToken, AuthRequest} from "../middleware/authMiddleware";
 import {StatusCodes} from "http-status-codes";
 import { body } from 'express-validator';
 import {Router} from "express";
-import {validateRequest} from "../middleware/validationMiddleware";
+import { validateRequest } from "../middleware/validationMiddleware";
 import { UserRepository } from "../repository/userRepository";
 import { Unit } from "../db/unit";
+import { comparePassword, hashPassword } from "../utils";
 
 const router = Router();
 
@@ -53,6 +54,74 @@ router.put('/',
                 return res.sendStatus(StatusCodes.NOT_FOUND);
             }
             console.error("Update profile error:", error);
+            return res.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR);
+        }
+});
+
+router.patch('/name',
+    authenticateToken,
+    body('name').notEmpty().withMessage('Name is required').isLength({ max: 50 }).withMessage('Name must be at most 50 characters'),
+    validateRequest,
+    async (req: AuthRequest, res) => {
+        const unit = new Unit(false);
+        try {
+            const userId = parseInt(req.user!.userId as unknown as string, 10);
+            const userRepo = new UserRepository(unit);
+
+            const existingUser = userRepo.findByName(req.body.name);
+            if (existingUser) {
+                unit.complete(false);
+                return res.sendStatus(StatusCodes.CONFLICT);
+            }
+
+            const updatedUser = userRepo.updateName(userId, req.body.name);
+            unit.complete(true);
+            
+            const { password: _, ...userDto } = updatedUser;
+            return res.status(StatusCodes.OK).json(userDto);
+        }
+        catch (error: any) {
+            unit.complete(false);
+            if (error.message.includes("User not found")) {
+                return res.sendStatus(StatusCodes.NOT_FOUND);
+            }
+            console.error("Update name error:", error);
+            return res.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR);
+        }
+});
+
+router.patch('/password',
+    authenticateToken,
+    body('currentPassword').notEmpty().withMessage('Current password is required'),
+    body('newPassword').isLength({ min: 8 }).withMessage('New password must be at least 8 characters long'),
+    validateRequest,
+    async (req: AuthRequest, res) => {
+        const unit = new Unit(false);
+        try {
+            const userId = parseInt(req.user!.userId as unknown as string, 10);
+            const userRepo = new UserRepository(unit);
+
+            const user = userRepo.findById(userId);
+            if (!user) {
+                unit.complete(false);
+                return res.sendStatus(StatusCodes.NOT_FOUND);
+            }
+
+            const isValidPassword = await comparePassword(req.body.currentPassword, user.password);
+            if (!isValidPassword) {
+                unit.complete(false);
+                return res.sendStatus(StatusCodes.BAD_REQUEST);
+            }
+
+            const newPasswordHash = await hashPassword(req.body.newPassword);
+            userRepo.updatePassword(userId, newPasswordHash);
+            unit.complete(true);
+            
+            return res.sendStatus(StatusCodes.NO_CONTENT);
+        }
+        catch (error: any) {
+            unit.complete(false);
+            console.error("Update password error:", error);
             return res.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR);
         }
 });
