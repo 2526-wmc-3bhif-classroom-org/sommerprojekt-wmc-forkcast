@@ -11,7 +11,24 @@ export interface Recipe {
     id: number;
     name: string;
     image: string;
+    readyInMinutes: number;
+    calories: number;
+    servings: number;
+    vegetarian: boolean;
+    vegan: boolean;
+    glutenFree: boolean;
+    dairyFree: boolean;
     updatedAt?: Date;
+}
+
+export interface RecipePreview {
+    id: number;
+    title: string;
+    image: string;
+    effort: number;
+    rating: { rating: number; count: number };
+    attributes: { icon: string; text: string }[];
+    tags: { icon: string; text: string; color: string }[];
 }
 
 export interface Notification {
