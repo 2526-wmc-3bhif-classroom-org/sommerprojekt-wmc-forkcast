@@ -32,7 +32,7 @@ router.get('/', authenticateToken, async (req: AuthRequest, res) => {
     }
 });
 
-router.put('/',
+router.patch('/picture',
     authenticateToken,
     body('profilePicture').notEmpty().withMessage('Profile picture is required').isBase64().withMessage('Profile picture has to be base64'),
     validateRequest,
@@ -93,7 +93,8 @@ router.patch('/name',
 router.patch('/password',
     authenticateToken,
     body('currentPassword').notEmpty().withMessage('Current password is required'),
-    body('newPassword').isLength({ min: 8 }).withMessage('New password must be at least 8 characters long'),
+    body('newPassword').isLength({ min: 8 }).withMessage('New password must be at least 8 characters long')
+        .isStrongPassword().withMessage("Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number and one special character"),
     validateRequest,
     async (req: AuthRequest, res) => {
         const unit = new Unit(false);
