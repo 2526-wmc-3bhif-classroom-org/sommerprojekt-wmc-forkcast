@@ -125,6 +125,27 @@ components:
         profilePicture:
           type: string
           format: uri
+    UpdateNameRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          maxLength: 50
+    UpdatePasswordRequest:
+      type: object
+      required:
+        - currentPassword
+        - newPassword
+      properties:
+        currentPassword:
+          type: string
+          format: password
+        newPassword:
+          type: string
+          format: password
+          minLength: 8
     AddFriendRequest:
       type: object
       required:
@@ -363,6 +384,58 @@ paths:
             application/json:
               schema:
                  $ref: '#/components/schemas/ValidationErrorResponse'
+        '401':
+          description: Missing or invalid authentication
+        '404':
+          description: User not found
+        '500':
+          description: Internal server error
+  /users/me/name:
+    patch:
+      summary: Update current user's name
+      tags: [User]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateNameRequest'
+      responses:
+        '200':
+          description: Name updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Invalid request body
+          content:
+            application/json:
+              schema:
+                 $ref: '#/components/schemas/ValidationErrorResponse'
+        '401':
+          description: Missing or invalid authentication
+        '404':
+          description: User not found
+        '409':
+          description: Name already taken
+        '500':
+          description: Internal server error
+  /users/me/password:
+    patch:
+      summary: Update current user's password
+      tags: [User]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePasswordRequest'
+      responses:
+        '204':
+          description: Password updated successfully
+        '400':
+          description: Invalid request body or incorrect current password
         '401':
           description: Missing or invalid authentication
         '404':
