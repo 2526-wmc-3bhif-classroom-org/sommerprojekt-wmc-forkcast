@@ -18,5 +18,5 @@ npm test
 This will execute the test suite and display the results in the console.
 
 ## API Documentation
-The API documentation is available at `http://localhost:3000/api/docs` once the server is running.
+The API documentation is available at `http://localhost:3000/api-docs` once the server is running.
 It provides detailed information about the available endpoints, request parameters, and response formats.

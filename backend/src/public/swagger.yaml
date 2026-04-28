@@ -13,6 +13,37 @@ components:
       scheme: bearer
       bearerFormat: JWT
   schemas:
+    PublicUser:
+      type: object
+      required:
+        - id
+        - name
+        - profilePicture
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        profilePicture:
+          type: string
+          format: uri
+          nullable: true
+        isVerified:
+          type: boolean
+    Friend:
+      type: object
+      properties:
+        userId:
+          type: integer
+        friendId:
+          type: integer
+    FavoriteFood:
+      type: object
+      properties:
+        userId:
+          type: integer
+        recipeId:
+          type: integer
     User:
       type: object
       required:
@@ -344,13 +375,13 @@ paths:
       tags: [Friends]
       responses:
         '200':
-          description: Friend list
+          description: Friend list mappings
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/User'
+                  $ref: '#/components/schemas/PublicUser'
         '401':
           description: Missing or invalid authentication
         '500':
@@ -365,21 +396,47 @@ paths:
             schema:
               $ref: '#/components/schemas/AddFriendRequest'
       responses:
-        '200':
-          description: Friend added
+        '201':
+          description: Friend added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Friend'
         '400':
-          description: Invalid request body
+          description: Invalid request body, user not found, or adding self
           content:
              application/json:
                schema:
                  $ref: '#/components/schemas/ValidationErrorResponse'
         '401':
           description: Missing or invalid authentication
-        '409':
-          description: Already friends or pending
         '500':
           description: Internal server error
   /users/me/friends/{friendId}:
+    get:
+      summary: Get a specific friend's profile
+      tags: [Friends]
+      parameters:
+        - in: path
+          name: friendId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Friend profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicUser'
+        '400':
+          description: Invalid friend ID
+        '401':
+          description: Missing or invalid authentication
+        '404':
+          description: Friend or user not found
+        '500':
+          description: Internal server error
     delete:
       summary: Remove a friend
       tags: [Friends]
@@ -396,6 +453,8 @@ paths:
           description: Invalid friend ID
         '401':
           description: Missing or invalid authentication
+        '404':
+          description: Friend connection not found
         '500':
           description: Internal server error
   /users/me/favorites:
@@ -410,7 +469,7 @@ paths:
               schema:
                 type: array
                 items:
-                  type: object
+                  $ref: '#/components/schemas/FavoriteFood'
         '401':
           description: Missing or invalid authentication
         '500':
@@ -425,8 +484,12 @@ paths:
             schema:
               $ref: '#/components/schemas/AddFavoriteRequest'
       responses:
-        '200':
+        '201':
           description: Added to favorites
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FavoriteFood'
         '400':
           description: Invalid request body
           content:
@@ -435,6 +498,8 @@ paths:
                 $ref: '#/components/schemas/ValidationErrorResponse'
         '401':
           description: Missing or invalid authentication
+        '404':
+          description: Recipe not found
         '500':
           description: Internal server error
   /users/me/favorites/{recipeId}:
@@ -454,6 +519,8 @@ paths:
           description: Invalid recipe ID
         '401':
           description: Missing or invalid authentication
+        '404':
+          description: Favorite not found
         '500':
           description: Internal server error
   /users/me/calendar:
