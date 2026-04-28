@@ -12,6 +12,8 @@ export default function useAuthService() {
     const loading = computed(() => userStore.loading);
     const authenticated = computed(() => !userStore.loading && jwtStore.jwt !== undefined);
 
+    const jwt = computed(() => jwtStore.jwt);
+
     async function clearAuthState() {
         userStore.user = undefined
         jwtStore.jwt = undefined;
@@ -93,6 +95,7 @@ export default function useAuthService() {
     return {
         authenticated,
         loading,
+        jwt,
         login,
         logout,
         signup,

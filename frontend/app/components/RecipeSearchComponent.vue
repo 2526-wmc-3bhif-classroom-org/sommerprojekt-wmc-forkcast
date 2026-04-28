@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import useRecipeService from "~/assets/service/recipe-service";
+
 const minCalories = ref({ value: 0, enabled: false });
 const maxCalories = ref({ value: 1000, enabled: false });
 const minTime = ref({ value: 0, enabled: false });
@@ -12,6 +14,16 @@ const maxRating = ref({ value: 5, enabled: false });
 const isVegetarian = ref(false);
 const isVegan = ref(false);
 const isGlutenFree = ref(false);
+
+const recipeService = useRecipeService();
+
+async function search(query: string) {
+  const res = await recipeService.search(query)
+  console.log(res)
+  if (res.ok) {
+    console.log(res.value)
+  }
+}
 </script>
 
 <template>
