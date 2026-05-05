@@ -47,77 +47,81 @@ function savePassword() {
       <!-- Back link -->
       <NuxtLink
         to="/dashboard/account"
-        class="inline-flex items-center gap-2 text-[#b3efb2] hover:text-[#e8f1f2] transition-colors text-sm w-fit"
+        class="btn btn-ghost w-fit pl-0"
       >
         <i class="fa-solid fa-arrow-left" />
         Back to Account
       </NuxtLink>
 
-      <h1 class="text-3xl font-bold text-[#e8f1f2]">Manage Profile</h1>
+      <h1 class="text-3xl font-bold text-base-content">Manage Profile</h1>
 
       <!-- Change Username -->
-      <div class="bg-[#001a23] shadow-lg rounded-2xl p-8 flex flex-col gap-4">
-        <h2 class="text-xl font-semibold text-[#e8f1f2]">Change Username</h2>
-        <div class="flex flex-col gap-2">
-          <label class="text-[#b3efb2] text-sm font-medium">New Username</label>
-          <input
-            v-model="newUsername"
-            type="text"
-            placeholder="Enter new username"
-            class="input w-full bg-[#002a36] border border-[#31493c] text-[#e8f1f2] placeholder:text-[#b3efb2]/50 focus:outline-none focus:border-[#7a9e7e]"
-          />
-        </div>
-        <p v-if="usernameError" class="text-red-400 text-sm">{{ usernameError }}</p>
-        <p v-if="usernameSuccess" class="text-green-400 text-sm">Username updated successfully.</p>
-        <div class="flex justify-end">
-          <button
-            @click="saveUsername"
-            class="px-5 py-2.5 bg-[#7a9e7e] hover:bg-[#31493c] text-[#e8f1f2] font-semibold rounded-lg transition-colors"
-          >
-            Save Username
-          </button>
+      <div class="card bg-base-100 shadow-xl">
+        <div class="card-body flex flex-col gap-4">
+          <h2 class="card-title text-xl font-semibold text-base-content">Change Username</h2>
+          <div class="flex flex-col gap-2">
+            <label class="text-base-content text-sm font-medium">New Username</label>
+            <input
+              v-model="newUsername"
+              type="text"
+              placeholder="Enter new username"
+              class="input input-bordered w-full"
+            />
+          </div>
+          <p v-if="usernameError" class="text-error text-sm">{{ usernameError }}</p>
+          <p v-if="usernameSuccess" class="text-success text-sm">Username updated successfully.</p>
+          <div class="card-actions justify-end mt-2">
+            <button
+              @click="saveUsername"
+              class="btn btn-secondary text-secondary-content"
+            >
+              Save Username
+            </button>
+          </div>
         </div>
       </div>
 
       <!-- Change Password -->
-      <div class="bg-[#001a23] shadow-lg rounded-2xl p-8 flex flex-col gap-4">
-        <h2 class="text-xl font-semibold text-[#e8f1f2]">Change Password</h2>
-        <div class="flex flex-col gap-2">
-          <label class="text-[#b3efb2] text-sm font-medium">Current Password</label>
-          <input
-            v-model="currentPassword"
-            type="password"
-            placeholder="Enter current password"
-            class="input w-full bg-[#002a36] border border-[#31493c] text-[#e8f1f2] placeholder:text-[#b3efb2]/50 focus:outline-none focus:border-[#7a9e7e]"
-          />
-        </div>
-        <div class="flex flex-col gap-2">
-          <label class="text-[#b3efb2] text-sm font-medium">New Password</label>
-          <input
-            v-model="newPassword"
-            type="password"
-            placeholder="Enter new password"
-            class="input w-full bg-[#002a36] border border-[#31493c] text-[#e8f1f2] placeholder:text-[#b3efb2]/50 focus:outline-none focus:border-[#7a9e7e]"
-          />
-        </div>
-        <div class="flex flex-col gap-2">
-          <label class="text-[#b3efb2] text-sm font-medium">Confirm New Password</label>
-          <input
-            v-model="confirmPassword"
-            type="password"
-            placeholder="Confirm new password"
-            class="input w-full bg-[#002a36] border border-[#31493c] text-[#e8f1f2] placeholder:text-[#b3efb2]/50 focus:outline-none focus:border-[#7a9e7e]"
-          />
-        </div>
-        <p v-if="passwordError" class="text-red-400 text-sm">{{ passwordError }}</p>
-        <p v-if="passwordSuccess" class="text-green-400 text-sm">Password updated successfully.</p>
-        <div class="flex justify-end">
-          <button
-            @click="savePassword"
-            class="px-5 py-2.5 bg-[#7a9e7e] hover:bg-[#31493c] text-[#e8f1f2] font-semibold rounded-lg transition-colors"
-          >
-            Save Password
-          </button>
+      <div class="card bg-base-100 shadow-xl">
+        <div class="card-body flex flex-col gap-4">
+          <h2 class="card-title text-xl font-semibold text-base-content">Change Password</h2>
+          <div class="flex flex-col gap-2">
+            <label class="text-base-content text-sm font-medium">Current Password</label>
+            <input
+              v-model="currentPassword"
+              type="password"
+              placeholder="Enter current password"
+              class="input input-bordered w-full"
+            />
+          </div>
+          <div class="flex flex-col gap-2">
+            <label class="text-base-content text-sm font-medium">New Password</label>
+            <input
+              v-model="newPassword"
+              type="password"
+              placeholder="Enter new password"
+              class="input input-bordered w-full"
+            />
+          </div>
+          <div class="flex flex-col gap-2">
+            <label class="text-base-content text-sm font-medium">Confirm New Password</label>
+            <input
+              v-model="confirmPassword"
+              type="password"
+              placeholder="Confirm new password"
+              class="input input-bordered w-full"
+            />
+          </div>
+          <p v-if="passwordError" class="text-error text-sm">{{ passwordError }}</p>
+          <p v-if="passwordSuccess" class="text-success text-sm">Password updated successfully.</p>
+          <div class="card-actions justify-end mt-2">
+            <button
+              @click="savePassword"
+              class="btn btn-secondary text-secondary-content"
+            >
+              Save Password
+            </button>
+          </div>
         </div>
       </div>
 
