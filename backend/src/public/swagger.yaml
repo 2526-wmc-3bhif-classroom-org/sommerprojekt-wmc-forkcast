@@ -205,28 +205,37 @@ components:
           type: string
     RecipePreviewRating:
       type: object
+      required: [rating, count]
       properties:
         rating:
-          type: number
+          type: integer
+          minimum: 1
+          maximum: 5
+          description: Star rating mapped from Spoonacular score
         count:
           type: integer
+          description: Number of aggregate likes
     RecipePreviewAttribute:
       type: object
+      required: [icon, text]
       properties:
         icon:
           type: string
+          description: Font Awesome icon name (without fa- prefix)
         text:
           type: string
     RecipePreviewTag:
       type: object
+      required: [icon, text, color]
       properties:
         icon:
           type: string
+          description: Font Awesome icon name (without fa- prefix)
         text:
           type: string
         color:
           type: string
-          enum: [primary, error, success, warning, neutral]
+          description: DaisyUI badge color (success, warning, primary, error, neutral)
     RecipePreview:
       type: object
       required: [id, title, image, effort, rating, attributes, tags]
@@ -240,19 +249,21 @@ components:
           format: uri
         effort:
           type: integer
-          minimum: 0
+          minimum: 1
           maximum: 100
-          description: Ready time in minutes, capped at 100
+          description: Effort score calculated from cook time, step count and ingredient count
         rating:
           $ref: '#/components/schemas/RecipePreviewRating'
         attributes:
           type: array
           items:
             $ref: '#/components/schemas/RecipePreviewAttribute'
+          description: Display attributes (e.g. cook time, servings)
         tags:
           type: array
           items:
             $ref: '#/components/schemas/RecipePreviewTag'
+          description: Dietary tags (Vegan, Vegetarian, Gluten Free, Dairy Free)
 security:
   - bearerAuth: []
 paths:
@@ -348,17 +359,17 @@ paths:
           description: Internal server error
   /recipes:
     get:
-      summary: Get all recipes
+      summary: Search recipes
       tags: [Recipes]
       parameters:
         - in: query
           name: search
           schema:
             type: string
-          description: Search term
+          description: Search term. Returns empty array if omitted.
       responses:
         '200':
-          description: List of recipes
+          description: List of matching recipes with effort score, rating and dietary tags
           content:
             application/json:
               schema:
@@ -375,7 +386,7 @@ paths:
           description: Internal server error
   /recipes/{id}:
     get:
-      summary: Get recipe details
+      summary: Get recipe by ID
       tags: [Recipes]
       parameters:
         - in: path
@@ -385,7 +396,7 @@ paths:
             type: integer
       responses:
         '200':
-          description: Recipe details
+          description: Recipe with effort score, rating and dietary tags
           content:
             application/json:
               schema:
