@@ -1,6 +1,7 @@
 import { RecipeWithDetails, RecipePreviewResponse } from '../types';
 import { LocalRecipeRepository } from '../repository/localRecipeRepository';
 import { RemoteRecipeRepository } from '../repository/remoteRecipeRepository';
+import { calculateEffortScore } from '../utils/effortScore';
 
 export class RecipeService {
     private localRepo: LocalRecipeRepository;
@@ -62,7 +63,7 @@ function toRecipePreview(r: RecipeWithDetails): RecipePreviewResponse {
         id: r.id,
         title: r.name,
         image: r.image,
-        effort: r.effortScore,
+        effort: calculateEffortScore(r.readyInMinutes, r.stepCount, r.ingredientCount, r.pricePerServing),
         rating: {
             rating: r.rating,
             count: r.aggregateLikes,

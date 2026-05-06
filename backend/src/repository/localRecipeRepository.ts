@@ -8,7 +8,7 @@ export class LocalRecipeRepository {
         const cutoff = new Date(Date.now() - CACHE_TTL_MS).toISOString();
         const stmt = unit.prepare<RecipeWithDetails>(`
             SELECT r.id, r.name, r.image,
-                   d.readyInMinutes, d.servings, d.stepCount, d.ingredientCount,
+                   d.readyInMinutes, d.servings, d.stepCount, d.ingredientCount, d.pricePerServing,
                    d.effortScore, d.rating, d.aggregateLikes,
                    d.vegetarian, d.vegan, d.glutenFree, d.dairyFree
             FROM Recipe r
@@ -35,10 +35,10 @@ export class LocalRecipeRepository {
 
             unit.prepare<void>(`
                 INSERT INTO RecipeDetails (
-                    recipeId, readyInMinutes, servings, stepCount, ingredientCount,
+                    recipeId, readyInMinutes, servings, stepCount, ingredientCount, pricePerServing,
                     effortScore, rating, aggregateLikes, vegetarian, vegan, glutenFree, dairyFree
                 ) VALUES (
-                    :recipeId, :readyInMinutes, :servings, :stepCount, :ingredientCount,
+                    :recipeId, :readyInMinutes, :servings, :stepCount, :ingredientCount, :pricePerServing,
                     :effortScore, :rating, :aggregateLikes, :vegetarian, :vegan, :glutenFree, :dairyFree
                 )
                 ON CONFLICT(recipeId) DO UPDATE SET
@@ -46,6 +46,7 @@ export class LocalRecipeRepository {
                     servings = excluded.servings,
                     stepCount = excluded.stepCount,
                     ingredientCount = excluded.ingredientCount,
+                    pricePerServing = excluded.pricePerServing,
                     effortScore = excluded.effortScore,
                     rating = excluded.rating,
                     aggregateLikes = excluded.aggregateLikes,
@@ -74,7 +75,7 @@ export class LocalRecipeRepository {
         const cutoff = new Date(Date.now() - CACHE_TTL_MS).toISOString();
         const stmt = unit.prepare<RecipeWithDetails>(`
             SELECT r.id, r.name, r.image,
-                   d.readyInMinutes, d.servings, d.stepCount, d.ingredientCount,
+                   d.readyInMinutes, d.servings, d.stepCount, d.ingredientCount, d.pricePerServing,
                    d.effortScore, d.rating, d.aggregateLikes,
                    d.vegetarian, d.vegan, d.glutenFree, d.dairyFree
             FROM Recipe r

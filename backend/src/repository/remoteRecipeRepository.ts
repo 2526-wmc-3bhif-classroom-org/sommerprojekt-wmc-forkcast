@@ -58,12 +58,15 @@ export class RemoteRecipeRepository {
         const ingredientCount = r.extendedIngredients?.length ?? 0;
         const readyInMinutes = r.readyInMinutes ?? 0;
 
+        const pricePerServing = r.pricePerServing ?? 0;
+
         return {
             readyInMinutes,
             servings: r.servings ?? 0,
             stepCount,
             ingredientCount,
-            effortScore: calculateEffortScore(readyInMinutes, stepCount, ingredientCount),
+            pricePerServing,
+            effortScore: calculateEffortScore(readyInMinutes, stepCount, ingredientCount, pricePerServing),
             rating: Math.max(1, Math.min(5, Math.round((r.spoonacularScore ?? 0) / 20))),
             aggregateLikes: r.aggregateLikes ?? 0,
             vegetarian: r.vegetarian ?? false,

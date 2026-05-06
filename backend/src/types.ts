@@ -20,6 +20,7 @@ export interface RecipeDetails {
     servings: number;
     stepCount: number;
     ingredientCount: number;
+    pricePerServing: number;
     effortScore: number;
     rating: number;
     aggregateLikes: number;
@@ -37,6 +38,7 @@ export interface RecipeWithDetails {
     servings: number;
     stepCount: number;
     ingredientCount: number;
+    pricePerServing: number;
     effortScore: number;
     rating: number;
     aggregateLikes: number;

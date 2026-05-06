@@ -118,6 +118,7 @@ class DB {
                 servings INTEGER NOT NULL DEFAULT 0,
                 stepCount INTEGER NOT NULL DEFAULT 0,
                 ingredientCount INTEGER NOT NULL DEFAULT 0,
+                pricePerServing REAL NOT NULL DEFAULT 0,
                 effortScore INTEGER NOT NULL DEFAULT 1,
                 rating INTEGER NOT NULL DEFAULT 1,
                 aggregateLikes INTEGER NOT NULL DEFAULT 0,
@@ -163,7 +164,7 @@ class DB {
             );
         `);
 
-        const recipeMigrations = [
+        const migrations = [
             "ALTER TABLE Recipe ADD COLUMN updatedAt DATETIME DEFAULT (datetime('now'))",
             "ALTER TABLE Recipe ADD COLUMN readyInMinutes INTEGER NOT NULL DEFAULT 0",
             "ALTER TABLE Recipe ADD COLUMN calories INTEGER NOT NULL DEFAULT 0",
@@ -172,8 +173,9 @@ class DB {
             "ALTER TABLE Recipe ADD COLUMN vegan BOOLEAN NOT NULL DEFAULT 0",
             "ALTER TABLE Recipe ADD COLUMN glutenFree BOOLEAN NOT NULL DEFAULT 0",
             "ALTER TABLE Recipe ADD COLUMN dairyFree BOOLEAN NOT NULL DEFAULT 0",
+            "ALTER TABLE RecipeDetails ADD COLUMN pricePerServing REAL NOT NULL DEFAULT 0",
         ];
-        for (const migration of recipeMigrations) {
+        for (const migration of migrations) {
             try {
                 connection.exec(migration);
             } catch (_) {
