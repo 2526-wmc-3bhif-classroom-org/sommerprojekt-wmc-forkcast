@@ -112,6 +112,22 @@ class DB {
                 updatedAt DATETIME DEFAULT (datetime('now'))
             );
 
+            CREATE TABLE IF NOT EXISTS RecipeDetails (
+                recipeId INTEGER PRIMARY KEY,
+                readyInMinutes INTEGER NOT NULL DEFAULT 0,
+                servings INTEGER NOT NULL DEFAULT 0,
+                stepCount INTEGER NOT NULL DEFAULT 0,
+                ingredientCount INTEGER NOT NULL DEFAULT 0,
+                effortScore INTEGER NOT NULL DEFAULT 1,
+                rating INTEGER NOT NULL DEFAULT 1,
+                aggregateLikes INTEGER NOT NULL DEFAULT 0,
+                vegetarian BOOLEAN NOT NULL DEFAULT 0,
+                vegan BOOLEAN NOT NULL DEFAULT 0,
+                glutenFree BOOLEAN NOT NULL DEFAULT 0,
+                dairyFree BOOLEAN NOT NULL DEFAULT 0,
+                FOREIGN KEY (recipeId) REFERENCES Recipe(id) ON DELETE CASCADE
+            );
+
             CREATE TABLE IF NOT EXISTS Notification (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 type TEXT NOT NULL,

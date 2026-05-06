@@ -1,12 +1,15 @@
-import { Recipe } from '../types';
+import { Recipe, RecipeDetails } from '../types';
 import { updateQuota } from "../middleware/apiQuotaLimiter";
+import { calculateEffortScore } from "../utils/effortScore";
+
+type RecipeWithRawDetails = { recipe: Recipe; details: Omit<RecipeDetails, 'recipeId'> };
 
 export class RemoteRecipeRepository {
     private readonly API_URL = "https://api.spoonacular.com/recipes";
     private readonly API_KEY = process.env.SPOONACULAR_API_KEY || "key";
 
-    async searchRecipes(query: string, userIp?: string, number: number = 4): Promise<Recipe[]> {
-        const url = `${this.API_URL}/complexSearch?query=${encodeURIComponent(query)}&number=${number}&addRecipeInformation=true&addRecipeNutrition=true&apiKey=${this.API_KEY}`;
+    async searchRecipes(query: string, userIp?: string, number: number = 4): Promise<RecipeWithRawDetails[]> {
+        const url = `${this.API_URL}/complexSearch?query=${encodeURIComponent(query)}&number=${number}&addRecipeInformation=true&apiKey=${this.API_KEY}`;
         const response = await fetch(url);
 
         if (userIp) {
@@ -19,11 +22,14 @@ export class RemoteRecipeRepository {
         }
 
         const res = await response.json();
-        return res.results.map((r: any) => this.mapToRecipe(r));
+        return res.results.map((r: any) => ({
+            recipe: { id: r.id, name: r.title, image: r.image },
+            details: this.extractDetails(r),
+        }));
     }
 
-    async getRecipeById(id: number, userIp?: string): Promise<Recipe> {
-        const url = `${this.API_URL}/${id}/information?includeNutrition=true&apiKey=${this.API_KEY}`;
+    async getRecipeById(id: number, userIp?: string): Promise<RecipeWithRawDetails | undefined> {
+        const url = `${this.API_URL}/${id}/information?apiKey=${this.API_KEY}`;
         const response = await fetch(url);
 
         if (userIp) {
@@ -31,24 +37,35 @@ export class RemoteRecipeRepository {
             updateQuota(userIp, pointsUsed);
         }
 
+        if (response.status === 404) {
+            return undefined;
+        }
+
         if (!response.ok) {
             throw new Error(`Error fetching recipe details: ${response.statusText}`);
         }
 
-        const res = await response.json();
-        return this.mapToRecipe(res);
+        const r = await response.json();
+        return {
+            recipe: { id: r.id, name: r.title, image: r.image },
+            details: this.extractDetails(r),
+        };
     }
 
-    private mapToRecipe(r: any): Recipe {
-        const nutrients: any[] = r.nutrition?.nutrients ?? [];
-        const calorieEntry = nutrients.find((n: any) => n.name === "Calories");
+    private extractDetails(r: any): Omit<RecipeDetails, 'recipeId'> {
+        const stepCount = (r.analyzedInstructions ?? [])
+            .reduce((sum: number, section: any) => sum + (section.steps?.length ?? 0), 0);
+        const ingredientCount = r.extendedIngredients?.length ?? 0;
+        const readyInMinutes = r.readyInMinutes ?? 0;
+
         return {
-            id: r.id,
-            name: r.title,
-            image: r.image,
-            readyInMinutes: r.readyInMinutes ?? 0,
-            calories: Math.round(calorieEntry?.amount ?? 0),
-            servings: r.servings ?? 1,
+            readyInMinutes,
+            servings: r.servings ?? 0,
+            stepCount,
+            ingredientCount,
+            effortScore: calculateEffortScore(readyInMinutes, stepCount, ingredientCount),
+            rating: Math.max(1, Math.min(5, Math.round((r.spoonacularScore ?? 0) / 20))),
+            aggregateLikes: r.aggregateLikes ?? 0,
             vegetarian: r.vegetarian ?? false,
             vegan: r.vegan ?? false,
             glutenFree: r.glutenFree ?? false,

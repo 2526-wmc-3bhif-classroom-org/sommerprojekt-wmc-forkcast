@@ -1,4 +1,4 @@
-import { Recipe, RecipePreview } from '../types';
+import { RecipeWithDetails, RecipePreviewResponse } from '../types';
 import { LocalRecipeRepository } from '../repository/localRecipeRepository';
 import { RemoteRecipeRepository } from '../repository/remoteRecipeRepository';
 
@@ -11,43 +11,45 @@ export class RecipeService {
         this.remoteRepo = new RemoteRecipeRepository();
     }
 
-    async searchRecipes(query: string, userIp?: string, number: number = 4): Promise<RecipePreview[]> {
+    async searchRecipes(query: string, userIp?: string, number: number = 4): Promise<RecipePreviewResponse[]> {
         const localRecipes = await this.localRepo.searchRecipes(query);
         if (localRecipes.length >= number) {
             return localRecipes.slice(0, number).map(toRecipePreview);
         }
 
-        const remoteRecipes = await this.remoteRepo.searchRecipes(query, userIp, number);
-
-        for (const recipe of remoteRecipes) {
-            this.localRepo.saveRecipe(recipe).catch(console.error);
+        let remoteResults: Awaited<ReturnType<typeof this.remoteRepo.searchRecipes>> = [];
+        try {
+            remoteResults = await this.remoteRepo.searchRecipes(query, userIp, number);
+        } catch (error) {
+            console.error('Remote recipe search failed, returning local results only', error);
+            return localRecipes.map(toRecipePreview);
         }
 
+        this.localRepo.saveRecipesWithDetails(remoteResults).catch(console.error);
+
         const existingIds = new Set(localRecipes.map(r => r.id));
-        const combined = [...localRecipes];
-        for (const r of remoteRecipes) {
-            if (!existingIds.has(r.id)) {
-                combined.push(r);
+        const combined: RecipeWithDetails[] = [...localRecipes];
+        for (const { recipe, details } of remoteResults) {
+            if (!existingIds.has(recipe.id)) {
+                combined.push({ id: recipe.id, name: recipe.name, image: recipe.image, ...details });
             }
         }
 
         return combined.slice(0, number).map(toRecipePreview);
     }
 
-    async getRecipeById(id: number, userIp?: string): Promise<RecipePreview | undefined> {
+    async getRecipeById(id: number, userIp?: string): Promise<RecipePreviewResponse | undefined> {
         const localRecipe = await this.localRepo.findRecipeById(id);
         if (localRecipe) {
             return toRecipePreview(localRecipe);
         }
 
-        try {
-            const remoteRecipe = await this.remoteRepo.getRecipeById(id, userIp);
-            await this.localRepo.saveRecipe(remoteRecipe);
-            return toRecipePreview(remoteRecipe);
-        } catch (error) {
-            console.error(`Failed to fetch recipe ${id} from remote source`, error);
+        const remote = await this.remoteRepo.getRecipeById(id, userIp);
+        if (!remote) {
             return undefined;
         }
+        await this.localRepo.saveRecipeWithDetails(remote.recipe, remote.details);
+        return toRecipePreview({ id: remote.recipe.id, name: remote.recipe.name, image: remote.recipe.image, ...remote.details });
     }
 
     async removeExpiredRecipes(): Promise<void> {
@@ -55,24 +57,32 @@ export class RecipeService {
     }
 }
 
-function toRecipePreview(recipe: Recipe): RecipePreview {
-    const tags: RecipePreview["tags"] = [];
-    if (recipe.vegan)       tags.push({ icon: "seedling",        text: "Vegan",       color: "success" });
-    else if (recipe.vegetarian) tags.push({ icon: "leaf",        text: "Vegetarian",  color: "success" });
-    if (recipe.glutenFree)  tags.push({ icon: "wheat-awn-slash", text: "Gluten-Free", color: "warning" });
-    if (recipe.dairyFree)   tags.push({ icon: "droplet-slash",   text: "Dairy-Free",  color: "primary" });
-
+function toRecipePreview(r: RecipeWithDetails): RecipePreviewResponse {
     return {
-        id: recipe.id,
-        title: recipe.name,
-        image: recipe.image,
-        effort: Math.min(recipe.readyInMinutes, 100),
-        rating: { rating: 0, count: 0 },
+        id: r.id,
+        title: r.name,
+        image: r.image,
+        effort: r.effortScore,
+        rating: {
+            rating: r.rating,
+            count: r.aggregateLikes,
+        },
         attributes: [
-            { icon: "clock",    text: `${recipe.readyInMinutes} min` },
-            { icon: "fire",     text: `${recipe.calories} kcal` },
-            { icon: "utensils", text: `${recipe.servings} servings` },
+            { icon: "clock", text: `${r.readyInMinutes} min` },
+            { icon: "users", text: `${r.servings} servings` },
         ],
-        tags,
+        tags: buildTags(r),
     };
+}
+
+function buildTags(r: RecipeWithDetails): Array<{ icon: string; text: string; color: string }> {
+    const tags: Array<{ icon: string; text: string; color: string }> = [];
+    if (r.vegan) {
+        tags.push({ icon: "seedling", text: "Vegan", color: "success" });
+    } else if (r.vegetarian) {
+        tags.push({ icon: "leaf", text: "Vegetarian", color: "success" });
+    }
+    if (r.glutenFree) tags.push({ icon: "wheat-awn-circle-exclamation", text: "Gluten Free", color: "warning" });
+    if (r.dairyFree) tags.push({ icon: "droplet-slash", text: "Dairy Free", color: "primary" });
+    return tags;
 }
