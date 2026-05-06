@@ -115,16 +115,36 @@ components:
           type: string
           pattern: '^\d{6}$'
           description: 6-digit verification code
-    UpdateProfileRequest:
+    UpdatePictureRequest:
+      type: object
+      required:
+        - profilePicture
+      properties:
+        profilePicture:
+          type: string
+          description: Base64 encoded image string
+    UpdateNameRequest:
       type: object
       required:
         - name
       properties:
         name:
           type: string
-        profilePicture:
+          maxLength: 50
+    UpdatePasswordRequest:
+      type: object
+      required:
+        - currentPassword
+        - newPassword
+      properties:
+        currentPassword:
           type: string
-          format: uri
+          format: password
+        newPassword:
+          type: string
+          format: password
+          minLength: 8
+          description: Must contain at least one uppercase letter, one lowercase letter, one number and one special character
     AddFriendRequest:
       type: object
       required:
@@ -395,18 +415,19 @@ paths:
           description: Missing or invalid authentication
         '500':
           description: Internal server error
-    put:
-      summary: Update current user profile
+  /users/me/picture:
+    patch:
+      summary: Update current user's profile picture
       tags: [User]
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdateProfileRequest'
+              $ref: '#/components/schemas/UpdatePictureRequest'
       responses:
         '200':
-          description: Profile updated
+          description: Profile picture updated successfully
           content:
             application/json:
               schema:
@@ -417,6 +438,58 @@ paths:
             application/json:
               schema:
                  $ref: '#/components/schemas/ValidationErrorResponse'
+        '401':
+          description: Missing or invalid authentication
+        '404':
+          description: User not found
+        '500':
+          description: Internal server error
+  /users/me/name:
+    patch:
+      summary: Update current user's name
+      tags: [User]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateNameRequest'
+      responses:
+        '200':
+          description: Name updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Invalid request body
+          content:
+            application/json:
+              schema:
+                 $ref: '#/components/schemas/ValidationErrorResponse'
+        '401':
+          description: Missing or invalid authentication
+        '404':
+          description: User not found
+        '409':
+          description: Name already taken
+        '500':
+          description: Internal server error
+  /users/me/password:
+    patch:
+      summary: Update current user's password
+      tags: [User]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePasswordRequest'
+      responses:
+        '204':
+          description: Password updated successfully
+        '400':
+          description: Invalid request body or incorrect current password
         '401':
           description: Missing or invalid authentication
         '404':

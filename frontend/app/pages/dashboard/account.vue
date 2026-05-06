@@ -1,27 +1,70 @@
 <script setup lang="ts">
-const user = {
-  name: "John Doe",
-  email: "john.doe@example.com",
-  profilePicture: null as string | null,
+import type {User} from '~/assets/model/user';
+import useApiConnection from '~/assets/util/api-connector';
+import {useJwtStore} from '~/assets/store/jwt-store';
+
+type PublicUser = {
+  id: number;
+  name: string;
+  profilePicture: string | null;
+  isVerified: boolean;
 };
 
-const favorites = [
-  { id: 1, name: "Spaghetti Carbonara", image: "https://via.placeholder.com/56" },
-  { id: 2, name: "Margherita Pizza", image: "https://via.placeholder.com/56" },
-  { id: 3, name: "Chicken Tikka Masala", image: "https://via.placeholder.com/56" },
-  { id: 4, name: "Caesar Salad", image: "https://via.placeholder.com/56" },
-  { id: 5, name: "Beef Tacos", image: "https://via.placeholder.com/56" },
-];
+type FavoriteFood = {
+  userId: number;
+  recipeId: number;
+};
 
-const friends = ref([
-  { id: 1, name: "Alice Müller", profilePicture: null as string | null },
-  { id: 2, name: "Ben Wagner", profilePicture: null as string | null },
-  { id: 3, name: "Clara Hofer", profilePicture: null as string | null },
-]);
+type Recipe = {
+  id: number;
+  name: string;
+  image: string;
+};
 
-const friendToRemove = ref<{ id: number; name: string } | null>(null);
+type FavoriteEntry = {
+  recipeId: number;
+  name: string;
+  image: string;
+};
 
-function confirmRemove(friend: { id: number; name: string }) {
+const {apiRequest} = useApiConnection();
+const jwtStore = useJwtStore();
+
+const user = ref<User | null>(null);
+const favorites = ref<FavoriteEntry[]>([]);
+const friends = ref<PublicUser[]>([]);
+const friendToRemove = ref<PublicUser | null>(null);
+
+async function loadData() {
+  const jwt = jwtStore.jwt;
+
+  const profileResult = await apiRequest<User>('/users/me', 'GET', jwt);
+  if (profileResult.ok && profileResult.value) {
+    user.value = profileResult.value;
+  }
+
+  const favResult = await apiRequest<FavoriteFood[]>('/users/me/favorites', 'GET', jwt);
+  if (favResult.ok && favResult.value) {
+    favorites.value = await Promise.all(
+      favResult.value.map(async (fav) => {
+        const recipeResult = await apiRequest<Recipe>(`/recipes/${fav.recipeId}`, 'GET', jwt);
+        if (recipeResult.ok && recipeResult.value) {
+          return {recipeId: fav.recipeId, name: recipeResult.value.name, image: recipeResult.value.image};
+        }
+        return {recipeId: fav.recipeId, name: `Recipe #${fav.recipeId}`, image: ''};
+      })
+    );
+  }
+
+  const friendsResult = await apiRequest<PublicUser[]>('/users/me/friends', 'GET', jwt);
+  if (friendsResult.ok && friendsResult.value) {
+    friends.value = friendsResult.value;
+  }
+}
+
+onMounted(loadData);
+
+function confirmRemove(friend: PublicUser) {
   friendToRemove.value = friend;
 }
 
@@ -29,9 +72,12 @@ function cancelRemove() {
   friendToRemove.value = null;
 }
 
-function removeFriend() {
+async function removeFriend() {
   if (!friendToRemove.value) return;
-  friends.value = friends.value.filter(f => f.id !== friendToRemove.value!.id);
+  const result = await apiRequest(`/users/me/friends/${friendToRemove.value.id}`, 'DELETE', jwtStore.jwt);
+  if (result.ok) {
+    friends.value = friends.value.filter(f => f.id !== friendToRemove.value!.id);
+  }
   friendToRemove.value = null;
 }
 </script>
@@ -41,22 +87,29 @@ function removeFriend() {
     <div class="w-full max-w-3xl flex flex-col gap-6">
 
       <!-- Profile Header -->
-      <div class="bg-[#001a23] shadow-lg rounded-2xl p-8">
+      <div class="bg-base-100 shadow-lg rounded-2xl p-8">
         <div class="flex items-center gap-6">
           <img
-            :src="user.profilePicture ? `data:image/png;base64,${user.profilePicture}` : 'https://via.placeholder.com/80'"
-            alt="Profile Picture"
-            class="w-20 h-20 rounded-full object-cover border-4 border-[#31493c] shrink-0"
+              v-if="user?.profilePicture"
+              :src="`data:image/png;base64,${user.profilePicture}`"
+              alt="Profile Picture"
+              class="w-20 h-20 rounded-full object-cover border-4 border-accent shrink-0"
           />
+          <div
+              v-else
+              class="w-20 h-20 rounded-full border-4 border-accent shrink-0 bg-accent flex items-center justify-center"
+          >
+            <span class="text-accent-content text-2xl font-bold select-none">{{ user?.name?.charAt(0).toUpperCase() }}</span>
+          </div>
           <div>
-            <h2 class="text-3xl font-bold text-[#e8f1f2]">{{ user.name }}</h2>
-            <p class="text-[#b3efb2] mt-1">{{ user.email }}</p>
+            <h2 class="text-3xl font-bold text-base-content">{{ user?.name }}</h2>
+            <p class="text-primary mt-1">{{ user?.email }}</p>
           </div>
         </div>
         <div class="mt-6 flex justify-end">
           <NuxtLink
-            to="/dashboard/modifyprofile"
-            class="px-5 py-2.5 bg-[#7a9e7e] hover:bg-[#31493c] text-[#e8f1f2] font-semibold rounded-lg transition-colors"
+              to="/dashboard/modifyprofile"
+              class="px-5 py-2.5 bg-secondary hover:bg-accent text-secondary-content font-semibold rounded-lg transition-colors"
           >
             Manage Profile
           </NuxtLink>
@@ -64,54 +117,61 @@ function removeFriend() {
       </div>
 
       <!-- Favorite Foods -->
-      <div class="bg-[#001a23] shadow-lg rounded-2xl p-8">
-        <h3 class="text-xl font-semibold text-[#e8f1f2] mb-4">
+      <div class="bg-base-100 shadow-lg rounded-2xl p-8">
+        <h3 class="text-xl font-semibold text-base-content mb-4">
           Favorite Foods
-          <span class="text-[#b3efb2] font-normal text-base ml-1">({{ favorites.length }} total)</span>
+          <span class="text-primary font-normal text-base ml-1">({{ favorites.length }} total)</span>
         </h3>
-        <div v-if="favorites.length === 0" class="text-[#b3efb2] opacity-60 text-sm py-6 text-center">
+        <div v-if="favorites.length === 0" class="text-primary opacity-60 text-sm py-6 text-center">
           No favorites yet.
         </div>
         <ul v-else class="overflow-y-auto max-h-72 flex flex-col gap-3 pr-1">
           <li
-            v-for="fav in favorites"
-            :key="fav.id"
-            class="flex items-center gap-4 bg-[#002a36] rounded-xl p-3"
+              v-for="fav in favorites"
+              :key="fav.recipeId"
+              class="flex items-center gap-4 bg-base-300 rounded-xl p-3"
           >
             <img
-              :src="fav.image ?? 'https://via.placeholder.com/56'"
-              :alt="fav.name"
-              class="w-14 h-14 rounded-lg object-cover shrink-0"
+                :src="fav.image || 'https://via.placeholder.com/56'"
+                :alt="fav.name"
+                class="w-14 h-14 rounded-lg object-cover shrink-0"
             />
-            <span class="text-[#e8f1f2] font-medium">{{ fav.name }}</span>
+            <span class="text-base-content font-medium">{{ fav.name }}</span>
           </li>
         </ul>
       </div>
 
       <!-- Friends -->
-      <div class="bg-[#001a23] shadow-lg rounded-2xl p-8">
-        <h3 class="text-xl font-semibold text-[#e8f1f2] mb-4">
+      <div class="bg-base-100 shadow-lg rounded-2xl p-8">
+        <h3 class="text-xl font-semibold text-base-content mb-4">
           Friends
-          <span class="text-[#b3efb2] font-normal text-base ml-1">({{ friends.length }} total)</span>
+          <span class="text-primary font-normal text-base ml-1">({{ friends.length }} total)</span>
         </h3>
-        <div v-if="friends.length === 0" class="text-[#b3efb2] opacity-60 text-sm py-6 text-center">
+        <div v-if="friends.length === 0" class="text-primary opacity-60 text-sm py-6 text-center">
           No friends added yet.
         </div>
         <ul v-else class="overflow-y-auto max-h-72 flex flex-col gap-3 pr-1">
           <li
-            v-for="friend in friends"
-            :key="friend.id"
-            class="flex items-center gap-4 bg-[#002a36] rounded-xl p-3"
+              v-for="friend in friends"
+              :key="friend.id"
+              class="flex items-center gap-4 bg-base-300 rounded-xl p-3"
           >
             <img
-              :src="friend.profilePicture ? `data:image/png;base64,${friend.profilePicture}` : 'https://via.placeholder.com/40'"
-              :alt="friend.name"
-              class="w-10 h-10 rounded-full object-cover border-2 border-[#31493c] shrink-0"
+                v-if="friend.profilePicture"
+                :src="`data:image/png;base64,${friend.profilePicture}`"
+                :alt="friend.name"
+                class="w-10 h-10 rounded-full object-cover border-2 border-accent shrink-0"
             />
-            <span class="text-[#e8f1f2] font-medium flex-1">{{ friend.name }}</span>
+            <div
+                v-else
+                class="w-10 h-10 rounded-full border-2 border-accent shrink-0 bg-accent flex items-center justify-center"
+            >
+              <span class="text-accent-content text-sm font-bold select-none">{{ friend.name.charAt(0).toUpperCase() }}</span>
+            </div>
+            <span class="text-base-content font-medium flex-1">{{ friend.name }}</span>
             <button
-              @click="confirmRemove(friend)"
-              class="px-3 py-1.5 bg-red-900/40 hover:bg-red-800 text-red-300 hover:text-white font-medium rounded-lg transition-colors text-sm"
+                @click="confirmRemove(friend)"
+                class="px-3 py-1.5 bg-error/30 hover:bg-error text-error hover:text-error-content font-medium rounded-lg transition-colors text-sm"
             >
               Remove
             </button>
@@ -123,16 +183,16 @@ function removeFriend() {
 
     <!-- Remove Friend Confirmation Modal -->
     <dialog :open="friendToRemove !== null" class="modal">
-      <div class="modal-box bg-[#001a23] border border-[#31493c]">
-        <h3 class="font-bold text-lg text-[#e8f1f2]">Remove Friend</h3>
-        <p class="py-4 text-[#b3efb2]">
+      <div class="modal-box bg-base-100 border border-accent">
+        <h3 class="font-bold text-lg text-base-content">Remove Friend</h3>
+        <p class="py-4 text-primary">
           Are you sure you want to remove
-          <strong class="text-[#e8f1f2]">{{ friendToRemove?.name }}</strong>
+          <strong class="text-base-content">{{ friendToRemove?.name }}</strong>
           from your friends?
         </p>
         <div class="modal-action">
-          <button @click="cancelRemove" class="btn btn-ghost text-[#b3efb2]">Cancel</button>
-          <button @click="removeFriend" class="btn bg-red-700 hover:bg-red-800 border-none text-white">
+          <button @click="cancelRemove" class="btn btn-ghost text-primary">Cancel</button>
+          <button @click="removeFriend" class="btn btn-error">
             Remove
           </button>
         </div>
