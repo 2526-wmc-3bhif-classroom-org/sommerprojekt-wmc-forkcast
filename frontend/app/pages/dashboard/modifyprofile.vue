@@ -1,4 +1,11 @@
 <script setup lang="ts">
+import useApiConnection from '~/assets/util/api-connector';
+import {useJwtStore} from '~/assets/store/jwt-store';
+
+const {apiRequest} = useApiConnection();
+const jwtStore = useJwtStore();
+const router = useRouter();
+
 const newUsername = ref("");
 const currentPassword = ref("");
 const newPassword = ref("");
@@ -8,19 +15,31 @@ const usernameSuccess = ref(false);
 const usernameError = ref("");
 const passwordSuccess = ref(false);
 const passwordError = ref("");
+const usernameLoading = ref(false);
+const passwordLoading = ref(false);
 
-function saveUsername() {
+async function saveUsername() {
   usernameError.value = "";
   usernameSuccess.value = false;
   if (!newUsername.value.trim()) {
     usernameError.value = "Username cannot be empty.";
     return;
   }
-  // TODO: wire up to PATCH /api/users/me/name
-  usernameSuccess.value = true;
+  usernameLoading.value = true;
+  const result = await apiRequest('/users/me/name', 'PATCH', jwtStore.jwt, {name: newUsername.value.trim()}, false);
+  usernameLoading.value = false;
+  if (result.ok) {
+    usernameSuccess.value = true;
+    newUsername.value = "";
+  } else {
+    const errs = result.failure?.errors;
+    usernameError.value = errs?.length
+      ? errs.map(e => e.msg).join(' · ')
+      : (result.failure?.message ?? "Failed to update username.");
+  }
 }
 
-function savePassword() {
+async function savePassword() {
   passwordError.value = "";
   passwordSuccess.value = false;
   if (!currentPassword.value) {
@@ -35,23 +54,38 @@ function savePassword() {
     passwordError.value = "New passwords do not match.";
     return;
   }
-  // TODO: wire up to PATCH /api/users/me/password
-  passwordSuccess.value = true;
+  passwordLoading.value = true;
+  const result = await apiRequest('/users/me/password', 'PATCH', jwtStore.jwt, {
+    currentPassword: currentPassword.value,
+    newPassword: newPassword.value,
+  }, false);
+  passwordLoading.value = false;
+  if (result.ok) {
+    passwordSuccess.value = true;
+    currentPassword.value = "";
+    newPassword.value = "";
+    confirmPassword.value = "";
+  } else {
+    const errs = result.failure?.errors;
+    passwordError.value = errs?.length
+      ? errs.map(e => `${e.path}: ${e.msg}`).join(' · ')
+      : (result.failure?.message ?? "Failed to update password.");
+  }
 }
 </script>
 
 <template>
-  <div class="container mx-auto px-4 py-10 flex justify-center">
+  <div class="container mx-auto px-4 pt-20 pb-10 flex justify-center">
     <div class="w-full max-w-xl flex flex-col gap-6">
 
-      <!-- Back link -->
-      <NuxtLink
-        to="/dashboard/account"
-        class="btn btn-ghost w-fit pl-0"
+      <!-- Back button -->
+      <button
+        @click="router.push('/dashboard/account')"
+        class="btn btn-ghost w-fit"
       >
         <i class="fa-solid fa-arrow-left" />
         Back to Account
-      </NuxtLink>
+      </button>
 
       <h1 class="text-3xl font-bold text-base-content">Manage Profile</h1>
 
@@ -66,6 +100,7 @@ function savePassword() {
               type="text"
               placeholder="Enter new username"
               class="input input-bordered w-full"
+              @keyup.enter="saveUsername"
             />
           </div>
           <p v-if="usernameError" class="text-error text-sm">{{ usernameError }}</p>
@@ -73,8 +108,10 @@ function savePassword() {
           <div class="card-actions justify-end mt-2">
             <button
               @click="saveUsername"
+              :disabled="usernameLoading"
               class="btn btn-secondary text-secondary-content"
             >
+              <span v-if="usernameLoading" class="loading loading-spinner loading-sm" />
               Save Username
             </button>
           </div>
@@ -110,6 +147,7 @@ function savePassword() {
               type="password"
               placeholder="Confirm new password"
               class="input input-bordered w-full"
+              @keyup.enter="savePassword"
             />
           </div>
           <p v-if="passwordError" class="text-error text-sm">{{ passwordError }}</p>
@@ -117,8 +155,10 @@ function savePassword() {
           <div class="card-actions justify-end mt-2">
             <button
               @click="savePassword"
+              :disabled="passwordLoading"
               class="btn btn-secondary text-secondary-content"
             >
+              <span v-if="passwordLoading" class="loading loading-spinner loading-sm" />
               Save Password
             </button>
           </div>
