@@ -4,10 +4,10 @@
     <!-- Header -->
     <div class="card bg-base-100 shadow-xl">
       <div class="card-body">
-        <div class="flex items-center gap-4 mb-2">
-          <i class="fa-solid fa-fork-and-knife text-primary text-3xl" />
-          <h1 class="text-4xl font-bold text-base-content">About Forkcast</h1>
-        </div>
+        <h1 class="card-title text-4xl font-bold text-base-content mb-2">
+          <i class="fa-solid fa-fork-and-knife text-primary mr-2" />
+          About Forkcast
+        </h1>
         <p class="text-base-content opacity-80 text-lg leading-relaxed">
           Forkcast is a free meal planning and recipe management platform developed as a school project by
           <span class="text-primary font-semibold">Forkcast Solutions</span> at
