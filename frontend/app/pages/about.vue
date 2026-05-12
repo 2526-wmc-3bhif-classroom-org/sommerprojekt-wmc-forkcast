@@ -86,7 +86,7 @@
           School Project
         </h2>
         <p class="text-base-content opacity-70 leading-relaxed">
-          Forkcast was created as part of the "Web & Mobile Computing" course at HTL Leonding, a technical secondary school
+          Forkcast was created as part of the "Web & Mobile <Computing></Computing>" course at HTL Leonding, a technical secondary school
           in Upper Austria. The project is provided free of charge and is continuously under development.
           No commercial use is intended.
         </p>
