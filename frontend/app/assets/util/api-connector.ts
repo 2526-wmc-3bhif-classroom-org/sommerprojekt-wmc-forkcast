@@ -1,6 +1,6 @@
 import type {Failure} from "~/assets/model/failure";
 
-export type ApiMethod = "GET" | "POST" | "PUT" | "DELETE";
+export type ApiMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
 export type ApiResponse<T> = {
     value?: T;
@@ -39,8 +39,12 @@ export default function useApiConnection() {
                     if (response.status === 401) {
                         return { ok: false, needsAuth: true, failure: { message: "Unauthorized" } as Failure };
                     }
-
-                    return { ok: false, needsAuth: false, failure: { message: "Request failed" } as Failure };
+                    try {
+                        const errData = await response.json();
+                        return { ok: false, needsAuth: false, failure: errData as Failure };
+                    } catch {
+                        return { ok: false, needsAuth: false, failure: { message: `Request failed (${response.status})`, errors: null } as Failure };
+                    }
                 }
 
                 return { ok: true } as ApiResponse<T>;

@@ -34,6 +34,7 @@ const user = ref<User | null>(null);
 const favorites = ref<FavoriteEntry[]>([]);
 const friends = ref<PublicUser[]>([]);
 const friendToRemove = ref<PublicUser | null>(null);
+const favoriteToRemove = ref<FavoriteEntry | null>(null);
 
 async function loadData() {
   const jwt = jwtStore.jwt;
@@ -63,6 +64,23 @@ async function loadData() {
 }
 
 onMounted(loadData);
+
+function confirmRemoveFavorite(fav: FavoriteEntry) {
+  favoriteToRemove.value = fav;
+}
+
+function cancelRemoveFavorite() {
+  favoriteToRemove.value = null;
+}
+
+async function removeFavorite() {
+  if (!favoriteToRemove.value) return;
+  const result = await apiRequest(`/users/me/favorites/${favoriteToRemove.value.recipeId}`, 'DELETE', jwtStore.jwt);
+  if (result.ok) {
+    favorites.value = favorites.value.filter(f => f.recipeId !== favoriteToRemove.value!.recipeId);
+  }
+  favoriteToRemove.value = null;
+}
 
 function confirmRemove(friend: PublicUser) {
   friendToRemove.value = friend;
@@ -139,7 +157,13 @@ async function removeFriend() {
                   :alt="fav.name"
                   class="w-14 h-14 rounded-lg object-cover shrink-0"
               />
-              <span class="text-base-content font-medium">{{ fav.name }}</span>
+              <span class="text-base-content font-medium flex-1">{{ fav.name }}</span>
+              <button
+                  @click="confirmRemoveFavorite(fav)"
+                  class="btn btn-error btn-sm text-error-content"
+              >
+                Remove
+              </button>
             </li>
           </ul>
         </div>
@@ -186,6 +210,27 @@ async function removeFriend() {
       </div>
 
     </div>
+
+    <!-- Remove Favorite Confirmation Modal -->
+    <dialog :open="favoriteToRemove !== null" class="modal">
+      <div class="modal-box bg-base-100 border border-accent">
+        <h3 class="font-bold text-lg text-base-content">Remove Favorite</h3>
+        <p class="py-4 text-primary">
+          Are you sure you want to remove
+          <strong class="text-base-content">{{ favoriteToRemove?.name }}</strong>
+          from your favorites?
+        </p>
+        <div class="modal-action">
+          <button @click="cancelRemoveFavorite" class="btn btn-ghost text-primary">Cancel</button>
+          <button @click="removeFavorite" class="btn btn-error">
+            Remove
+          </button>
+        </div>
+      </div>
+      <form method="dialog" class="modal-backdrop" @click="cancelRemoveFavorite">
+        <button>close</button>
+      </form>
+    </dialog>
 
     <!-- Remove Friend Confirmation Modal -->
     <dialog :open="friendToRemove !== null" class="modal">
