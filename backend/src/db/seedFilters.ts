@@ -89,6 +89,13 @@ const FILTERS: FilterData[] = [
 export async function seedFilters(): Promise<void> {
     const unit = new Unit(false);
     try {
+        const countStmt = unit.prepare<{ count: number }, {}>("SELECT COUNT(*) as count FROM FilterGroup");
+        const result = countStmt.get();
+        if (result && result.count > 0) {
+            unit.complete(true);
+            return;
+        }
+
         for (const groupData of FILTERS) {
             const groupStmt = unit.prepare<{ id: number }, { name: string; icon: string }>(
                 "INSERT INTO FilterGroup (name, icon) VALUES (:name, :icon)",
