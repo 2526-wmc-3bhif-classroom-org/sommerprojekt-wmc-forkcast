@@ -13,6 +13,10 @@ export class CalendarService {
         return this.calendarRepository.findByUserId(userId);
     }
 
+    public getCalendarEntriesByDateRange(userId: number, fromDate: Date, toDate: Date): CalendarEntry[] {
+        return this.calendarRepository.findByUserIdAndDateRange(userId, fromDate, toDate);
+    }
+
     public getCalendarEntryById(id: number): CalendarEntry | undefined {
         return this.calendarRepository.findById(id);
     }

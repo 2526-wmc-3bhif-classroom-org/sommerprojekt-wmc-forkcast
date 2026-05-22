@@ -13,6 +13,16 @@ export class CalendarRepository {
         return stmt.all();
     }
 
+    public findByUserIdAndDateRange(userId: number, fromDate: Date, toDate: Date): CalendarEntry[] {
+        const fromISO = fromDate.toISOString().split('T')[0];
+        const toISO = toDate.toISOString().split('T')[0];
+        const stmt = this.unit.prepare<CalendarEntry>(
+            "SELECT * FROM CalenderEntry WHERE userId = :userId AND date BETWEEN :fromDate AND :toDate ORDER BY date ASC",
+            { userId, fromDate: fromISO, toDate: toISO }
+        );
+        return stmt.all();
+    }
+
     public findById(id: number): CalendarEntry | undefined {
         const stmt = this.unit.prepare<CalendarEntry>("SELECT * FROM CalenderEntry WHERE id = :id", { id });
         return stmt.get();

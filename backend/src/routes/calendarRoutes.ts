@@ -1,21 +1,58 @@
 import {authenticateToken, AuthRequest} from "../middleware/authMiddleware";
 import {StatusCodes} from "http-status-codes";
-import { body } from 'express-validator';
+import { body, query } from 'express-validator';
 import {Router} from "express";
 import {validateRequest} from "../middleware/validationMiddleware";
 import { Unit } from "../db/unit";
 import { CalendarService } from "../services/calendarService";
+import { ShoppingListService } from "../services/shoppingListService";
 
 const router = Router();
 
-router.get('/', authenticateToken, (req: AuthRequest, res) => {
+router.get('/',
+    authenticateToken,
+    query('from').optional().isISO8601().withMessage('from must be a valid ISO8601 date'),
+    query('to').optional().isISO8601().withMessage('to must be a valid ISO8601 date'),
+    validateRequest,
+    (req: AuthRequest, res) => {
     const unit = new Unit(true);
     try {
         const calendarService = new CalendarService(unit);
-        const entries = calendarService.getCalendarEntries(req.user!.userId);
+        const from = req.query.from as string | undefined;
+        const to = req.query.to as string | undefined;
+
+        let entries;
+        if (from && to) {
+            const fromDate = new Date(from);
+            const toDate = new Date(to);
+            entries = calendarService.getCalendarEntriesByDateRange(req.user!.userId, fromDate, toDate);
+        } else {
+            entries = calendarService.getCalendarEntries(req.user!.userId);
+        }
         res.json(entries);
     } finally {
         unit.complete();
+    }
+});
+
+router.get('/shopping-list',
+    authenticateToken,
+    query('from').isISO8601().withMessage('from is required and must be a valid ISO8601 date'),
+    query('to').isISO8601().withMessage('to is required and must be a valid ISO8601 date'),
+    query('units').optional().isIn(['us', 'metric', 'both']).withMessage('units must be us, metric, or both'),
+    validateRequest,
+    async (req: AuthRequest, res) => {
+    try {
+        const from = new Date(req.query.from as string);
+        const to = new Date(req.query.to as string);
+        const units = (req.query.units as 'us' | 'metric' | 'both') || 'metric';
+
+        const shoppingListService = new ShoppingListService();
+        const shoppingList = await shoppingListService.getShoppingList(req.user!.userId, from, to, units);
+        res.json(shoppingList);
+    } catch (error) {
+        console.error(error);
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({});
     }
 });
 
