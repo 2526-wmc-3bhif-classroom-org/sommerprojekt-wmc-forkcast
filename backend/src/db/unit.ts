@@ -102,7 +102,31 @@ class DB {
                 id INTEGER PRIMARY KEY,
                 name TEXT NOT NULL,
                 image TEXT,
+                readyInMinutes INTEGER NOT NULL DEFAULT 0,
+                calories INTEGER NOT NULL DEFAULT 0,
+                servings INTEGER NOT NULL DEFAULT 1,
+                vegetarian BOOLEAN NOT NULL DEFAULT 0,
+                vegan BOOLEAN NOT NULL DEFAULT 0,
+                glutenFree BOOLEAN NOT NULL DEFAULT 0,
+                dairyFree BOOLEAN NOT NULL DEFAULT 0,
                 updatedAt DATETIME DEFAULT (datetime('now'))
+            );
+
+            CREATE TABLE IF NOT EXISTS RecipeDetails (
+                recipeId INTEGER PRIMARY KEY,
+                readyInMinutes INTEGER NOT NULL DEFAULT 0,
+                servings INTEGER NOT NULL DEFAULT 0,
+                stepCount INTEGER NOT NULL DEFAULT 0,
+                ingredientCount INTEGER NOT NULL DEFAULT 0,
+                pricePerServing REAL NOT NULL DEFAULT 0,
+                effortScore INTEGER NOT NULL DEFAULT 1,
+                rating INTEGER NOT NULL DEFAULT 1,
+                aggregateLikes INTEGER NOT NULL DEFAULT 0,
+                vegetarian BOOLEAN NOT NULL DEFAULT 0,
+                vegan BOOLEAN NOT NULL DEFAULT 0,
+                glutenFree BOOLEAN NOT NULL DEFAULT 0,
+                dairyFree BOOLEAN NOT NULL DEFAULT 0,
+                FOREIGN KEY (recipeId) REFERENCES Recipe(id) ON DELETE CASCADE
             );
 
             CREATE TABLE IF NOT EXISTS Notification (
@@ -140,11 +164,23 @@ class DB {
             );
         `);
 
-        try {
-            connection.exec("ALTER TABLE Recipe ADD COLUMN updatedAt DATETIME DEFAULT (datetime('now'))");
-        } catch (e) {
-            // Column likely already exists in dev environment, or was just created by CREATE TABLE above.
-            // This is a simple migration step.
+        const migrations = [
+            "ALTER TABLE Recipe ADD COLUMN updatedAt DATETIME DEFAULT (datetime('now'))",
+            "ALTER TABLE Recipe ADD COLUMN readyInMinutes INTEGER NOT NULL DEFAULT 0",
+            "ALTER TABLE Recipe ADD COLUMN calories INTEGER NOT NULL DEFAULT 0",
+            "ALTER TABLE Recipe ADD COLUMN servings INTEGER NOT NULL DEFAULT 1",
+            "ALTER TABLE Recipe ADD COLUMN vegetarian BOOLEAN NOT NULL DEFAULT 0",
+            "ALTER TABLE Recipe ADD COLUMN vegan BOOLEAN NOT NULL DEFAULT 0",
+            "ALTER TABLE Recipe ADD COLUMN glutenFree BOOLEAN NOT NULL DEFAULT 0",
+            "ALTER TABLE Recipe ADD COLUMN dairyFree BOOLEAN NOT NULL DEFAULT 0",
+            "ALTER TABLE RecipeDetails ADD COLUMN pricePerServing REAL NOT NULL DEFAULT 0",
+        ];
+        for (const migration of migrations) {
+            try {
+                connection.exec(migration);
+            } catch (_) {
+                // Column already exists — expected on subsequent startups.
+            }
         }
     }
 }

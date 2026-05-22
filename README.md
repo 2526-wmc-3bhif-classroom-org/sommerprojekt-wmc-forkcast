@@ -53,7 +53,7 @@ https://coolors.co/e8f1f2-b3efb2-7a9e7e-31493c-001a23
 - Friend (userId, friendId)
 - Notification (id, userId, type, content, isRead)
 - CalenderEntry(userId, date, recipeId)
-- Recipe(id, name, image)
+- Recipe(id, name, image, readyInMinutes, calories, servings, vegetarian, vegan, glutenFree, dairyFree)
 - FavoriteFood(userId, recipeId)
 
 ![Erd-Diagram](https://img.plantuml.biz/plantuml/svg/bLB1QiCm3BtxAqpl_O5HIaTPBeDH2li0BL4oWMq5MTa8xVwzTiCsktI7NOprdgIdPtaN5KGdxup1eAIpNRr6b9Kz6Mkfim-MWkA0OZURm_Dscz007XCULIWCAKOFv4fWX1W_MReA4-x9uO5QdQGe__hLROGmT5cv05zOgQSMb3WiG-ayLl8jfm63bX358qAMVsDs2A5iUCIMHloFF_8mLC0qTg3uc2NpHSbZgR07btoWF0MLUH7AQNzaD_31GeeDyxVtl01xFg_NVB9LCxCCVv-hoigkDrKLLHMLRttJxhgQvE0TekslmNsUVcYpIsVwLnS0)

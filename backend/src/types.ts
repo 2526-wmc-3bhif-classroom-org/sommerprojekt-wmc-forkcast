@@ -14,6 +14,50 @@ export interface Recipe {
     updatedAt?: Date;
 }
 
+export interface RecipeDetails {
+    recipeId: number;
+    readyInMinutes: number;
+    servings: number;
+    stepCount: number;
+    ingredientCount: number;
+    pricePerServing: number;
+    effortScore: number;
+    rating: number;
+    aggregateLikes: number;
+    vegetarian: boolean;
+    vegan: boolean;
+    glutenFree: boolean;
+    dairyFree: boolean;
+}
+
+export interface RecipeWithDetails {
+    id: number;
+    name: string;
+    image: string;
+    readyInMinutes: number;
+    servings: number;
+    stepCount: number;
+    ingredientCount: number;
+    pricePerServing: number;
+    effortScore: number;
+    rating: number;
+    aggregateLikes: number;
+    vegetarian: boolean;
+    vegan: boolean;
+    glutenFree: boolean;
+    dairyFree: boolean;
+}
+
+export interface RecipePreviewResponse {
+    id: number;
+    title: string;
+    image: string;
+    effort: number;
+    rating: { rating: number; count: number };
+    attributes: Array<{ icon: string; text: string }>;
+    tags: Array<{ icon: string; text: string; color: string }>;
+}
+
 export interface Notification {
     id: number;
     type: string;
