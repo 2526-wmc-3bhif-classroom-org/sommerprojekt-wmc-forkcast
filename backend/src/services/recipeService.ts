@@ -12,15 +12,16 @@ export class RecipeService {
         this.remoteRepo = new RemoteRecipeRepository();
     }
 
-    async searchRecipes(query: string, userIp?: string, number: number = 4): Promise<RecipePreviewResponse[]> {
+    async searchRecipes(query: string, userIp?: string, filters: Record<string, any> = {}, number: number = 10): Promise<RecipePreviewResponse[]> {
+        const numResults = filters.number ?? number;
         const localRecipes = await this.localRepo.searchRecipes(query);
-        if (localRecipes.length >= number) {
-            return localRecipes.slice(0, number).map(toRecipePreview);
+        if (localRecipes.length >= numResults) {
+            return localRecipes.slice(0, numResults).map(toRecipePreview);
         }
 
         let remoteResults: Awaited<ReturnType<typeof this.remoteRepo.searchRecipes>> = [];
         try {
-            remoteResults = await this.remoteRepo.searchRecipes(query, userIp, number);
+            remoteResults = await this.remoteRepo.searchRecipes(query, userIp, numResults, filters);
         } catch (error) {
             console.error('Remote recipe search failed, returning local results only', error);
             return localRecipes.map(toRecipePreview);
@@ -36,7 +37,7 @@ export class RecipeService {
             }
         }
 
-        return combined.slice(0, number).map(toRecipePreview);
+        return combined.slice(0, numResults).map(toRecipePreview);
     }
 
     async getRecipeById(id: number, userIp?: string): Promise<RecipePreviewResponse | undefined> {

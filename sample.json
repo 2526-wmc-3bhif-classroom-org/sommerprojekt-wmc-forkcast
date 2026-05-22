@@ -1,0 +1,38 @@
+{
+    "filters": {
+        "calories": {
+            "pretty_name": "Calories",
+            "icon": "fa-flame",
+            "options": {
+                "min_calories": {
+                    "pretty_name": "Min Calories"
+                    "type": "number",
+                    "min": 0,
+                    "max": 1000,
+                    "default": 0
+                },
+                "max_calories": {
+                    "pretty_name": "Max Calories"
+                    "type": "number",
+                    "min": 0,
+                    "max": 1000,
+                    "default": 0
+                }
+                ...
+            }
+        },
+        "dietary": {
+            "pretty_name": "Dietary",
+            "icon": "fa-leaf",
+            "options": {
+                "gluten_free": {
+                    "pretty_name": "Gluten Free"
+                    "type": "boolean",
+                    "default": true
+                }
+                ...
+            }
+        }
+        ...
+    }
+}
