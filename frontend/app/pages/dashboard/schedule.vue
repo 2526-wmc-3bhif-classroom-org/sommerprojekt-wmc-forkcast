@@ -20,7 +20,7 @@ const datas = ref<(RecipePreview & { __sourceItemId: string })[]>([]);
 function onSearchResults(results: RecipePreview[]) {
   datas.value = results.map(r => ({
     ...r,
-    __sourceItemId: `source-recipe-${sourceItemCounter++}`
+    __sourceItemId: `source-recipe-${r.id}`
   }));
 }
 

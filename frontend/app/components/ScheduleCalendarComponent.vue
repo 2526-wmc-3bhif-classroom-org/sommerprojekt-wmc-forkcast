@@ -247,7 +247,7 @@ function goToToday() {
                   class="cursor-grab active:cursor-grabbing touch-none flex items-center gap-2 rounded-xl bg-base-200/70 hover:bg-base-200 px-2 py-1.5 transition-colors"
                   @click.stop="openRecipe(data as Record<string, unknown>)"
               >
-                <img :src="(data as any).image" :alt="(data as any).title" class="size-7 rounded-lg object-cover shrink-0"/>
+                <img :src="(data as any).image" :alt="(data as any).title" class="size-7 rounded-lg object-cover shrink-0" loading="lazy"/>
                 <span class="text-xs font-medium leading-tight truncate flex-1">{{ (data as any).title }}</span>
                 <span class="shrink-0 size-1.5 rounded-full" :class="effortClass((data as any).effort)"/>
               </li>

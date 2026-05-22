@@ -56,8 +56,7 @@ const legend = computed(() => {
 <template>
   <div class="card bg-base-100 w-96 max-h-full shadow-sm">
     <figure>
-      <!-- Do not use nuxt-image here as the image will come from external -->
-      <img :src="data.image" :alt="`Image for: ${data.title}`" class="object-cover h-60 w-full"/>
+      <img :src="data.image" :alt="`Image for: ${data.title}`" class="object-cover h-60 w-full" loading="lazy"/>
     </figure>
     <div class="card-body text-left">
       <div class="inline-flex">
