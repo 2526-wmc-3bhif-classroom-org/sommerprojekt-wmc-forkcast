@@ -11,10 +11,14 @@ export default function useCalendarService() {
         return result;
     }
 
-    async function getEntries(): Promise<ApiResponse<CalendarEntry[]>> {
+    async function getEntries(from?: string, to?: string): Promise<ApiResponse<CalendarEntry[]>> {
         if (!auth.authenticated.value) throw Error('Not authenticated');
+        const params = new URLSearchParams();
+        if (from) params.set('from', from);
+        if (to) params.set('to', to);
+        const query = params.toString() ? `?${params}` : '';
         return handleAuth(
-            await connection.apiRequest<CalendarEntry[]>('/users/me/calendar', 'GET', auth.jwt.value)
+            await connection.apiRequest<CalendarEntry[]>(`/users/me/calendar${query}`, 'GET', auth.jwt.value)
         );
     }
 

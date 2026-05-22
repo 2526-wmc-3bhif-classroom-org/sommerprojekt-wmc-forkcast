@@ -8,6 +8,8 @@ const emit = defineEmits<{ results: [recipes: RecipePreview[]] }>();
 const query = ref('');
 const filterGroups = ref<Record<string, FilterGroup>>({});
 const filterState = reactive<Record<string, any>>({});
+const pageSize = ref(10);
+const hasMore = ref(false);
 
 const recipeService = useRecipeService();
 let debounceTimer: ReturnType<typeof setTimeout> | null = null;
@@ -58,14 +60,27 @@ function onInput() {
   debounceTimer = setTimeout(doSearch, 400);
 }
 
-async function doSearch() {
+async function doSearch(reset = true) {
+  if (reset) pageSize.value = 10;
   if (!query.value.trim()) {
     emit('results', []);
+    hasMore.value = false;
     return;
   }
-  const res = await recipeService.search(query.value.trim(), buildFilterParams());
-  if (res.ok && res.value) emit('results', res.value);
+  const res = await recipeService.search(query.value.trim(), { ...buildFilterParams(), number: String(pageSize.value) });
+  if (res.ok && res.value) {
+    emit('results', res.value);
+    hasMore.value = res.value.length >= pageSize.value;
+  }
 }
+
+async function loadMore() {
+  if (!hasMore.value) return;
+  pageSize.value += 10;
+  await doSearch(false);
+}
+
+defineExpose({ loadMore });
 </script>
 
 <template>

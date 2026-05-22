@@ -3,8 +3,22 @@ import draggable from 'vuedraggable';
 import type { RecipePreview } from '~/assets/model/recipe-preview';
 
 definePageMeta({
-  showFooter: false
+  showFooter: false,
+  ssr: false
 })
+
+const searchRef = ref<{ loadMore: () => void } | null>(null);
+const listContainerRef = ref<HTMLElement | null>(null);
+const sentinelRef = ref<HTMLElement | null>(null);
+
+onMounted(() => {
+  const observer = new IntersectionObserver(
+    (entries) => { if (entries[0].isIntersecting) searchRef.value?.loadMore(); },
+    { root: listContainerRef.value, threshold: 0 }
+  );
+  if (sentinelRef.value) observer.observe(sentinelRef.value);
+  onUnmounted(() => observer.disconnect());
+});
 
 let sourceItemCounter = 0;
 
@@ -68,28 +82,31 @@ function onMainListDragEnd() {
     <div class="col-span-2"></div>
     <div class="w-125 bg-base-100 rounded-tr-2xl col-span-1">
       <div>
-        <recipe-search-component class="m-3 w-[stretch]" @results="onSearchResults"/>
+        <recipe-search-component ref="searchRef" class="m-3 w-[stretch]" @results="onSearchResults"/>
 
-        <draggable
-            v-model="datas"
-            :animation="300"
-            :clone="cloneRecipeForDrop"
-            :sort="false"
-            :group="{ name: 'items', pull: 'clone', put: false }"
-            tag="ul"
-            item-key="__sourceItemId"
-            class="list overflow-y-scroll h-[calc(100vh-8rem)]"
-            ghost-class="hidden"
-            @start="onMainListDragStart"
-            @end="onMainListDragEnd"
-            :data-zone="'main'"
-        >
-          <template #item="{ element: data }">
-            <div class="cursor-grab active:cursor-grabbing touch-none">
-              <recipe-list-component :data="data"/>
-            </div>
-          </template>
-        </draggable>
+        <div ref="listContainerRef" class="overflow-y-scroll h-[calc(100vh-8rem)]">
+          <draggable
+              v-model="datas"
+              :animation="300"
+              :clone="cloneRecipeForDrop"
+              :sort="false"
+              :group="{ name: 'items', pull: 'clone', put: false }"
+              tag="ul"
+              item-key="__sourceItemId"
+              class="list"
+              ghost-class="hidden"
+              @start="onMainListDragStart"
+              @end="onMainListDragEnd"
+              :data-zone="'main'"
+          >
+            <template #item="{ element: data }">
+              <div class="cursor-grab active:cursor-grabbing touch-none">
+                <recipe-list-component :data="data"/>
+              </div>
+            </template>
+          </draggable>
+          <div ref="sentinelRef" class="h-1"/>
+        </div>
       </div>
     </div>
     <schedule-calendar-component />

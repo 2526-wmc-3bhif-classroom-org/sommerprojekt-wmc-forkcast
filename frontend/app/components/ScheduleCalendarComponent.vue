@@ -32,6 +32,7 @@ function closeRecipe() {
   selectedRecipe.value = null;
 }
 let dropItemCounter = 0;
+const fetchedWeeks = new Set<string>();
 
 const calendarService = useCalendarService();
 const recipeService = useRecipeService();
@@ -59,14 +60,21 @@ const weekDays = computed<WeekDay[]>(() =>
   })
 );
 
-onMounted(async () => {
-  const result = await calendarService.getEntries();
+async function loadWeek(weekStart: Date) {
+  const from = toDateKey(weekStart);
+  if (fetchedWeeks.has(from)) return;
+  fetchedWeeks.add(from);
+
+  const end = new Date(weekStart);
+  end.setDate(end.getDate() + 6);
+  const to = toDateKey(end);
+
+  const result = await calendarService.getEntries(from, to);
   if (!result.ok || !result.value) return;
 
   await Promise.all(result.value.map(async (entry) => {
     const recipeResult = await recipeService.getRecipe(entry.recipeId);
     if (!recipeResult.ok || !recipeResult.value) return;
-
     const dayKey = entry.date.slice(0, 10);
     getDayRecipes(dayKey).push({
       ...recipeResult.value,
@@ -74,7 +82,10 @@ onMounted(async () => {
       __calendarEntryId: entry.id,
     });
   }));
-});
+}
+
+onMounted(() => loadWeek(currentWeekStart.value));
+watch(currentWeekStart, (weekStart) => loadWeek(weekStart));
 
 function toDateKey(date: Date): string {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
