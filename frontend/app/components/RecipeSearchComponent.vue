@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import useRecipeService from "~/assets/service/recipe-service";
+import type { RecipePreview } from "~/assets/model/recipe-preview";
+
+const emit = defineEmits<{ results: [recipes: RecipePreview[]] }>();
 
 const minCalories = ref({ value: 0, enabled: false });
 const maxCalories = ref({ value: 1000, enabled: false });
@@ -15,14 +18,20 @@ const isVegetarian = ref(false);
 const isVegan = ref(false);
 const isGlutenFree = ref(false);
 
+const query = ref('');
 const recipeService = useRecipeService();
+let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
-async function search(query: string) {
-  const res = await recipeService.search(query)
-  console.log(res)
-  if (res.ok) {
-    console.log(res.value)
-  }
+function onInput() {
+  if (debounceTimer) clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(async () => {
+    if (!query.value.trim()) {
+      emit('results', []);
+      return;
+    }
+    const res = await recipeService.search(query.value.trim());
+    if (res.ok && res.value) emit('results', res.value);
+  }, 400);
 }
 </script>
 
@@ -30,7 +39,7 @@ async function search(query: string) {
   <div class="join">
     <label class="input join-item w-full">
       <i class="fa-solid fa-magnifying-glass"/>
-      <input type="search" required placeholder="Search" />
+      <input type="search" v-model="query" placeholder="Search" @input="onInput" />
     </label>
     <div class="dropdown dropdown-end join-item">
       <div tabindex="0" role="button" class="select join-item w-30">

@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import draggable from 'vuedraggable';
+import useCalendarService from '~/assets/service/calendar-service';
+import useRecipeService from '~/assets/service/recipe-service';
 
 const { locale } = useI18n();
 
@@ -15,9 +17,24 @@ const today = new Date();
 const currentWeekStart = ref(getWeekStart(today));
 const calendarGridRef = ref<HTMLElement | null>(null);
 const dragSourceDayKey = ref<string | null>(null);
-const dragSourceIndex = ref<number | null>(null);
+const dragSourceItem = ref<Record<string, unknown> | null>(null);
 const recipesByDay = reactive<Record<string, Record<string, unknown>[]>>({});
+const selectedRecipe = ref<Record<string, unknown> | null>(null);
+const dialogRef = ref<HTMLDialogElement | null>(null);
+
+function openRecipe(data: Record<string, unknown>) {
+  selectedRecipe.value = data;
+  dialogRef.value?.showModal();
+}
+
+function closeRecipe() {
+  dialogRef.value?.close();
+  selectedRecipe.value = null;
+}
 let dropItemCounter = 0;
+
+const calendarService = useCalendarService();
+const recipeService = useRecipeService();
 
 const weekLabel = computed(() => {
   const start = currentWeekStart.value;
@@ -42,8 +59,31 @@ const weekDays = computed<WeekDay[]>(() =>
   })
 );
 
+onMounted(async () => {
+  const result = await calendarService.getEntries();
+  if (!result.ok || !result.value) return;
+
+  await Promise.all(result.value.map(async (entry) => {
+    const recipeResult = await recipeService.getRecipe(entry.recipeId);
+    if (!recipeResult.ok || !recipeResult.value) return;
+
+    const dayKey = entry.date.slice(0, 10);
+    getDayRecipes(dayKey).push({
+      ...recipeResult.value,
+      __dropItemId: `day-recipe-${dropItemCounter++}`,
+      __calendarEntryId: entry.id,
+    });
+  }));
+});
+
 function toDateKey(date: Date): string {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
+
+function dayKeyToDate(dayKey: string): Date {
+  const [year, month, day] = dayKey.split('-').map(Number);
+  // Use noon local time to avoid UTC boundary issues.
+  return new Date(year, month - 1, day, 12, 0, 0);
 }
 
 function getWeekStart(date: Date): Date {
@@ -81,40 +121,59 @@ function isPointInsideCalendar(x: number, y: number): boolean {
   return x >= bounds.left && x <= bounds.right && y >= bounds.top && y <= bounds.bottom;
 }
 
-function onDayListAdd(dayKey: string, event: { newIndex?: number }) {
+async function onDayListAdd(dayKey: string, event: { newIndex?: number }) {
   const index = typeof event.newIndex === 'number' ? event.newIndex : -1;
   if (index < 0) return;
+
   const dayRecipes = getDayRecipes(dayKey);
   const dropped = dayRecipes[index];
   if (!dropped) return;
-  dayRecipes[index] = { ...dropped, __dropItemId: `day-recipe-${dropItemCounter++}` };
+
+  const itemWithId = { ...dropped, __dropItemId: `day-recipe-${dropItemCounter++}` };
+  dayRecipes[index] = itemWithId;
+
+  const recipeId = dropped.id as number;
+  const result = await calendarService.addEntry(recipeId, dayKeyToDate(dayKey));
+  if (result.ok && result.value) {
+    itemWithId.__calendarEntryId = result.value.id;
+  }
 }
 
 function onDayListDragStart(dayKey: string, event: { oldIndex?: number }) {
   dragSourceDayKey.value = dayKey;
-  dragSourceIndex.value = typeof event.oldIndex === 'number' ? event.oldIndex : null;
+  const idx = typeof event.oldIndex === 'number' ? event.oldIndex : -1;
+  dragSourceItem.value = idx >= 0 ? (getDayRecipes(dayKey)[idx] ?? null) : null;
 }
 
-function onDayListDragEnd(_dayKey: string, event: {
+async function onDayListDragEnd(_dayKey: string, event: {
   oldIndex?: number;
   to?: EventTarget | null;
   from?: EventTarget | null;
   originalEvent?: MouseEvent | TouchEvent;
 }) {
   const sourceDayKey = dragSourceDayKey.value;
-  const sourceIndex = dragSourceIndex.value;
+  const sourceItem = dragSourceItem.value;
   const didReturnToSameList = event.to === event.from;
   const pointer = pointerPositionFromEvent(event.originalEvent);
   const droppedOutside = pointer ? !isPointInsideCalendar(pointer.x, pointer.y) : false;
 
   if (sourceDayKey && didReturnToSameList && droppedOutside) {
+    // Dragged out of calendar entirely — remove from list and delete from backend.
     const dayRecipes = getDayRecipes(sourceDayKey);
-    const idx = sourceIndex ?? (typeof event.oldIndex === 'number' ? event.oldIndex : -1);
+    const idx = typeof event.oldIndex === 'number' ? event.oldIndex : -1;
     if (idx >= 0 && idx < dayRecipes.length) dayRecipes.splice(idx, 1);
+    if (sourceItem?.__calendarEntryId) {
+      await calendarService.deleteEntry(sourceItem.__calendarEntryId as number);
+    }
+  } else if (!didReturnToSameList && !droppedOutside) {
+    // Moved to a different calendar day — old entry deleted, new one created via onDayListAdd.
+    if (sourceItem?.__calendarEntryId) {
+      await calendarService.deleteEntry(sourceItem.__calendarEntryId as number);
+    }
   }
 
   dragSourceDayKey.value = null;
-  dragSourceIndex.value = null;
+  dragSourceItem.value = null;
 }
 
 function goPrev() {
@@ -163,9 +222,7 @@ function goToToday() {
             :key="day.key"
             class="bg-base-100 flex flex-col overflow-hidden min-h-0"
         >
-          <div
-              class="flex flex-col items-center py-3 shrink-0 border-b border-base-300"
-          >
+          <div class="flex flex-col items-center py-3 shrink-0 border-b border-base-300">
             <span class="text-xs font-semibold uppercase tracking-widest text-base-content/50">{{ day.dayName }}</span>
             <span
                 class="mt-1 inline-flex size-9 items-center justify-center rounded-full text-lg font-bold"
@@ -186,7 +243,10 @@ function goToToday() {
               @add="onDayListAdd(day.key, $event)"
           >
             <template #item="{ element: data }">
-              <li class="cursor-grab active:cursor-grabbing touch-none flex items-center gap-2 rounded-xl bg-base-200/70 hover:bg-base-200 px-2 py-1.5 transition-colors">
+              <li
+                  class="cursor-grab active:cursor-grabbing touch-none flex items-center gap-2 rounded-xl bg-base-200/70 hover:bg-base-200 px-2 py-1.5 transition-colors"
+                  @click.stop="openRecipe(data as Record<string, unknown>)"
+              >
                 <img :src="(data as any).image" :alt="(data as any).title" class="size-7 rounded-lg object-cover shrink-0"/>
                 <span class="text-xs font-medium leading-tight truncate flex-1">{{ (data as any).title }}</span>
                 <span class="shrink-0 size-1.5 rounded-full" :class="effortClass((data as any).effort)"/>
@@ -198,6 +258,19 @@ function goToToday() {
     </div>
 
   </div>
+
+  <!-- Recipe detail popover -->
+  <dialog ref="dialogRef" class="modal" @click.self="closeRecipe">
+    <div class="modal-box p-0 overflow-hidden w-auto max-w-sm">
+      <button
+          class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 z-10"
+          @click="closeRecipe"
+      >
+        <i class="fa-solid fa-xmark"/>
+      </button>
+      <recipe-card-component v-if="selectedRecipe" :data="selectedRecipe"/>
+    </div>
+  </dialog>
 </template>
 
 <style>
