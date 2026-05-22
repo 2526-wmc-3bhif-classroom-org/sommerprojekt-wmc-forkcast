@@ -264,6 +264,50 @@ components:
           items:
             $ref: '#/components/schemas/RecipePreviewTag'
           description: Dietary tags (Vegan, Vegetarian, Gluten Free, Dairy Free)
+    FilterOption:
+      type: object
+      required: [name, pretty_name, type]
+      properties:
+        name:
+          type: string
+          description: Filter parameter name (e.g. calories, diet)
+        pretty_name:
+          type: string
+          description: User-friendly filter name
+        type:
+          type: string
+          enum: [number, string, boolean, range]
+          description: Filter input type
+        min:
+          type: number
+          description: Minimum allowed value (for number/range types)
+        max:
+          type: number
+          description: Maximum allowed value (for number/range types)
+    FilterGroup:
+      type: object
+      required: [pretty_name, icon, options]
+      properties:
+        pretty_name:
+          type: string
+          description: User-friendly group name
+        icon:
+          type: string
+          description: Font Awesome icon name
+        options:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/FilterOption'
+          description: Map of filter names to their configurations
+    FiltersResponse:
+      type: object
+      required: [filters]
+      properties:
+        filters:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/FilterGroup'
+          description: Map of filter group names to their configurations
 security:
   - bearerAuth: []
 paths:
@@ -290,7 +334,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ValidationErrorResponse'
+                  $ref: '#/components/schemas/ValidationErrorResponse'
         '500':
           description: Internal server error
   /auth/login:
@@ -355,33 +399,126 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/MessageResponse'
-        '500':
-          description: Internal server error
+          '500':
+            description: Internal server error
   /recipes:
     get:
-      summary: Search recipes
+       summary: Search recipes with optional filters
+       tags: [Recipes]
+       parameters:
+         - in: query
+           name: search
+           schema:
+             type: string
+           description: Search term. Returns empty array if omitted.
+         - in: query
+           name: calories
+           schema:
+             type: string
+           description: Calorie range filter (e.g. 50-500, 50-, -500)
+         - in: query
+           name: carbs
+           schema:
+             type: string
+           description: Carbs range filter in grams
+         - in: query
+           name: protein
+           schema:
+             type: string
+           description: Protein range filter in grams
+         - in: query
+           name: fat
+           schema:
+             type: string
+           description: Fat range filter in grams
+         - in: query
+           name: sugar
+           schema:
+             type: string
+           description: Sugar range filter in grams
+         - in: query
+           name: sodium
+           schema:
+             type: string
+           description: Sodium range filter in mg
+         - in: query
+           name: fiber
+           schema:
+             type: string
+           description: Fiber range filter in grams
+         - in: query
+           name: diet
+           schema:
+             type: string
+           description: Diet type (e.g. vegetarian, vegan, gluten free)
+         - in: query
+           name: intolerances
+           schema:
+             type: string
+           description: Comma-separated intolerances
+         - in: query
+           name: maxReadyTime
+           schema:
+             type: integer
+           description: Maximum ready time in minutes
+         - in: query
+           name: servings
+           schema:
+             type: string
+           description: Servings range (e.g. 2-4)
+         - in: query
+           name: equipment
+           schema:
+             type: string
+           description: Required equipment
+         - in: query
+           name: type
+           schema:
+             type: string
+           description: Meal type
+         - in: query
+           name: cuisine
+           schema:
+             type: string
+           description: Cuisine type
+         - in: query
+           name: number
+           schema:
+             type: integer
+             minimum: 1
+             maximum: 100
+           description: Number of results (default 10)
+       responses:
+         '200':
+           description: List of matching recipes with effort score, rating and dietary tags
+           content:
+             application/json:
+               schema:
+                 type: array
+                 items:
+                   $ref: '#/components/schemas/RecipePreview'
+         '400':
+           description: Invalid query parameter
+           content:
+             application/json:
+               schema:
+                  $ref: '#/components/schemas/ValidationErrorResponse'
+         '500':
+            description: Internal server error
+  /recipes/filters:
+    get:
+      summary: Get available recipe filters
       tags: [Recipes]
-      parameters:
-        - in: query
-          name: search
-          schema:
-            type: string
-          description: Search term. Returns empty array if omitted.
+      security:
+        - bearerAuth: []
+      description: Returns all available filters organized by group. Range-type filters accept format 'min-max' (e.g., calories=50-500).
       responses:
         '200':
-          description: List of matching recipes with effort score, rating and dietary tags
+          description: Available filters grouped by category
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/RecipePreview'
-        '400':
-          description: Invalid query parameter
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ValidationErrorResponse'
+                $ref: '#/components/schemas/FiltersResponse'
         '500':
           description: Internal server error
   /recipes/{id}:
