@@ -15,7 +15,7 @@ export default function useRecipeService() {
             .apiRequest<RecipeResponse>(`/recipes?${params}`, "GET", auth.jwt.value);
 
         if (result.needsAuth) {
-            await auth.logout()
+            await auth.logout();
         }
 
         return result;
@@ -27,7 +27,7 @@ export default function useRecipeService() {
             .apiRequest<RecipeResponse>(`/recipes/${id}`, "GET", auth.jwt.value);
 
         if (result.needsAuth) {
-            await auth.logout()
+            await auth.logout();
         }
 
         return result;

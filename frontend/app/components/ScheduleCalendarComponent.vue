@@ -3,196 +3,99 @@ import draggable from 'vuedraggable';
 
 const { locale } = useI18n();
 
-type CalendarCell = {
+type WeekDay = {
   key: string;
-  day: number | null;
+  date: Date;
+  dayName: string;
+  dayNum: number;
   isToday: boolean;
-  date: Date | null;
 };
-
-type DayRecipeSummary = {
-  count: number;
-  previewTitles: string[];
-  remainingCount: number;
-};
-
-const HOVER_DELAY_MS = 450;
-const DAY_PREVIEW_TITLE_LIMIT = 2;
 
 const today = new Date();
-const currentMonth = ref(new Date(today.getFullYear(), today.getMonth(), 1));
-const expandedDayKey = ref<string | null>(null);
-const isDraggingRecipe = ref(false);
+const currentWeekStart = ref(getWeekStart(today));
 const calendarGridRef = ref<HTMLElement | null>(null);
 const dragSourceDayKey = ref<string | null>(null);
 const dragSourceIndex = ref<number | null>(null);
 const recipesByDay = reactive<Record<string, Record<string, unknown>[]>>({});
-let hoverTimerId: ReturnType<typeof setTimeout> | null = null;
 let dropItemCounter = 0;
 
-const monthLabel = computed(() =>
-  new Intl.DateTimeFormat(locale.value, {
-	month: 'long',
-	year: 'numeric'
-  }).format(currentMonth.value)
+const weekLabel = computed(() => {
+  const start = currentWeekStart.value;
+  const end = new Date(start);
+  end.setDate(end.getDate() + 6);
+  const fmt = new Intl.DateTimeFormat(locale.value, { month: 'short', day: 'numeric' });
+  const year = new Intl.DateTimeFormat(locale.value, { year: 'numeric' }).format(end);
+  return `${fmt.format(start)} – ${fmt.format(end)}, ${year}`;
+});
+
+const weekDays = computed<WeekDay[]>(() =>
+  Array.from({ length: 7 }, (_, i) => {
+    const date = new Date(currentWeekStart.value);
+    date.setDate(date.getDate() + i);
+    return {
+      key: toDateKey(date),
+      date,
+      dayName: new Intl.DateTimeFormat(locale.value, { weekday: 'short' }).format(date),
+      dayNum: date.getDate(),
+      isToday: toDateKey(date) === toDateKey(today),
+    };
+  })
 );
 
-const weekdayLabels = computed(() => {
-  const formatter = new Intl.DateTimeFormat(locale.value, { weekday: 'short' });
-  const monday = new Date(2026, 5, 1);
-  return Array.from({ length: 7 }, (_, index) => formatter.format(new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + index)));
-});
-
-const calendarDays = computed(() => {
-  const year = currentMonth.value.getFullYear();
-  const month = currentMonth.value.getMonth();
-  const firstDayOfMonth = new Date(year, month, 1);
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const leadingEmptyDays = (firstDayOfMonth.getDay() + 6) % 7;
-
-  const cells: CalendarCell[] = [];
-
-  for (let index = 0; index < leadingEmptyDays; index += 1) {
-	cells.push({ key: `empty-leading-${index}`, day: null, isToday: false, date: null });
-  }
-
-  for (let day = 1; day <= daysInMonth; day += 1) {
-	const date = new Date(year, month, day);
-	cells.push({
-	  key: toDateKey(date),
-	  day,
-	  date,
-	  isToday:
-		date.getFullYear() === today.getFullYear() &&
-		date.getMonth() === today.getMonth() &&
-		date.getDate() === today.getDate()
-	});
-  }
-
-  while (cells.length < 42) {
-	cells.push({ key: `empty-trailing-${cells.length}`, day: null, isToday: false, date: null });
-  }
-
-  return cells;
-});
-
-const dayRecipeSummaryByKey = computed<Record<string, DayRecipeSummary>>(() => {
-  const summaries: Record<string, DayRecipeSummary> = {};
-
-  for (const [dayKey, dayRecipes] of Object.entries(recipesByDay)) {
-    if (!Array.isArray(dayRecipes) || dayRecipes.length === 0) {
-      continue;
-    }
-
-    const titles = dayRecipes.map((recipe, index) => recipeTitleFromData(recipe, index));
-    summaries[dayKey] = {
-      count: titles.length,
-      previewTitles: titles.slice(0, DAY_PREVIEW_TITLE_LIMIT),
-      remainingCount: Math.max(0, titles.length - DAY_PREVIEW_TITLE_LIMIT)
-    };
-  }
-
-  return summaries;
-});
-
-watch(currentMonth, () => {
-  expandedDayKey.value = null;
-  clearHoverTimer();
-});
-
-onUnmounted(() => {
-  clearHoverTimer();
-});
-
 function toDateKey(date: Date): string {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 }
 
-function clearHoverTimer() {
-  if (!hoverTimerId) {
-    return;
-  }
-  clearTimeout(hoverTimerId);
-  hoverTimerId = null;
+function getWeekStart(date: Date): Date {
+  const d = new Date(date);
+  const day = d.getDay();
+  d.setDate(d.getDate() - (day === 0 ? 6 : day - 1));
+  d.setHours(0, 0, 0, 0);
+  return d;
 }
 
-function startDayHover(cell: CalendarCell) {
-  if (!cell.day || !cell.key) {
-    return;
-  }
-  clearHoverTimer();
-  hoverTimerId = setTimeout(() => {
-    expandedDayKey.value = cell.key;
-  }, HOVER_DELAY_MS);
+function effortClass(effort: unknown): string {
+  const n = typeof effort === 'number' ? effort : 100;
+  if (n <= 30) return 'bg-success';
+  if (n <= 60) return 'bg-warning';
+  return 'bg-error';
 }
 
-function endDayHover(cell: CalendarCell) {
-  clearHoverTimer();
-  if (isDraggingRecipe.value) {
-    return;
-  }
-  if (expandedDayKey.value === cell.key) {
-    expandedDayKey.value = null;
-  }
+function getDayRecipes(dayKey: string): Record<string, unknown>[] {
+  if (!recipesByDay[dayKey]) recipesByDay[dayKey] = [];
+  return recipesByDay[dayKey];
 }
 
-function onDayDragEnter(cell: CalendarCell) {
-  if (!cell.day) {
-    return;
-  }
-  isDraggingRecipe.value = true;
-  clearHoverTimer();
-  expandedDayKey.value = cell.key;
+function pointerPositionFromEvent(event?: MouseEvent | TouchEvent): { x: number; y: number } | null {
+  if (!event) return null;
+  if ('clientX' in event) return { x: event.clientX, y: event.clientY };
+  const touch = event.changedTouches[0] ?? event.touches[0];
+  if (!touch) return null;
+  return { x: touch.clientX, y: touch.clientY };
 }
 
-function onDayDragOver(cell: CalendarCell) {
-  if (!cell.day) {
-    return;
-  }
-  isDraggingRecipe.value = true;
-  if (expandedDayKey.value !== cell.key) {
-    expandedDayKey.value = cell.key;
-  }
+function isPointInsideCalendar(x: number, y: number): boolean {
+  const grid = calendarGridRef.value;
+  if (!grid) return true;
+  const bounds = grid.getBoundingClientRect();
+  return x >= bounds.left && x <= bounds.right && y >= bounds.top && y <= bounds.bottom;
 }
 
-function onDayDrop(cell: CalendarCell) {
-  if (cell.day) {
-    expandedDayKey.value = cell.key;
-  }
-  isDraggingRecipe.value = false;
-}
-
-function onDayListAdd(cell: CalendarCell, event: { newIndex?: number }) {
-  onDayDrop(cell);
-
+function onDayListAdd(dayKey: string, event: { newIndex?: number }) {
   const index = typeof event.newIndex === 'number' ? event.newIndex : -1;
-  if (index < 0) {
-    return;
-  }
-
-  const dayRecipes = getDayRecipes(cell.key);
-  const droppedRecipe = dayRecipes[index];
-  if (!droppedRecipe) {
-    return;
-  }
-
-  // Create a fresh object + unique key for each drop, even for cloned sources.
-  dayRecipes[index] = {
-    ...droppedRecipe,
-    __dropItemId: `day-recipe-${dropItemCounter++}`
-  };
+  if (index < 0) return;
+  const dayRecipes = getDayRecipes(dayKey);
+  const dropped = dayRecipes[index];
+  if (!dropped) return;
+  dayRecipes[index] = { ...dropped, __dropItemId: `day-recipe-${dropItemCounter++}` };
 }
 
-function onDayListDragStart(cell: CalendarCell, event: { oldIndex?: number }) {
-  isDraggingRecipe.value = true;
-  dragSourceDayKey.value = cell.key;
+function onDayListDragStart(dayKey: string, event: { oldIndex?: number }) {
+  dragSourceDayKey.value = dayKey;
   dragSourceIndex.value = typeof event.oldIndex === 'number' ? event.oldIndex : null;
 }
 
-function onDayListDragEnd(cell: CalendarCell, event: {
+function onDayListDragEnd(_dayKey: string, event: {
   oldIndex?: number;
   to?: EventTarget | null;
   from?: EventTarget | null;
@@ -202,257 +105,114 @@ function onDayListDragEnd(cell: CalendarCell, event: {
   const sourceIndex = dragSourceIndex.value;
   const didReturnToSameList = event.to === event.from;
   const pointer = pointerPositionFromEvent(event.originalEvent);
-  const droppedOutsideCalendar = pointer
-    ? !isPointInsideCalendar(pointer.x, pointer.y)
-    : false;
+  const droppedOutside = pointer ? !isPointInsideCalendar(pointer.x, pointer.y) : false;
 
-  if (sourceDayKey && didReturnToSameList && droppedOutsideCalendar) {
+  if (sourceDayKey && didReturnToSameList && droppedOutside) {
     const dayRecipes = getDayRecipes(sourceDayKey);
-    const indexToRemove = sourceIndex ?? (typeof event.oldIndex === 'number' ? event.oldIndex : -1);
-    if (indexToRemove >= 0 && indexToRemove < dayRecipes.length) {
-      dayRecipes.splice(indexToRemove, 1);
-    }
+    const idx = sourceIndex ?? (typeof event.oldIndex === 'number' ? event.oldIndex : -1);
+    if (idx >= 0 && idx < dayRecipes.length) dayRecipes.splice(idx, 1);
   }
 
   dragSourceDayKey.value = null;
   dragSourceIndex.value = null;
-  isDraggingRecipe.value = false;
 }
 
-function getDayRecipes(dayKey: string): Record<string, unknown>[] {
-  if (!recipesByDay[dayKey]) {
-    recipesByDay[dayKey] = [];
-  }
-  return recipesByDay[dayKey];
+function goPrev() {
+  const d = new Date(currentWeekStart.value);
+  d.setDate(d.getDate() - 7);
+  currentWeekStart.value = d;
 }
 
-function getDayRecipeSummary(dayKey: string): DayRecipeSummary | null {
-  return dayRecipeSummaryByKey.value[dayKey] ?? null;
-}
-
-function pointerPositionFromEvent(event?: MouseEvent | TouchEvent): { x: number; y: number } | null {
-  if (!event) {
-    return null;
-  }
-  if ('clientX' in event) {
-    return { x: event.clientX, y: event.clientY };
-  }
-  const touch = event.changedTouches[0] ?? event.touches[0];
-  if (!touch) {
-    return null;
-  }
-  return { x: touch.clientX, y: touch.clientY };
-}
-
-function isPointInsideCalendar(x: number, y: number): boolean {
-  const grid = calendarGridRef.value;
-  if (!grid) {
-    return true;
-  }
-  const bounds = grid.getBoundingClientRect();
-  return x >= bounds.left && x <= bounds.right && y >= bounds.top && y <= bounds.bottom;
-}
-
-function recipeTitleFromData(recipe: Record<string, unknown>, index: number): string {
-  const rawTitle = recipe.title;
-  if (typeof rawTitle === 'string' && rawTitle.trim().length > 0) {
-    return rawTitle;
-  }
-  return `Recipe ${index + 1}`;
-}
-
-function dayPopoverTitle(date: Date | null): string {
-  if (!date) {
-    return '';
-  }
-  return new Intl.DateTimeFormat(locale.value, {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric'
-  }).format(date);
-}
-
-function getPopoverPlacementClasses(index: number): string {
-  const row = Math.floor(index / 7);
-  const column = index % 7;
-
-  const horizontalClass =
-    column <= 1
-      ? 'left-0'
-      : column >= 5
-        ? 'right-0'
-        : 'left-1/2 -translate-x-1/2';
-
-  // Open down on top rows to avoid clipping, otherwise open upward from the day card.
-  if (row <= 1) {
-    return `${horizontalClass} top-0 origin-top`;
-  }
-
-  return `${horizontalClass} bottom-0 origin-bottom`;
-}
-
-function goToPreviousMonth() {
-  currentMonth.value = new Date(
-	currentMonth.value.getFullYear(),
-	currentMonth.value.getMonth() - 1,
-	1
-  );
-}
-
-function goToNextMonth() {
-  currentMonth.value = new Date(
-	currentMonth.value.getFullYear(),
-	currentMonth.value.getMonth() + 1,
-	1
-  );
+function goNext() {
+  const d = new Date(currentWeekStart.value);
+  d.setDate(d.getDate() + 7);
+  currentWeekStart.value = d;
 }
 
 function goToToday() {
-  currentMonth.value = new Date(today.getFullYear(), today.getMonth(), 1);
+  currentWeekStart.value = getWeekStart(today);
 }
 </script>
 
 <template>
   <div class="grid grid-rows-[4.5rem_1fr] grid-cols-1 gap-5">
+
     <div class="bg-base-100 rounded-l-2xl text-base-content">
       <div class="flex items-center justify-between gap-4 px-4 py-4">
         <h1 class="text-left text-2xl font-semibold tracking-tight sm:text-3xl lg:text-4xl whitespace-nowrap">
-          {{ monthLabel }}
+          {{ weekLabel }}
         </h1>
-
         <div class="flex items-center gap-2 sm:gap-3">
-          <button
-              type="button"
-              class="btn btn-circle btn-sm sm:btn-md"
-              aria-label="Previous month"
-              @click="goToPreviousMonth"
-          >
-            <span aria-hidden="true"><i class="fa-solid fa-arrow-left"/></span>
+          <button type="button" class="btn btn-circle btn-sm sm:btn-md" aria-label="Previous week" @click="goPrev">
+            <i class="fa-solid fa-arrow-left"/>
           </button>
-
-          <button
-              type="button"
-              class="btn btn-sm sm:btn-md rounded-full px-4"
-              aria-label="Go to today"
-              @click="goToToday"
-          >
-            <span aria-hidden="true"><i class="fa-solid fa-calendar-day"/></span>
+          <button type="button" class="btn btn-sm sm:btn-md rounded-full px-4" aria-label="Today" @click="goToToday">
+            <i class="fa-solid fa-calendar-day"/>
           </button>
-
-          <button
-              type="button"
-              class="btn btn-circle btn-sm sm:btn-md"
-              aria-label="Next month"
-              @click="goToNextMonth"
-          >
-            <span aria-hidden="true"><i class="fa-solid fa-arrow-right"/></span>
+          <button type="button" class="btn btn-circle btn-sm sm:btn-md" aria-label="Next week" @click="goNext">
+            <i class="fa-solid fa-arrow-right"/>
           </button>
         </div>
       </div>
     </div>
-    <div class="bg-base-100 rounded-tl-2xl text-base-content">
-      <div class="flex flex-col h-full">
-        <div class="grid flex-1 grid-rows-[auto_1fr]">
-          <div class="grid grid-cols-7 text-center text-xs font-medium uppercase tracking-[0.2em] text-base-content/60 sm:text-sm">
-            <div
-                v-for="weekday in weekdayLabels"
-                :key="weekday"
-                class="px-2 py-3 sm:py-4"
-            >
-              {{ weekday }}
-            </div>
+
+    <div class="bg-base-100 rounded-tl-2xl text-base-content overflow-hidden">
+      <div ref="calendarGridRef" class="grid grid-cols-7 gap-px bg-base-300 h-full">
+        <div
+            v-for="day in weekDays"
+            :key="day.key"
+            class="bg-base-100 flex flex-col overflow-hidden min-h-0"
+        >
+          <div
+              class="flex flex-col items-center py-3 shrink-0 border-b border-base-300"
+          >
+            <span class="text-xs font-semibold uppercase tracking-widest text-base-content/50">{{ day.dayName }}</span>
+            <span
+                class="mt-1 inline-flex size-9 items-center justify-center rounded-full text-lg font-bold"
+                :class="day.isToday ? 'bg-primary text-primary-content' : 'text-base-content'"
+            >{{ day.dayNum }}</span>
           </div>
 
-          <div ref="calendarGridRef" class="grid flex-1 grid-cols-7 h-full grid-rows-6 gap-px bg-base-300 p-px">
-            <div
-                v-for="(cell, index) in calendarDays"
-                :key="cell.key || `${monthLabel}-${index}`"
-                class="relative bg-base-100 text-sm"
-                :class="cell.day ? 'hover:bg-base-200/70' : 'bg-base-100/80 text-base-content/20'"
-                @mouseenter="startDayHover(cell)"
-                @mouseleave="endDayHover(cell)"
-                @dragenter.prevent="onDayDragEnter(cell)"
-                @dragover.prevent="onDayDragOver(cell)"
-            >
-              <div
-                  v-if="cell.day"
-                  class="relative flex h-full flex-col items-start justify-between rounded-2xl p-2 transition-colors"
-                  :class="cell.isToday ? 'ring-primary/40' : ''"
-              >
-              <span
-                  class="inline-flex h-8 min-w-8 items-center justify-center rounded-full text-sm font-semibold"
-                  :class="cell.isToday ? 'bg-primary text-primary-content' : 'text-base-content'"
-              >
-                {{ cell.day }}
-              </span>
-
-                <div
-                    v-if="getDayRecipeSummary(cell.key)"
-                    class="pointer-events-none mt-2 w-full min-h-18 max-h-18 overflow-hidden"
-                >
-                  <div class="flex items-center justify-between gap-2">
-                    <p class="text-[10px] font-semibold uppercase tracking-[0.16em] text-base-content/55">
-                      Planned
-                    </p>
-                    <span class="rounded-full bg-base-200/80 px-2 py-0.5 text-[10px] font-semibold text-base-content/60">
-                      {{ getDayRecipeSummary(cell.key)?.count }}
-                    </span>
-                  </div>
-                  <ul class="mt-1 space-y-1">
-                    <li
-                        v-for="(title, titleIndex) in getDayRecipeSummary(cell.key)?.previewTitles"
-                        :key="`${cell.key}-summary-${titleIndex}`"
-                        class="truncate rounded-md bg-base-200/60 px-2 py-1 text-xs text-base-content/75"
-                    >
-                      {{ title }}
-                    </li>
-                  </ul>
-                </div>
-
-                <Transition
-                    enter-active-class="transition duration-200 ease-out"
-                    enter-from-class="opacity-0 !scale-100"
-                    enter-to-class="opacity-100 !scale-125"
-                    leave-active-class="transition duration-200 ease-in"
-                    leave-from-class="opacity-100 !scale-125"
-                    leave-to-class="opacity-0 !scale-100"
-                >
-                  <div
-                      v-show="expandedDayKey === cell.key"
-                      :class="getPopoverPlacementClasses(index)"
-                      class="pointer-events-none absolute z-30 flex h-60 w-120 scale-125 flex-col overflow-hidden rounded-2xl border border-base-300 bg-base-100 p-3 shadow-2xl"
-                  >
-                    <p class="text-sm font-semibold leading-tight">
-                      {{ dayPopoverTitle(cell.date) }}
-                    </p>
-
-                    <draggable
-                        :list="getDayRecipes(cell.key)"
-                        :animation="300"
-                        :group="{ name: 'items', pull: true, put: true }"
-                        tag="ul"
-                        item-key="__dropItemId"
-                        ghost-class="opacity-25"
-                        class="pointer-events-auto list mt-2 min-h-0 flex-1 overflow-y-auto rounded-xl bg-base-200/60 p-2"
-                        @start="onDayListDragStart(cell, $event)"
-                        @end="onDayListDragEnd(cell, $event)"
-                        @add="onDayListAdd(cell, $event)"
-                    >
-                      <template #item="{ element: data }">
-                        <div class="cursor-grab active:cursor-grabbing touch-none">
-                          <recipe-list-component :data="data"/>
-                        </div>
-                      </template>
-                    </draggable>
-                  </div>
-                </Transition>
-              </div>
-            </div>
-          </div>
+          <draggable
+              :list="getDayRecipes(day.key)"
+              :animation="200"
+              :group="{ name: 'items', pull: true, put: true }"
+              tag="ul"
+              item-key="__dropItemId"
+              ghost-class="cal-drop-ghost"
+              class="flex-1 min-h-0 overflow-y-auto p-2 space-y-1.5"
+              @start="onDayListDragStart(day.key, $event)"
+              @end="onDayListDragEnd(day.key, $event)"
+              @add="onDayListAdd(day.key, $event)"
+          >
+            <template #item="{ element: data }">
+              <li class="cursor-grab active:cursor-grabbing touch-none flex items-center gap-2 rounded-xl bg-base-200/70 hover:bg-base-200 px-2 py-1.5 transition-colors">
+                <img :src="(data as any).image" :alt="(data as any).title" class="size-7 rounded-lg object-cover shrink-0"/>
+                <span class="text-xs font-medium leading-tight truncate flex-1">{{ (data as any).title }}</span>
+                <span class="shrink-0 size-1.5 rounded-full" :class="effortClass((data as any).effort)"/>
+              </li>
+            </template>
+          </draggable>
         </div>
       </div>
     </div>
+
   </div>
-
 </template>
 
+<style>
+.cal-drop-ghost {
+  height: 2rem !important;
+  max-height: 2rem !important;
+  overflow: hidden !important;
+  border-radius: 0.5rem !important;
+  opacity: 0.45;
+  background: var(--color-base-200) !important;
+  border: 1px dashed var(--color-primary) !important;
+  padding: 0 !important;
+}
+
+.cal-drop-ghost > * {
+  display: none !important;
+}
+</style>

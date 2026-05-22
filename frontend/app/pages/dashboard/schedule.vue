@@ -100,6 +100,46 @@ function onMainListAdd(evt: any) {
   }
 }
 
+let dragGhostEl: HTMLElement | null = null;
+
+function onMainListDragStart(evt: any) {
+  const recipe = datas.value[evt.oldIndex];
+  if (!recipe || !evt.originalEvent?.dataTransfer) return;
+
+  // Resolve actual computed theme colors from document root.
+  const style = getComputedStyle(document.documentElement);
+  const bg = style.getPropertyValue('--color-base-200').trim() || '#1f2937';
+  const border = style.getPropertyValue('--color-base-300').trim() || '#374151';
+  const color = style.getPropertyValue('--color-base-content').trim() || '#ffffff';
+
+  dragGhostEl = document.createElement('div');
+  // Must be in the visible paint area when browser snapshots it — position off-left via transform.
+  dragGhostEl.style.cssText =
+    `position:fixed;top:0;left:0;transform:translate(-9999px,-9999px);` +
+    `display:flex;align-items:center;gap:8px;` +
+    `background:${bg};border:1px solid ${border};` +
+    `border-radius:10px;padding:6px 10px;color:${color};` +
+    `font-size:12px;font-weight:500;width:200px;white-space:nowrap;overflow:hidden;`;
+
+  const img = document.createElement('img');
+  img.src = recipe.image as string;
+  img.style.cssText = 'width:24px;height:24px;border-radius:4px;object-fit:cover;flex-shrink:0;';
+  dragGhostEl.appendChild(img);
+
+  const label = document.createElement('span');
+  label.textContent = recipe.title as string;
+  label.style.cssText = 'overflow:hidden;text-overflow:ellipsis;flex:1;';
+  dragGhostEl.appendChild(label);
+
+  document.body.appendChild(dragGhostEl);
+  evt.originalEvent.dataTransfer.setDragImage(dragGhostEl, 16, 16);
+}
+
+function onMainListDragEnd() {
+  dragGhostEl?.remove();
+  dragGhostEl = null;
+}
+
 </script>
 
 <template>
@@ -117,9 +157,11 @@ function onMainListAdd(evt: any) {
             :group="{ name: 'items', pull: 'clone', put: false }"
             tag="ul"
             item-key="__sourceItemId"
-            class="list  overflow-y-scroll h-[calc(100vh-8rem)]"
+            class="list overflow-y-scroll h-[calc(100vh-8rem)]"
             ghost-class="hidden"
             @add="onMainListAdd"
+            @start="onMainListDragStart"
+            @end="onMainListDragEnd"
             :data-zone="'main'"
         >
           <template #item="{ element: data }">
