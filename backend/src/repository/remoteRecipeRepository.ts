@@ -8,8 +8,20 @@ export class RemoteRecipeRepository {
     private readonly API_URL = "https://api.spoonacular.com/recipes";
     private readonly API_KEY = process.env.SPOONACULAR_API_KEY || "key";
 
-    async searchRecipes(query: string, userIp?: string, number: number = 4): Promise<RecipeWithRawDetails[]> {
-        const url = `${this.API_URL}/complexSearch?query=${encodeURIComponent(query)}&number=${number}&addRecipeInformation=true&apiKey=${this.API_KEY}`;
+    async searchRecipes(query: string, userIp?: string, number: number = 4, filters: Record<string, any> = {}): Promise<RecipeWithRawDetails[]> {
+        const params = new URLSearchParams();
+        params.append("query", query);
+        params.append("number", String(filters.number ?? number));
+        params.append("addRecipeInformation", "true");
+        params.append("apiKey", this.API_KEY);
+
+        for (const [key, value] of Object.entries(filters)) {
+            if (key !== "number" && value !== undefined && value !== "") {
+                params.append(key, String(value));
+            }
+        }
+
+        const url = `${this.API_URL}/complexSearch?${params.toString()}`;
         const response = await fetch(url);
 
         if (userIp) {

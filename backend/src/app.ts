@@ -15,6 +15,7 @@ import profileRoutes from "./routes/profileRoutes";
 import calendarRoutes from "./routes/calendarRoutes";
 import notificationRoutes from "./routes/notificationRoutes";
 import { RecipeService } from "./services/recipeService";
+import { seedFilters } from "./db/seedFilters";
 import { parseDurationToMilliseconds } from "./utils";
 import rateLimit from "express-rate-limit";
 import { apiQuotaLimiter } from "./middleware/apiQuotaLimiter";
@@ -34,6 +35,7 @@ const app = express();
 const unit = new Unit(true);
 unit.complete(null);
 
+await seedFilters();
 await cleanup();
 
 app.use(cors({ origin: allowedOrigins, credentials: true }));

@@ -60,6 +60,7 @@ class DB {
         db.pragma("foreign_keys = ON");
 
         DB.ensureTablesCreated(db);
+        DB.ensureFiltersSeeded(db);
 
         return db;
     }
@@ -162,6 +163,23 @@ class DB {
                 FOREIGN KEY (userId) REFERENCES User(id),
                 FOREIGN KEY (recipeId) REFERENCES Recipe(id)
             );
+
+            CREATE TABLE IF NOT EXISTS FilterGroup (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL UNIQUE,
+                icon TEXT NOT NULL
+            );
+
+            CREATE TABLE IF NOT EXISTS Filter (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                groupId INTEGER NOT NULL,
+                name TEXT NOT NULL UNIQUE,
+                prettyName TEXT NOT NULL,
+                type TEXT NOT NULL,
+                min REAL,
+                max REAL,
+                FOREIGN KEY (groupId) REFERENCES FilterGroup(id) ON DELETE CASCADE
+            );
         `);
 
         const migrations = [
@@ -183,6 +201,17 @@ class DB {
             }
         }
     }
+
+     public static ensureFiltersSeeded(connection: Database): void {
+         try {
+             const filterCount = connection.prepare("SELECT COUNT(*) as count FROM Filter").get() as any;
+             if (filterCount && filterCount.count === 0) {
+                 // Seed happens in app.ts to avoid recursion during DB init
+             }
+         } catch {
+             // Table might not exist yet, skip seeding
+         }
+     }
 }
 
 // Expose a tiny test-only hook so tests can exercise internal log branches (harmless)
