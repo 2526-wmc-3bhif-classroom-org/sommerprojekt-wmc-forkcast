@@ -8,7 +8,7 @@ export default function useRecipeService() {
     const auth = useAuthService();
 
     async function search(query: string, filters: Record<string, string> = {}): Promise<ApiResponse<RecipePreview[]>> {
-        if (!auth.authenticated.value) throw Error("Not authenticated");
+        if (!auth.authenticated.value) return { ok: false, needsAuth: true, rateLimited: false };
 
         const params = new URLSearchParams({ search: query, ...filters });
         const result = await connection
@@ -19,7 +19,7 @@ export default function useRecipeService() {
     }
 
     async function getRecipe(id: number): Promise<ApiResponse<RecipePreview>> {
-        if (!auth.authenticated.value) throw Error("Not authenticated");
+        if (!auth.authenticated.value) return { ok: false, needsAuth: true, rateLimited: false };
 
         const result = await connection
             .apiRequest<RecipePreview>(`/recipes/${id}`, "GET", auth.jwt.value);
@@ -29,7 +29,7 @@ export default function useRecipeService() {
     }
 
     async function getFilters(): Promise<ApiResponse<FiltersResponse>> {
-        if (!auth.authenticated.value) throw Error("Not authenticated");
+        if (!auth.authenticated.value) return { ok: false, needsAuth: true, rateLimited: false };
 
         const result = await connection
             .apiRequest<FiltersResponse>("/recipes/filters", "GET", auth.jwt.value);

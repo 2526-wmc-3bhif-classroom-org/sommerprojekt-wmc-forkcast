@@ -12,7 +12,7 @@ export default function useCalendarService() {
     }
 
     async function getEntries(from?: string, to?: string): Promise<ApiResponse<CalendarEntry[]>> {
-        if (!auth.authenticated.value) throw Error('Not authenticated');
+        if (!auth.authenticated.value) return { ok: false, needsAuth: true, rateLimited: false };
         const params = new URLSearchParams();
         if (from) params.set('from', from);
         if (to) params.set('to', to);
@@ -23,14 +23,14 @@ export default function useCalendarService() {
     }
 
     async function getEntry(id: number): Promise<ApiResponse<CalendarEntry>> {
-        if (!auth.authenticated.value) throw Error('Not authenticated');
+        if (!auth.authenticated.value) return { ok: false, needsAuth: true, rateLimited: false };
         return handleAuth(
             await connection.apiRequest<CalendarEntry>(`/users/me/calendar/${id}`, 'GET', auth.jwt.value)
         );
     }
 
     async function addEntry(recipeId: number, date: Date): Promise<ApiResponse<CalendarEntry>> {
-        if (!auth.authenticated.value) throw Error('Not authenticated');
+        if (!auth.authenticated.value) return { ok: false, needsAuth: true, rateLimited: false };
         return handleAuth(
             await connection.apiRequest<CalendarEntry>(
                 '/users/me/calendar',
@@ -42,7 +42,7 @@ export default function useCalendarService() {
     }
 
     async function deleteEntry(id: number): Promise<ApiResponse<void>> {
-        if (!auth.authenticated.value) throw Error('Not authenticated');
+        if (!auth.authenticated.value) return { ok: false, needsAuth: true, rateLimited: false };
         return handleAuth(
             await connection.apiRequest<void>(
                 `/users/me/calendar/${id}`,

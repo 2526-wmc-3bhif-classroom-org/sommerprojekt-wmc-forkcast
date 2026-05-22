@@ -3,13 +3,14 @@ import useRecipeService from "~/assets/service/recipe-service";
 import type { RecipePreview } from "~/assets/model/recipe-preview";
 import type { FilterGroup } from "~/assets/model/filter";
 
-const emit = defineEmits<{ results: [recipes: RecipePreview[]] }>();
+const emit = defineEmits<{ results: [recipes: RecipePreview[]]; loading: [value: boolean] }>();
 
 const query = ref('');
 const filterGroups = ref<Record<string, FilterGroup>>({});
 const filterState = reactive<Record<string, any>>({});
 const pageSize = ref(10);
 const hasMore = ref(false);
+const searchError = ref<string | null>(null);
 
 const recipeService = useRecipeService();
 let debounceTimer: ReturnType<typeof setTimeout> | null = null;
@@ -67,7 +68,14 @@ async function doSearch(reset = true) {
     hasMore.value = false;
     return;
   }
+  searchError.value = null;
+  emit('loading', true);
   const res = await recipeService.search(query.value.trim(), { ...buildFilterParams(), number: String(pageSize.value) });
+  emit('loading', false);
+  if (res.rateLimited) {
+    searchError.value = 'Too many requests — please wait a moment before searching again.';
+    return;
+  }
   if (res.ok && res.value) {
     emit('results', res.value);
     hasMore.value = res.value.length >= pageSize.value;
@@ -84,6 +92,7 @@ defineExpose({ loadMore });
 </script>
 
 <template>
+  <div class="flex flex-col gap-1.5">
   <div class="join">
     <label class="input join-item w-full">
       <i class="fa-solid fa-magnifying-glass"/>
@@ -215,5 +224,10 @@ defineExpose({ loadMore });
         </div>
       </div>
     </div>
+  </div>
+  <div v-if="searchError" class="flex items-center gap-2 text-xs text-error px-1">
+    <i class="fa-solid fa-circle-exclamation shrink-0"/>
+    <span>{{ searchError }}</span>
+  </div>
   </div>
 </template>

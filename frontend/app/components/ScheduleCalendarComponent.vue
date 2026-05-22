@@ -33,6 +33,8 @@ function closeRecipe() {
 }
 let dropItemCounter = 0;
 const fetchedWeeks = new Set<string>();
+const loadingWeek = ref(false);
+const calendarError = ref<string | null>(null);
 
 const calendarService = useCalendarService();
 const recipeService = useRecipeService();
@@ -64,13 +66,21 @@ async function loadWeek(weekStart: Date) {
   const from = toDateKey(weekStart);
   if (fetchedWeeks.has(from)) return;
   fetchedWeeks.add(from);
+  calendarError.value = null;
+  loadingWeek.value = true;
 
   const end = new Date(weekStart);
   end.setDate(end.getDate() + 6);
   const to = toDateKey(end);
 
   const result = await calendarService.getEntries(from, to);
-  if (!result.ok || !result.value) return;
+  if (result.rateLimited) {
+    calendarError.value = 'Too many requests — please wait a moment.';
+    loadingWeek.value = false;
+    fetchedWeeks.delete(from);
+    return;
+  }
+  if (!result.ok || !result.value) { loadingWeek.value = false; return; }
 
   await Promise.all(result.value.map(async (entry) => {
     const recipeResult = await recipeService.getRecipe(entry.recipeId);
@@ -82,6 +92,7 @@ async function loadWeek(weekStart: Date) {
       __calendarEntryId: entry.id,
     });
   }));
+  loadingWeek.value = false;
 }
 
 onMounted(() => loadWeek(currentWeekStart.value));
@@ -209,9 +220,15 @@ function goToToday() {
 
     <div class="bg-base-100 rounded-l-2xl text-base-content">
       <div class="flex items-center justify-between gap-4 px-4 py-4">
-        <h1 class="text-left text-2xl font-semibold tracking-tight sm:text-3xl lg:text-4xl whitespace-nowrap">
-          {{ weekLabel }}
-        </h1>
+        <div class="flex flex-col gap-0.5 min-w-0">
+          <h1 class="text-left text-2xl font-semibold tracking-tight sm:text-3xl lg:text-4xl whitespace-nowrap">
+            {{ weekLabel }}
+          </h1>
+          <p v-if="calendarError" class="flex items-center gap-1.5 text-xs text-error">
+            <i class="fa-solid fa-circle-exclamation shrink-0"/>
+            {{ calendarError }}
+          </p>
+        </div>
         <div class="flex items-center gap-2 sm:gap-3">
           <button type="button" class="btn btn-circle btn-sm sm:btn-md" aria-label="Previous week" @click="goPrev">
             <i class="fa-solid fa-arrow-left"/>
@@ -241,7 +258,10 @@ function goToToday() {
             >{{ day.dayNum }}</span>
           </div>
 
-          <draggable
+          <div v-if="loadingWeek" class="flex-1 p-2 space-y-1.5">
+            <div v-for="i in 2" :key="i" class="skeleton h-10 w-full rounded-xl"/>
+          </div>
+          <draggable v-else
               :list="getDayRecipes(day.key)"
               :animation="200"
               :group="{ name: 'items', pull: true, put: true }"

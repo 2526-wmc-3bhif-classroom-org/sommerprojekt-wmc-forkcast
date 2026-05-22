@@ -25,8 +25,7 @@ export default function useAuthService() {
     }
 
     async function logout() {
-        if (!authenticated.value) throw Error("Not authenticated");
-
+        if (!authenticated.value) return;
         await clearAuthState();
     }
 
@@ -40,8 +39,8 @@ export default function useAuthService() {
 
         if (result.ok) {
             userStore.user = result.value as User;
-        } else {
-            await clearAuthState(); // If the JWT is invalid or expired, clear the auth state to prevent using an invalid token
+        } else if (result.needsAuth) {
+            await clearAuthState();
         }
 
         userStore.loading = false; // Set loading to false after attempting to load the user

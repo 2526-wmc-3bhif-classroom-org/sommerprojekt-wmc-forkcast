@@ -30,6 +30,7 @@ function cloneRecipeForDrop(recipe: Record<string, unknown>) {
 }
 
 const datas = ref<(RecipePreview & { __sourceItemId: string })[]>([]);
+const isSearchLoading = ref(false);
 
 function onSearchResults(results: RecipePreview[]) {
   datas.value = results.map(r => ({
@@ -82,10 +83,25 @@ function onMainListDragEnd() {
     <div class="col-span-2"></div>
     <div class="w-125 bg-base-100 rounded-tr-2xl col-span-1">
       <div>
-        <recipe-search-component ref="searchRef" class="m-3 w-[stretch]" @results="onSearchResults"/>
+        <recipe-search-component ref="searchRef" class="m-3 w-[stretch]" @results="onSearchResults" @loading="isSearchLoading = $event"/>
 
         <div ref="listContainerRef" class="overflow-y-scroll h-[calc(100vh-8rem)]">
-          <draggable
+          <ul v-if="isSearchLoading && datas.length === 0" class="list">
+            <li v-for="i in 5" :key="i" class="list-row flex items-center gap-4 p-3">
+              <div class="skeleton size-33 rounded-box shrink-0"/>
+              <div class="flex flex-col gap-2 flex-1">
+                <div class="skeleton h-5 w-3/4 rounded"/>
+                <div class="skeleton h-3 w-1/2 rounded"/>
+                <div class="skeleton h-3 w-2/3 rounded"/>
+                <div class="skeleton h-3 w-1/3 rounded"/>
+              </div>
+            </li>
+          </ul>
+          <div v-else-if="datas.length === 0" class="flex flex-col items-center justify-center h-full gap-3 text-base-content/30 select-none">
+            <i class="fa-solid fa-magnifying-glass text-4xl"/>
+            <span class="text-sm font-medium">Start by searching something...</span>
+          </div>
+          <draggable v-else
               v-model="datas"
               :animation="300"
               :clone="cloneRecipeForDrop"
