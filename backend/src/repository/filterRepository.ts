@@ -1,7 +1,6 @@
 import { Unit } from "../db/unit";
 
 interface FilterOption {
-    name: string;
     pretty_name: string;
     type: string;
     min?: number;
@@ -9,7 +8,6 @@ interface FilterOption {
 }
 
 interface FilterGroup {
-    pretty_name: string;
     icon: string;
     options: Record<string, FilterOption>;
 }
@@ -38,7 +36,6 @@ export class FilterRepository {
 
                 for (const filter of groupFilters) {
                     const option: FilterOption = {
-                        name: filter.name,
                         pretty_name: filter.prettyName,
                         type: filter.type,
                     };
@@ -49,7 +46,6 @@ export class FilterRepository {
                 }
 
                 result.filters[group.name] = {
-                    pretty_name: this.formatGroupName(group.name),
                     icon: group.icon,
                     options,
                 };
@@ -61,9 +57,5 @@ export class FilterRepository {
             unit.complete();
             throw error;
         }
-    }
-
-    private formatGroupName(name: string): string {
-        return name.split(/(?=[A-Z])/).join(" ");
     }
 }
