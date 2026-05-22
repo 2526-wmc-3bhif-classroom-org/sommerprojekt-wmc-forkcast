@@ -25,6 +25,8 @@ router.get("/filters",
 
 router.get("/",
     query("search").optional().isString().trim().escape(),
+    query("number").optional().isInt({ min: 1, max: 100 }).toInt(),
+    query("offset").optional().isInt({ min: 0 }).toInt(),
     validateRequest,
     async (req: AuthRequest, res: Response) => {
     try {
@@ -38,7 +40,10 @@ router.get("/",
         }
 
         const filters = filterValidator.validateAndBuild(req.query as Record<string, any>);
-        const recipes = await recipeService.searchRecipes(search, req.ip, filters);
+        const number = (req.query.number as number) ?? 10;
+        const offset = (req.query.offset as number) ?? 0;
+        
+        const recipes = await recipeService.searchRecipes(search, req.ip, { ...filters, offset }, number);
         res.json(recipes);
     } catch (e) {
         console.error(e);
