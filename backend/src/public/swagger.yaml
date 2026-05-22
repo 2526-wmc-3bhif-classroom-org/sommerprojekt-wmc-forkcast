@@ -171,6 +171,45 @@ components:
           type: string
           format: date-time
           description: ISO 8601 date string.
+    ShoppingListIngredient:
+      type: object
+      properties:
+        name:
+          type: string
+        us:
+          type: object
+          properties:
+            amount:
+              type: number
+            unit:
+              type: string
+        metric:
+          type: object
+          properties:
+            amount:
+              type: number
+            unit:
+              type: string
+    DateRange:
+      type: object
+      properties:
+        start:
+          type: string
+          format: date
+        end:
+          type: string
+          format: date
+    ShoppingListResponse:
+      type: object
+      properties:
+        dateRange:
+          $ref: '#/components/schemas/DateRange'
+        recipeCount:
+          type: integer
+        ingredients:
+          type: array
+          items:
+            $ref: '#/components/schemas/ShoppingListIngredient'
     UpdateNotificationRequest:
       type: object
       required:
@@ -665,6 +704,19 @@ paths:
     get:
       summary: Get calendar entries
       tags: [Calendar]
+      parameters:
+        - in: query
+          name: from
+          schema:
+            type: string
+            format: date
+          description: Start date in ISO8601 format (YYYY-MM-DD). Optional, returns all if omitted.
+        - in: query
+          name: to
+          schema:
+            type: string
+            format: date
+          description: End date in ISO8601 format (YYYY-MM-DD). Optional, returns all if omitted.
       responses:
         '200':
            description: Calendar entries
@@ -687,6 +739,49 @@ paths:
         '400':
            description: Invalid request body
            content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+        '401':
+          description: Missing or invalid authentication
+        '500':
+          description: Internal server error
+  /users/me/calendar/shopping-list:
+    get:
+      summary: Get shopping list for calendar entries in date range
+      tags: [Calendar]
+      parameters:
+        - in: query
+          name: from
+          required: true
+          schema:
+            type: string
+            format: date
+          description: Start date in ISO8601 format (YYYY-MM-DD)
+        - in: query
+          name: to
+          required: true
+          schema:
+            type: string
+            format: date
+          description: End date in ISO8601 format (YYYY-MM-DD)
+        - in: query
+          name: units
+          schema:
+            type: string
+            enum: [us, metric, both]
+            default: metric
+          description: Unit system for ingredient amounts
+      responses:
+        '200':
+          description: Aggregated shopping list with ingredients
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShoppingListResponse'
+        '400':
+          description: Invalid parameters
+          content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ValidationErrorResponse'
