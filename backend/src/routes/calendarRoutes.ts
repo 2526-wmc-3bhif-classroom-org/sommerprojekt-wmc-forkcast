@@ -6,6 +6,7 @@ import {validateRequest} from "../middleware/validationMiddleware";
 import { Unit } from "../db/unit";
 import { CalendarService } from "../services/calendarService";
 import { ShoppingListService } from "../services/shoppingListService";
+import { ErrorResponse } from "../utils/errorResponse";
 
 const router = Router();
 
@@ -52,7 +53,7 @@ router.get('/shopping-list',
         res.json(shoppingList);
     } catch (error) {
         console.error(error);
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({});
+        return ErrorResponse.internalServerError(res, "Failed to retrieve shopping list");
     }
 });
 
@@ -71,7 +72,7 @@ router.post('/',
             res.status(StatusCodes.CREATED).json(newEntry);
         } catch (error) {
             unit.complete(false);
-            res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({});
+            return ErrorResponse.internalServerError(res, "Failed to add calendar entry");
         }
     });
 
@@ -82,12 +83,12 @@ router.get('/:calendarEntryId', authenticateToken, (req: AuthRequest, res) => {
        const id = parseInt(req.params.calendarEntryId as string);
        const entry = calendarService.getCalendarEntryById(id);
        if (!entry) {
-           return res.status(StatusCodes.NOT_FOUND).json({});
+           return ErrorResponse.notFound(res, "Calendar entry not found");
        }
        return res.status(StatusCodes.OK).json(entry);
    }
    catch (error) {
-       return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({});
+       return ErrorResponse.internalServerError(res, "Failed to retrieve calendar entry");
    }
    finally {
        unit.complete();
@@ -102,14 +103,14 @@ router.delete('/:calendarEntryId', authenticateToken, (req: AuthRequest, res) =>
         const success = calendarService.removeCalendarEntry(req.user!.userId, calendarEntryId);
         if (success) {
             unit.complete(true);
-            res.status(StatusCodes.OK).json({});
+            return res.status(StatusCodes.OK).json({ message: "Calendar entry deleted" });
         } else {
             unit.complete(false);
-            res.status(StatusCodes.NOT_FOUND).json({});
+            return ErrorResponse.notFound(res, "Calendar entry not found");
         }
     } catch (error) {
         unit.complete(false);
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({});
+        return ErrorResponse.internalServerError(res, "Failed to delete calendar entry");
     }
 });
 

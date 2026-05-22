@@ -1,3 +1,4 @@
+import { ErrorResponse } from "../utils/errorResponse";
 import {authenticateToken, AuthRequest} from "../middleware/authMiddleware";
 import {StatusCodes} from "http-status-codes";
 import { body, param } from 'express-validator';
@@ -19,7 +20,7 @@ router.get('/', authenticateToken, (req: AuthRequest, res) => {
         res.status(StatusCodes.OK).json(favorites);
     } catch (error) {
         console.error("Get favorites error:", error);
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({});
+        ErrorResponse.internalServerError(res);
     } finally {
         unit.complete();
     }
@@ -49,7 +50,7 @@ router.post('/',
         } catch (error: any) {
             unit.complete(false);
             console.error("Add favorite error:", error);
-            res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({});
+            ErrorResponse.internalServerError(res);
         }
 });
 
@@ -70,12 +71,12 @@ router.delete('/:recipeId',
             res.status(StatusCodes.OK).json({});
         } else {
             unit.complete(false);
-            res.status(StatusCodes.NOT_FOUND).json({});
+            ErrorResponse.notFound(res, "Favorite not found");
         }
     } catch (error) {
         unit.complete(false);
         console.error("Remove favorite error:", error);
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({});
+        ErrorResponse.internalServerError(res);
     }
 });
 
