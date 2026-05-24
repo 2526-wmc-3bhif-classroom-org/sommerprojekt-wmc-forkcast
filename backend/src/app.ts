@@ -19,6 +19,7 @@ import { seedFilters } from "./db/seedFilters";
 import { parseDurationToMilliseconds } from "./utils";
 import rateLimit from "express-rate-limit";
 import { apiQuotaLimiter } from "./middleware/apiQuotaLimiter";
+import { initializeFilterCache } from "./utils/filterCache";
 
 const PORT = process.env.PORT || "3000";
 const allowedOrigins = (process.env.CORS_ORIGIN ?? "")
@@ -36,6 +37,7 @@ const unit = new Unit(true);
 unit.complete(null);
 
 await seedFilters();
+await initializeFilterCache();
 await cleanup();
 
 app.use(cors({ origin: allowedOrigins, credentials: true }));
