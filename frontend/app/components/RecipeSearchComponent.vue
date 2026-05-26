@@ -125,7 +125,8 @@ defineExpose({ loadMore });
               </p>
 
               <div class="space-y-4">
-                <div v-for="(option, optKey) in group.options" :key="optKey" v-if="optKey !== 'number'">
+                <template v-for="(option, optKey) in group.options" :key="optKey">
+                <div v-if="optKey !== 'number'">
 
                   <!-- BOOLEAN — pill toggle -->
                   <template v-if="option.type === 'boolean'">
@@ -220,6 +221,7 @@ defineExpose({ loadMore });
                   </template>
 
                 </div>
+                </template>
               </div>
             </div>
           </div>
