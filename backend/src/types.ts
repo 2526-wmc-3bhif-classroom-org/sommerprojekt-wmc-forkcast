@@ -14,6 +14,16 @@ export interface Recipe {
     updatedAt?: Date;
 }
 
+export interface Ingredient {
+    name: string;
+    amount: number;
+    unit: string;
+    measures?: {
+        us?: { amount: number; unitShort: string };
+        metric?: { amount: number; unitShort: string };
+    };
+}
+
 export interface RecipeNutrients {
     calories: number;
     carbs: number;
@@ -95,6 +105,7 @@ export interface RecipePreviewResponse {
     rating: { rating: number; count: number };
     attributes: Array<{ icon: string; text: string }>;
     tags: Array<{ icon: string; text: string; color: string }>;
+    ingredients?: Ingredient[];
 }
 
 export interface Notification {
