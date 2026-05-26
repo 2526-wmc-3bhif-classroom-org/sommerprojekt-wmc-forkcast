@@ -13,10 +13,10 @@ export default function useCalendarService() {
 
     async function getEntries(from?: string, to?: string): Promise<ApiResponse<CalendarEntry[]>> {
         if (!auth.authenticated.value) return { ok: false, needsAuth: true, rateLimited: false };
-        const params = new URLSearchParams();
+        const params = new URLSearchParams({ populate: 'true' });
         if (from) params.set('from', from);
         if (to) params.set('to', to);
-        const query = params.toString() ? `?${params}` : '';
+        const query = `?${params}`;
         return handleAuth(
             await connection.apiRequest<CalendarEntry[]>(`/users/me/calendar${query}`, 'GET', auth.jwt.value)
         );

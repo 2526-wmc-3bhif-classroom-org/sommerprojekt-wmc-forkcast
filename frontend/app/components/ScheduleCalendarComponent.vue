@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import draggable from 'vuedraggable';
 import useCalendarService from '~/assets/service/calendar-service';
-import useRecipeService from '~/assets/service/recipe-service';
 
 const { locale } = useI18n();
 
@@ -37,7 +36,6 @@ const loadingWeek = ref(false);
 const calendarError = ref<string | null>(null);
 
 const calendarService = useCalendarService();
-const recipeService = useRecipeService();
 
 const weekLabel = computed(() => {
   const start = currentWeekStart.value;
@@ -82,16 +80,15 @@ async function loadWeek(weekStart: Date) {
   }
   if (!result.ok || !result.value) { loadingWeek.value = false; return; }
 
-  await Promise.all(result.value.map(async (entry) => {
-    const recipeResult = await recipeService.getRecipe(entry.recipeId);
-    if (!recipeResult.ok || !recipeResult.value) return;
+  for (const entry of result.value) {
+    if (!entry.recipe) continue;
     const dayKey = entry.date.slice(0, 10);
     getDayRecipes(dayKey).push({
-      ...recipeResult.value,
+      ...entry.recipe,
       __dropItemId: `day-recipe-${dropItemCounter++}`,
       __calendarEntryId: entry.id,
     });
-  }));
+  }
   loadingWeek.value = false;
 }
 
