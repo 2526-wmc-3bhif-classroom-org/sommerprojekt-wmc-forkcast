@@ -1,4 +1,4 @@
-<script setup lang="ts">
+  <script setup lang="ts">
 // --- Types (Step 2: swap dummyRecipes with GET /api/users/me/calendar/shopping-list?from=&to=&units=metric) ---
 type Ingredient = { name: string; amount: number; unit: string };
 
@@ -276,19 +276,57 @@ const allDummyRecipes: PlannedRecipe[] = [
   },
 ];
 
+// --- Helpers ---
+function toInputStr(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const dd = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${dd}`;
+}
+
+function parseLocalDate(str: string): Date {
+  const [y, m, d] = str.split('-').map(Number);
+  return new Date(y, (m as number) - 1, d as number);
+}
+
+function addDays(date: Date, n: number): Date {
+  const x = new Date(date);
+  x.setDate(x.getDate() + n);
+  return x;
+}
+
 // --- State ---
 const PRESETS = [3, 7, 14, 30] as const;
-const selectedDays = ref(7);
-const customDaysInput = ref('');
+const startDateStr = ref(toInputStr(today));
+const endDateStr = ref(toInputStr(addDays(today, 7)));
 const checkedKeys = ref<Set<string>>(new Set());
 const copySuccess = ref(false);
+const calendarRangeEl = ref<HTMLElement | null>(null);
+
+const displayRange = computed(() => {
+  const s = parseLocalDate(startDateStr.value);
+  const e = parseLocalDate(endDateStr.value);
+  const fmt = (d: Date, showYear: boolean) =>
+    d.toLocaleDateString('en', { month: 'short', day: 'numeric', ...(showYear ? { year: 'numeric' } : {}) });
+  const diffYear = s.getFullYear() !== e.getFullYear();
+  return `${fmt(s, diffYear)} — ${fmt(e, true)}`;
+});
 
 // --- Computed ---
-const activeRecipes = computed(() => {
-  const cutoff = new Date(today);
-  cutoff.setDate(cutoff.getDate() + selectedDays.value);
-  return allDummyRecipes.filter((r) => r.date >= today && r.date < cutoff);
+const startDate = computed(() => parseLocalDate(startDateStr.value));
+const endDate = computed(() => {
+  const d = parseLocalDate(endDateStr.value);
+  d.setHours(23, 59, 59, 999);
+  return d;
 });
+
+const activeRecipes = computed(() =>
+  allDummyRecipes.filter((r) => r.date >= startDate.value && r.date <= endDate.value)
+);
+
+function isPresetActive(n: number): boolean {
+  return startDateStr.value === toInputStr(today) && endDateStr.value === toInputStr(addDays(today, n));
+}
 
 const shoppingItems = computed((): ShoppingItem[] => {
   const map = new Map<string, ShoppingItem>();
@@ -325,16 +363,24 @@ const shoppingItems = computed((): ShoppingItem[] => {
 const checkedCount = computed(() => shoppingItems.value.filter((i) => i.checked).length);
 
 // --- Actions ---
-function setDays(n: number) {
-  selectedDays.value = n;
-  customDaysInput.value = '';
+function setPreset(n: number) {
+  startDateStr.value = toInputStr(today);
+  endDateStr.value = toInputStr(addDays(today, n));
+  nextTick(() => {
+    if (calendarRangeEl.value) {
+      (calendarRangeEl.value as any).value = `${startDateStr.value}/${endDateStr.value}`;
+    }
+  });
 }
 
-function applyCustomDays() {
-  const n = parseInt(customDaysInput.value);
-  if (Number.isFinite(n) && n >= 1 && n <= 365) {
-    selectedDays.value = n;
-  }
+function onRangeChange(event: Event) {
+  const val = (event.target as any).value as string;
+  if (!val || !val.includes('/')) return;
+  const [start, end] = val.split('/');
+  if (!start || !end) return;
+  startDateStr.value = start;
+  endDateStr.value = end;
+  (document.activeElement as HTMLElement)?.blur();
 }
 
 function toggleItem(item: ShoppingItem) {
@@ -353,7 +399,7 @@ function uncheckAll() {
 
 async function copyToClipboard() {
   const lines = [
-    `Shopping List — Next ${selectedDays.value} days`,
+    `Shopping List — ${startDateStr.value} to ${endDateStr.value}`,
     '─'.repeat(36),
     ...shoppingItems.value.map((item) => {
       const check = item.checked ? '✓' : '□';
@@ -404,37 +450,47 @@ function formatDate(date: Date): string {
             </div>
           </div>
 
-          <!-- Day selector -->
+          <!-- Date range selector -->
           <div class="flex items-center gap-3 flex-wrap">
-            <span class="text-base-content/60 text-sm">{{ $t('page.shopping_list.next') }}</span>
             <div class="join">
               <button
                 v-for="n in PRESETS"
                 :key="n"
-                :class="['join-item btn btn-sm', selectedDays === n && customDaysInput === '' ? 'btn-primary' : 'btn-ghost']"
-                @click="setDays(n)"
-              >{{ n }}</button>
+                :class="['join-item btn btn-sm', isPresetActive(n) ? 'btn-primary' : 'btn-ghost']"
+                @click="setPreset(n)"
+              >{{ n }}d</button>
             </div>
-            <span class="text-base-content/60 text-sm">{{ $t('page.shopping_list.days') }}</span>
-            <input
-              v-model="customDaysInput"
-              type="number"
-              min="1"
-              max="365"
-              :placeholder="$t('page.shopping_list.custom')"
-              class="input input-sm input-bordered w-24"
-              @keyup.enter="applyCustomDays"
-              @blur="applyCustomDays"
-            />
+
+            <div class="dropdown">
+              <div tabindex="0" role="button" class="btn btn-ghost btn-sm gap-2">
+                <i class="fa-solid fa-calendar-days" />
+                <span>{{ displayRange }}</span>
+                <i class="fa-solid fa-chevron-down text-xs opacity-50" />
+              </div>
+              <div tabindex="0" class="card card-compact dropdown-content bg-base-100 z-10 mt-3 shadow">
+                <calendar-range
+                  ref="calendarRangeEl"
+                  class="cally card-body p-0"
+                  :value="`${startDateStr}/${endDateStr}`"
+                  @change="onRangeChange"
+                >
+                  <div class="p-2 py-1" slot="previous"><i class="fa-solid fa-angle-left" /></div>
+                  <div class="p-2 py-1" slot="next"><i class="fa-solid fa-angle-right" /></div>
+                  <calendar-month />
+                </calendar-range>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
       <!-- Print-only header -->
       <div class="print-only hidden">
-        <h1 class="text-2xl font-bold mb-1">Shopping List — Next {{ selectedDays }} days</h1>
-        <p class="text-sm text-gray-500 mb-4">
-          {{ activeRecipes.length }} recipes · {{ shoppingItems.length }} ingredients
+        <h1 class="text-2xl font-bold mb-1">Shopping List</h1>
+        <p class="text-sm mb-4">
+          {{ startDateStr }} – {{ endDateStr }} &nbsp;·&nbsp;
+          {{ activeRecipes.length }} recipes &nbsp;·&nbsp;
+          {{ shoppingItems.length }} ingredients
         </p>
       </div>
 
@@ -506,7 +562,7 @@ function formatDate(date: Date): string {
           </div>
 
           <!-- List -->
-          <ul v-else class="flex flex-col gap-2">
+          <ul v-else class="ingredient-list flex flex-col gap-2">
             <shopping-list-item-component
               v-for="item in shoppingItems"
               :key="`${item.name}|||${item.unit}`"
@@ -531,7 +587,33 @@ function formatDate(date: Date): string {
   .no-print { display: none !important; }
   .navbar, footer, .footer { display: none !important; }
   .print-only { display: block !important; }
-  body { background: white !important; color: black !important; }
-  .card { box-shadow: none !important; border: 1px solid #e5e7eb !important; }
+
+  body, body * { background: white !important; }
+  body * { color: black !important; }
+
+  /* Keep checked items visually distinct */
+  li.opacity-50, li.opacity-50 * { color: #555 !important; }
+
+  .card { box-shadow: none !important; border: 1px solid #ddd !important; }
+
+  /* 2-column ingredient grid */
+  .ingredient-list {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 0.2rem 0.75rem !important;
+  }
+
+  .ingredient-list li {
+    font-size: 0.75rem !important;
+    padding: 0.2rem 0.5rem !important;
+    background: transparent !important;
+    border: none !important;
+    border-bottom: 1px solid #eee !important;
+    border-radius: 0 !important;
+  }
+
+  .ingredient-list li .badge {
+    display: none !important;
+  }
 }
 </style>
