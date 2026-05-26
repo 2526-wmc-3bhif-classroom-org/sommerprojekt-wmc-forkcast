@@ -34,7 +34,7 @@ const PLACEHOLDER_ITEMS: ShoppingItem[] = [
 const today = new Date();
 today.setHours(0, 0, 0, 0);
 
-// --- Helpers ---
+  // --- Helpers ---
 function toInputStr(date: Date): string {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, '0');
@@ -221,7 +221,7 @@ onMounted(fetchShoppingList);
               <button
                 v-for="n in PRESETS"
                 :key="n"
-                :class="['join-item btn btn-sm', isPresetActive(n) ? 'btn-primary' : 'btn-ghost']"
+                :class="['join-item btn btn-sm', isPresetActive(n) ? 'btn-primary' : 'btn-ghost bg-base-300']"
                 @click="setPreset(n)"
               >{{ n }}d</button>
             </div>
