@@ -242,6 +242,16 @@ components:
       properties:
         message:
           type: string
+    QuotaExceededResponse:
+      type: object
+      required: [message, retry_after]
+      properties:
+        message:
+          type: string
+          description: Error message indicating quota exceeded
+        retry_after:
+          type: integer
+          description: Seconds until the quota resets
     RecipePreviewRating:
       type: object
       required: [rating, count]
@@ -539,11 +549,17 @@ paths:
          '400':
            description: Invalid query parameter
            content:
-             application/json:
-               schema:
-                  $ref: '#/components/schemas/ValidationErrorResponse'
+            application/json:
+              schema:
+                 $ref: '#/components/schemas/ValidationErrorResponse'
+         '429':
+           description: Daily API quota exceeded
+           content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuotaExceededResponse'
          '500':
-            description: Internal server error
+           description: Internal server error
   /recipes/filters:
     get:
       summary: Get available recipe filters
@@ -583,6 +599,12 @@ paths:
              application/json:
                schema:
                  $ref: '#/components/schemas/ValidationErrorResponse'
+        '429':
+          description: Daily API quota exceeded
+          content:
+             application/json:
+               schema:
+                 $ref: '#/components/schemas/QuotaExceededResponse'
         '404':
           description: Recipe not found
         '500':

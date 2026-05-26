@@ -6,6 +6,7 @@ import { validateRequest } from "../middleware/validationMiddleware";
 import {AuthRequest} from "../middleware/authMiddleware";
 import { FilterRepository } from "../repository/filterRepository";
 import { FilterValidator } from "../utils/filterValidator";
+import { ErrorResponse } from "../utils/errorResponse";
 
 const router = Router();
 const recipeService = new RecipeService();
@@ -19,7 +20,7 @@ router.get("/filters",
         res.json(filters);
     } catch (e) {
         console.error(e);
-        res.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR);
+        return ErrorResponse.internalServerError(res, "Failed to retrieve filters");
     }
 });
 
@@ -40,14 +41,14 @@ router.get("/",
         }
 
         const filters = filterValidator.validateAndBuild(req.query as Record<string, any>);
-        const number = (req.query.number as number) ?? 10;
-        const offset = (req.query.offset as number) ?? 0;
+        const number = (typeof req.query.number === 'string' ? parseInt(req.query.number) : undefined) ?? 10;
+        const offset = (typeof req.query.offset === 'string' ? parseInt(req.query.offset) : undefined) ?? 0;
         
         const recipes = await recipeService.searchRecipes(search, req.ip, { ...filters, offset }, number);
         res.json(recipes);
     } catch (e) {
         console.error(e);
-        res.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR);
+        return ErrorResponse.internalServerError(res, "Failed to search recipes");
     }
 });
 
@@ -59,13 +60,12 @@ router.get("/:id",
         const { id } = req.params;
         const recipe = await recipeService.getRecipeById(Number(id), req.ip);
         if (!recipe) {
-            res.sendStatus(StatusCodes.NOT_FOUND);
-            return;
+            return ErrorResponse.notFound(res, "Recipe not found");
         }
         res.json(recipe);
     } catch (e) {
         console.error(e);
-        res.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR);
+        return ErrorResponse.internalServerError(res, "Failed to retrieve recipe");
     }
 });
 

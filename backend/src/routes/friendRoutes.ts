@@ -1,3 +1,4 @@
+import { ErrorResponse } from "../utils/errorResponse";
 import { Router } from "express";
 import { AuthRequest, authenticateToken } from "../middleware/authMiddleware";
 import { StatusCodes } from "http-status-codes";
@@ -29,7 +30,7 @@ router.get('/', authenticateToken, (req: AuthRequest, res) => {
         res.status(StatusCodes.OK).json(friendProfiles);
     } catch (error) {
         console.error("Get friends error:", error);
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({});
+        ErrorResponse.internalServerError(res);
     } finally {
         unit.complete();
     }
@@ -63,7 +64,7 @@ router.get('/:friendId',
             res.status(StatusCodes.OK).json(userDto);
         } catch (error) {
             console.error("Get friend profile error:", error);
-            res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({});
+            ErrorResponse.internalServerError(res);
         } finally {
             unit.complete();
         }
@@ -92,7 +93,7 @@ router.post(
                 res.status(StatusCodes.BAD_REQUEST).json({ message: error.message });
             } else {
                 console.error("Add friend error:", error);
-                res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({});
+                ErrorResponse.internalServerError(res);
             }
         }
     }
@@ -115,12 +116,12 @@ router.delete('/:friendId',
             res.status(StatusCodes.OK).json({});
         } else {
             unit.complete(false);
-            res.status(StatusCodes.NOT_FOUND).json({});
+            ErrorResponse.notFound(res, "Friend not found");
         }
     } catch (error) {
         unit.complete(false);
         console.error("Remove friend error:", error);
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({});
+        ErrorResponse.internalServerError(res);
     }
 });
 
