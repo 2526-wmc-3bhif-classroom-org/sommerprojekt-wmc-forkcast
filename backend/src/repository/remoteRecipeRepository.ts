@@ -1,8 +1,8 @@
-import { Recipe, RecipeDetails } from '../types';
+import { Recipe, RecipeDetails, Ingredient } from '../types';
 import { updateQuota } from "../middleware/apiQuotaLimiter";
 import { calculateEffortScore } from "../utils/effortScore";
 
-type RecipeWithRawDetails = { recipe: Recipe; details: Omit<RecipeDetails, 'recipeId'> };
+type RecipeWithRawDetails = { recipe: Recipe; details: Omit<RecipeDetails, 'recipeId'>; ingredients: Ingredient[] };
 
 const SPOONACULAR_NUTRIENT_MAP: Record<string, keyof Omit<RecipeDetails, 'recipeId' | 'readyInMinutes' | 'servings' | 'stepCount' | 'ingredientCount' | 'pricePerServing' | 'effortScore' | 'rating' | 'aggregateLikes' | 'vegetarian' | 'vegan' | 'glutenFree' | 'dairyFree'>> = {
     'Calories': 'calories',
@@ -77,6 +77,7 @@ export class RemoteRecipeRepository {
         return res.results.map((r: any) => ({
             recipe: { id: r.id, name: r.title, image: r.image },
             details: this.extractDetails(r),
+            ingredients: this.extractIngredients(r),
         }));
     }
 
@@ -98,6 +99,7 @@ export class RemoteRecipeRepository {
         return results.map((r: any) => ({
             recipe: { id: r.id, name: r.title, image: r.image },
             details: this.extractDetails(r),
+            ingredients: this.extractIngredients(r),
         }));
     }
 
@@ -122,7 +124,26 @@ export class RemoteRecipeRepository {
         return {
             recipe: { id: r.id, name: r.title, image: r.image },
             details: this.extractDetails(r),
+            ingredients: this.extractIngredients(r),
         };
+    }
+
+    private extractIngredients(r: any): Ingredient[] {
+        return (r.extendedIngredients ?? []).map((ing: any) => ({
+            name: ing.nameClean ?? ing.name ?? '',
+            amount: ing.amount ?? 0,
+            unit: ing.unit ?? '',
+            measures: {
+                us: ing.measures?.us ? {
+                    amount: ing.measures.us.amount ?? 0,
+                    unitShort: ing.measures.us.unitShort ?? '',
+                } : undefined,
+                metric: ing.measures?.metric ? {
+                    amount: ing.measures.metric.amount ?? 0,
+                    unitShort: ing.measures.metric.unitShort ?? '',
+                } : undefined,
+            },
+        }));
     }
 
     private extractNutrients(r: any): Record<string, number> {
