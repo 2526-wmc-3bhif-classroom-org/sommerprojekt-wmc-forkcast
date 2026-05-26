@@ -82,3 +82,7 @@ export interface FavoriteFood {
     userId: number;
     recipeId: number;
 }
+
+export interface CalendarEntryWithRecipe extends CalendarEntry {
+    recipe: RecipePreviewResponse | null;
+}

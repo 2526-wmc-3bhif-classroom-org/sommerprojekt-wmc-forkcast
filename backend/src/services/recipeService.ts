@@ -54,6 +54,27 @@ export class RecipeService {
         return toRecipePreview({ id: remote.recipe.id, name: remote.recipe.name, image: remote.recipe.image, ...remote.details });
     }
 
+    async getRecipesByIds(ids: number[], userIp?: string): Promise<Map<number, RecipePreviewResponse>> {
+        const result = new Map<number, RecipePreviewResponse>();
+        if (ids.length === 0) return result;
+
+        const cached = await this.localRepo.findRecipesByIds(ids);
+        for (const r of cached) {
+            result.set(r.id, toRecipePreview(r));
+        }
+
+        const uncachedIds = ids.filter(id => !result.has(id));
+        if (uncachedIds.length > 0) {
+            const remote = await this.remoteRepo.getRecipesByIds(uncachedIds, userIp);
+            this.localRepo.saveRecipesWithDetails(remote).catch(console.error);
+            for (const { recipe, details } of remote) {
+                result.set(recipe.id, toRecipePreview({ id: recipe.id, name: recipe.name, image: recipe.image, ...details }));
+            }
+        }
+
+        return result;
+    }
+
     async removeExpiredRecipes(): Promise<void> {
         await this.localRepo.removeExpiredRecipes();
     }

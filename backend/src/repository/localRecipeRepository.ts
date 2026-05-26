@@ -70,6 +70,27 @@ export class LocalRecipeRepository {
         return this.saveRecipesWithDetails([{ recipe, details }]);
     }
 
+    async findRecipesByIds(ids: number[]): Promise<RecipeWithDetails[]> {
+        if (ids.length === 0) return [];
+        const unit = new Unit(true);
+        const cutoff = new Date(Date.now() - CACHE_TTL_MS).toISOString();
+        const placeholders = ids.map((_, i) => `:id${i}`).join(', ');
+        const params: Record<string, any> = { cutoff };
+        ids.forEach((id, i) => { params[`id${i}`] = id; });
+        const stmt = unit.prepare<RecipeWithDetails>(`
+            SELECT r.id, r.name, r.image,
+                   d.readyInMinutes, d.servings, d.stepCount, d.ingredientCount, d.pricePerServing,
+                   d.effortScore, d.rating, d.aggregateLikes,
+                   d.vegetarian, d.vegan, d.glutenFree, d.dairyFree
+            FROM Recipe r
+            INNER JOIN RecipeDetails d ON d.recipeId = r.id
+            WHERE r.id IN (${placeholders}) AND r.updatedAt > :cutoff
+        `, params);
+        const recipes = stmt.all();
+        unit.complete();
+        return recipes;
+    }
+
     async findRecipeById(id: number): Promise<RecipeWithDetails | undefined> {
         const unit = new Unit(true);
         const cutoff = new Date(Date.now() - CACHE_TTL_MS).toISOString();
