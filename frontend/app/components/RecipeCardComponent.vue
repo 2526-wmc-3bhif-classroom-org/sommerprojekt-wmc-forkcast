@@ -17,9 +17,9 @@ const effortTooltipColors = {
 }
 
 const effortLegend = {
-  low: "Low Effort",
-  medium: "Medium Effort",
-  high: "High Effort",
+  low: $t("component.recipe.low_effort"),
+  medium: $t("component.recipe.medium_effort"),
+  high: $t("component.recipe.high_effort"),
 }
 
 const color = computed(() => {
@@ -56,8 +56,7 @@ const legend = computed(() => {
 <template>
   <div class="card bg-base-100 w-96 max-h-full shadow-sm">
     <figure>
-      <!-- Do not use nuxt-image here as the image will come from external -->
-      <img :src="data.image" :alt="`Image for: ${data.title}`" class="object-cover h-60 w-full"/>
+      <img :src="data.image" :alt="`Image for: ${data.title}`" class="object-cover h-60 w-full" loading="lazy"/>
     </figure>
     <div class="card-body text-left">
       <div class="inline-flex">
@@ -108,7 +107,7 @@ const legend = computed(() => {
         <!--nuxt-link-locale :to="`/cook/${id}`" class="btn btn-primary btn-block mt-3"-->
         <nuxt-link-locale :to="`/`" class="btn btn-primary btn-block mt-3">
           <i class="fa-solid fa-utensils"/>
-          <span>Open in Cooking View</span>
+          <span>{{$t("component.recipe.card.open")}}</span>
         </nuxt-link-locale>
       </div>
     </div>

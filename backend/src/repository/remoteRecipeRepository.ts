@@ -40,6 +40,27 @@ export class RemoteRecipeRepository {
         }));
     }
 
+    async getRecipesByIds(ids: number[], userIp?: string): Promise<RecipeWithRawDetails[]> {
+        if (ids.length === 0) return [];
+        const url = `${this.API_URL}/informationBulk?ids=${ids.join(',')}&apiKey=${this.API_KEY}`;
+        const response = await fetch(url);
+
+        if (userIp) {
+            const pointsUsed = parseInt(response.headers.get("X-API-Quota-Request") || "0", 10);
+            updateQuota(userIp, pointsUsed);
+        }
+
+        if (!response.ok) {
+            throw new Error(`Error fetching bulk recipes: ${response.statusText}`);
+        }
+
+        const results: any[] = await response.json();
+        return results.map((r: any) => ({
+            recipe: { id: r.id, name: r.title, image: r.image },
+            details: this.extractDetails(r),
+        }));
+    }
+
     async getRecipeById(id: number, userIp?: string): Promise<RecipeWithRawDetails | undefined> {
         const url = `${this.API_URL}/${id}/information?apiKey=${this.API_KEY}`;
         const response = await fetch(url);

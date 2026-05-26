@@ -1,6 +1,7 @@
 import { Unit } from "../db/unit";
 import { CalendarRepository } from "../repository/calendarRepository";
-import { CalendarEntry } from "../types";
+import { CalendarEntry, CalendarEntryWithRecipe } from "../types";
+import { RecipeService } from "./recipeService";
 
 export class CalendarService {
     private calendarRepository: CalendarRepository;
@@ -15,6 +16,16 @@ export class CalendarService {
 
     public getCalendarEntriesByDateRange(userId: number, fromDate: Date, toDate: Date): CalendarEntry[] {
         return this.calendarRepository.findByUserIdAndDateRange(userId, fromDate, toDate);
+    }
+
+    public async populateWithRecipes(entries: CalendarEntry[], userIp?: string): Promise<CalendarEntryWithRecipe[]> {
+        const recipeIds = [...new Set(entries.map(e => e.recipeId))];
+        const recipeService = new RecipeService();
+        const recipeMap = await recipeService.getRecipesByIds(recipeIds, userIp);
+        return entries.map(entry => ({
+            ...entry,
+            recipe: recipeMap.get(entry.recipeId) ?? null,
+        }));
     }
 
     public getCalendarEntryById(id: number): CalendarEntry | undefined {

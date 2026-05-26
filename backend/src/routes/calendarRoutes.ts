@@ -14,13 +14,15 @@ router.get('/',
     authenticateToken,
     query('from').optional().isISO8601().withMessage('from must be a valid ISO8601 date'),
     query('to').optional().isISO8601().withMessage('to must be a valid ISO8601 date'),
+    query('populate').optional().isBoolean().withMessage('populate must be a boolean'),
     validateRequest,
-    (req: AuthRequest, res) => {
+    async (req: AuthRequest, res) => {
     const unit = new Unit(true);
     try {
         const calendarService = new CalendarService(unit);
         const from = req.query.from as string | undefined;
         const to = req.query.to as string | undefined;
+        const populate = req.query.populate === 'true';
 
         let entries;
         if (from && to) {
@@ -30,7 +32,15 @@ router.get('/',
         } else {
             entries = calendarService.getCalendarEntries(req.user!.userId);
         }
+
+        if (populate) {
+            const populated = await calendarService.populateWithRecipes(entries, req.ip);
+            return res.json(populated);
+        }
+
         res.json(entries);
+    } catch (error) {
+        return ErrorResponse.internalServerError(res, "Failed to retrieve calendar entries");
     } finally {
         unit.complete();
     }
