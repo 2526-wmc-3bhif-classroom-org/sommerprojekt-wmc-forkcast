@@ -15,7 +15,9 @@ export class CalendarRepository {
 
     public findByUserIdAndDateRange(userId: number, fromDate: Date, toDate: Date): CalendarEntry[] {
         const fromISO = fromDate.toISOString().split('T')[0];
-        const toISO = toDate.toISOString().split('T')[0];
+        const nextDay = new Date(toDate);
+        nextDay.setDate(nextDay.getDate() + 1);
+        const toISO = nextDay.toISOString().split('T')[0];
         const stmt = this.unit.prepare<CalendarEntry>(
             "SELECT * FROM CalenderEntry WHERE userId = :userId AND date BETWEEN :fromDate AND :toDate ORDER BY date ASC",
             { userId, fromDate: fromISO, toDate: toISO }

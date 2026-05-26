@@ -19,6 +19,7 @@ import { seedFilters } from "./db/seedFilters";
 import { parseDurationToMilliseconds } from "./utils";
 import rateLimit from "express-rate-limit";
 import { apiQuotaLimiter } from "./middleware/apiQuotaLimiter";
+import { initializeFilterCache } from "./utils/filterCache";
 
 const PORT = process.env.PORT || "3000";
 const allowedOrigins = (process.env.CORS_ORIGIN ?? "")
@@ -36,6 +37,7 @@ const unit = new Unit(true);
 unit.complete(null);
 
 await seedFilters();
+await initializeFilterCache();
 await cleanup();
 
 app.use(cors({ origin: allowedOrigins, credentials: true }));
@@ -43,11 +45,13 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    limit: 100, // Limit each IP to 100 requests per time window
+    limit: 200, // Limit each IP to 200 requests per time window
     standardHeaders: 'draft-8', // draft-6: `RateLimit-*` headers; draft-7 & draft-8: combined `RateLimit` header
     legacyHeaders: false, // Disable the `X-RateLimit-*` headers.
     ipv6Subnet: 56, // Set to 60 or 64 to be less aggressive, or 52 or 48 to be more aggressive
-    message: "Too many requests, please try again later."
+    handler: (req, res) => {
+        res.status(429).json({ message: "Too many requests, please try again later." });
+    }
 }))
 
 app.use("/api/auth", authRoutes);

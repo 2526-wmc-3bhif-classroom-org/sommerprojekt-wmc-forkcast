@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { StatusCodes } from "http-status-codes";
+import { ErrorResponse } from "../utils/errorResponse";
 
 // For production, a persistent store like Redis is recommended.
 const ipQuotaUsage = new Map<string, { points: number, expiration: number }>();
@@ -28,6 +28,9 @@ export function updateQuota(ip: string, pointsConsumed: number) {
  * Express middleware to enforce API quota limits per user IP.
  * It checks if the user has exceeded their quota before allowing the request to proceed.
  * It also adds user-specific quota headers to the response.
+ * 
+ * NOTE: Uses in-memory storage - not persistent across server restarts.
+ * For production, use Redis or similar persistent store.
  */
 export function apiQuotaLimiter(req: Request, res: Response, next: NextFunction) {
     const ip = req.ip;
@@ -41,11 +44,12 @@ export function apiQuotaLimiter(req: Request, res: Response, next: NextFunction)
     const usage = getIpUsage(ip);
 
     if (usage.points >= MAX_QUOTA_POINTS) {
-        res.status(StatusCodes.TOO_MANY_REQUESTS).json({
-            message: "Daily API quota exceeded. Please try again tomorrow.",
-            retryAfter: Math.ceil((usage.expiration - Date.now()) / 1000) // Time in seconds until reset
-        });
-        return;
+        const retryAfter = Math.ceil((usage.expiration - Date.now()) / 1000);
+        return ErrorResponse.tooManyRequests(
+            res,
+            "Daily API quota exceeded. Please try again tomorrow.",
+            retryAfter
+        );
     }
 
     // Set user-specific quota headers on the response

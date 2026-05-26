@@ -20,7 +20,7 @@ interface ShoppingListResponse {
 }
 
 export class ShoppingListService {
-    private calendarRepository: CalendarRepository;
+    private calendarRepository?: CalendarRepository;
     private recipeService: RecipeService;
     private aggregator: IngredientAggregator;
 

@@ -1,3 +1,4 @@
+import { ErrorResponse } from "../utils/errorResponse";
 import {authenticateToken, AuthRequest} from "../middleware/authMiddleware";
 import {StatusCodes} from "http-status-codes";
 import { body } from 'express-validator';
@@ -19,7 +20,7 @@ router.get('/', authenticateToken, async (req: AuthRequest, res) => {
         unit.complete(true);
 
         if (!user) {
-            return res.sendStatus(StatusCodes.NOT_FOUND);
+            return ErrorResponse.notFound(res, "User not found");
         }
 
         // Strip the password before returning the user DTO (same shape as /auth/login)
@@ -28,7 +29,7 @@ router.get('/', authenticateToken, async (req: AuthRequest, res) => {
     } catch (error) {
         unit.complete(false);
         console.error("Get profile error:", error);
-        return res.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR);
+        return ErrorResponse.internalServerError(res);
     }
 });
 
@@ -51,10 +52,10 @@ router.patch('/picture',
         catch (error: any) {
             unit.complete(false);
             if (error.message.includes("User not found")) {
-                return res.sendStatus(StatusCodes.NOT_FOUND);
+                return ErrorResponse.notFound(res, "User not found");
             }
             console.error("Update profile error:", error);
-            return res.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR);
+            return ErrorResponse.internalServerError(res);
         }
 });
 
@@ -71,7 +72,7 @@ router.patch('/name',
             const existingUser = userRepo.findByName(req.body.name);
             if (existingUser) {
                 unit.complete(false);
-                return res.sendStatus(StatusCodes.CONFLICT);
+                return ErrorResponse.conflict(res, "Username already exists");
             }
 
             const updatedUser = userRepo.updateName(userId, req.body.name);
@@ -83,10 +84,10 @@ router.patch('/name',
         catch (error: any) {
             unit.complete(false);
             if (error.message.includes("User not found")) {
-                return res.sendStatus(StatusCodes.NOT_FOUND);
+                return ErrorResponse.notFound(res, "User not found");
             }
             console.error("Update name error:", error);
-            return res.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR);
+            return ErrorResponse.internalServerError(res);
         }
 });
 
@@ -105,13 +106,13 @@ router.patch('/password',
             const user = userRepo.findById(userId);
             if (!user) {
                 unit.complete(false);
-                return res.sendStatus(StatusCodes.NOT_FOUND);
+                return ErrorResponse.notFound(res, "User not found");
             }
 
             const isValidPassword = await comparePassword(req.body.currentPassword, user.password);
             if (!isValidPassword) {
                 unit.complete(false);
-                return res.sendStatus(StatusCodes.BAD_REQUEST);
+                return ErrorResponse.badRequest(res, "Current password is incorrect");
             }
 
             const newPasswordHash = await hashPassword(req.body.newPassword);
@@ -123,7 +124,7 @@ router.patch('/password',
         catch (error: any) {
             unit.complete(false);
             console.error("Update password error:", error);
-            return res.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR);
+            return ErrorResponse.internalServerError(res);
         }
 });
 

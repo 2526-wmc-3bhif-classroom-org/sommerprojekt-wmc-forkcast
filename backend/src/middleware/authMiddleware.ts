@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { JWT_SECRET } from "../utils/jwtUtils";
-import { StatusCodes } from "http-status-codes";
+import { ErrorResponse } from "../utils/errorResponse";
 
 export interface AuthRequest extends Request {
     user?: {
@@ -14,12 +14,12 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
     const token = req.header("Authorization")?.replace("Bearer ", "")
 
     if (!token) {
-        return res.sendStatus(StatusCodes.UNAUTHORIZED);
+        return ErrorResponse.unauthorized(res, "Token required");
     }
 
     jwt.verify(token, JWT_SECRET, (err: any, user: any) => {
         if (err) {
-            return res.sendStatus(StatusCodes.FORBIDDEN);
+            return ErrorResponse.forbidden(res, "Invalid token");
         }
         req.user = user;
         next();
