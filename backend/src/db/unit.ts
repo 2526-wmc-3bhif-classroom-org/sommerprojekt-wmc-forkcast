@@ -200,6 +200,19 @@ class DB {
                 FOREIGN KEY (recipeId) REFERENCES Recipe(id)
             );
 
+            CREATE TABLE IF NOT EXISTS RecipeIngredient (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                recipeId INTEGER NOT NULL,
+                name TEXT NOT NULL,
+                amount REAL NOT NULL DEFAULT 0,
+                unit TEXT NOT NULL DEFAULT '',
+                usAmount REAL,
+                usUnit TEXT,
+                metricAmount REAL,
+                metricUnit TEXT,
+                FOREIGN KEY (recipeId) REFERENCES Recipe(id) ON DELETE CASCADE
+            );
+
             CREATE TABLE IF NOT EXISTS FilterGroup (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name TEXT NOT NULL UNIQUE,
