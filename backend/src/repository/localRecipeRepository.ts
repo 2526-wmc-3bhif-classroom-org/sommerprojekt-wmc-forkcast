@@ -1,4 +1,4 @@
-import { Recipe, RecipeDetails, RecipeWithDetails } from '../types';
+import { Recipe, RecipeDetails, RecipeWithDetails, Ingredient } from '../types';
 import { Unit } from "../db/unit";
 import { CACHE_TTL_MS } from "../app";
 
@@ -78,7 +78,34 @@ export class LocalRecipeRepository {
         return recipes;
     }
 
-    async saveRecipesWithDetails(entries: Array<{ recipe: Recipe; details: Omit<RecipeDetails, 'recipeId'> }>): Promise<void> {
+    async findIngredientsByRecipeIds(ids: number[]): Promise<Map<number, Ingredient[]>> {
+        const result = new Map<number, Ingredient[]>();
+        if (ids.length === 0) return result;
+        const unit = new Unit(true);
+        const placeholders = ids.map((_, i) => `:id${i}`).join(', ');
+        const params: Record<string, any> = {};
+        ids.forEach((id, i) => { params[`id${i}`] = id; });
+        const rows = unit.prepare<{ recipeId: number; name: string; amount: number; unit: string; usAmount: number | null; usUnit: string | null; metricAmount: number | null; metricUnit: string | null }>(
+            `SELECT recipeId, name, amount, unit, usAmount, usUnit, metricAmount, metricUnit FROM RecipeIngredient WHERE recipeId IN (${placeholders})`,
+            params
+        ).all();
+        unit.complete();
+        for (const row of rows) {
+            if (!result.has(row.recipeId)) result.set(row.recipeId, []);
+            result.get(row.recipeId)!.push({
+                name: row.name,
+                amount: row.amount,
+                unit: row.unit,
+                measures: {
+                    us: row.usAmount !== null ? { amount: row.usAmount, unitShort: row.usUnit ?? '' } : undefined,
+                    metric: row.metricAmount !== null ? { amount: row.metricAmount, unitShort: row.metricUnit ?? '' } : undefined,
+                },
+            });
+        }
+        return result;
+    }
+
+    async saveRecipesWithDetails(entries: Array<{ recipe: Recipe; details: Omit<RecipeDetails, 'recipeId'>; ingredients?: Ingredient[] }>): Promise<void> {
         if (entries.length === 0) return;
         const unit = new Unit(false);
         const now = new Date().toISOString();
@@ -86,7 +113,7 @@ export class LocalRecipeRepository {
         const nutrientVals = NUTRIENT_COLUMNS.map(c => `:${c}`).join(', ');
         const nutrientUpdates = NUTRIENT_COLUMNS.map(c => `${c} = excluded.${c}`).join(', ');
 
-        for (const { recipe, details } of entries) {
+        for (const { recipe, details, ingredients } of entries) {
             unit.prepare<void>(`
                 INSERT INTO Recipe (id, name, image, updatedAt) VALUES (:id, :name, :image, :updatedAt)
                 ON CONFLICT(id) DO UPDATE SET
@@ -94,6 +121,25 @@ export class LocalRecipeRepository {
                     name = excluded.name,
                     image = excluded.image
             `, { id: recipe.id, name: recipe.name, image: recipe.image, updatedAt: now }).run();
+
+            if (ingredients && ingredients.length > 0) {
+                unit.prepare<void>('DELETE FROM RecipeIngredient WHERE recipeId = :recipeId', { recipeId: recipe.id }).run();
+                for (const ing of ingredients) {
+                    unit.prepare<void>(`
+                        INSERT INTO RecipeIngredient (recipeId, name, amount, unit, usAmount, usUnit, metricAmount, metricUnit)
+                        VALUES (:recipeId, :name, :amount, :unit, :usAmount, :usUnit, :metricAmount, :metricUnit)
+                    `, {
+                        recipeId: recipe.id,
+                        name: ing.name,
+                        amount: ing.amount,
+                        unit: ing.unit,
+                        usAmount: ing.measures?.us?.amount ?? null,
+                        usUnit: ing.measures?.us?.unitShort ?? null,
+                        metricAmount: ing.measures?.metric?.amount ?? null,
+                        metricUnit: ing.measures?.metric?.unitShort ?? null,
+                    }).run();
+                }
+            }
 
             unit.prepare<void>(`
                 INSERT INTO RecipeDetails (
@@ -131,8 +177,8 @@ export class LocalRecipeRepository {
         unit.complete(true);
     }
 
-    async saveRecipeWithDetails(recipe: Recipe, details: Omit<RecipeDetails, 'recipeId'>): Promise<void> {
-        return this.saveRecipesWithDetails([{ recipe, details }]);
+    async saveRecipeWithDetails(recipe: Recipe, details: Omit<RecipeDetails, 'recipeId'>, ingredients?: Ingredient[]): Promise<void> {
+        return this.saveRecipesWithDetails([{ recipe, details, ingredients }]);
     }
 
     async findRecipesByIds(ids: number[]): Promise<RecipeWithDetails[]> {
