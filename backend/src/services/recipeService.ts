@@ -1,4 +1,4 @@
-import { RecipeWithDetails, RecipePreviewResponse } from '../types';
+import { RecipeWithDetails, RecipePreviewResponse, Ingredient } from '../types';
 import { LocalRecipeRepository } from '../repository/localRecipeRepository';
 import { RemoteRecipeRepository } from '../repository/remoteRecipeRepository';
 import { calculateEffortScore } from '../utils/effortScore';
@@ -16,7 +16,9 @@ export class RecipeService {
         const numResults = filters.number ?? number;
         const localRecipes = await this.localRepo.searchRecipes(query, filters);
         if (localRecipes.length >= numResults) {
-            return localRecipes.slice(0, numResults).map(toRecipePreview);
+            const ids = localRecipes.slice(0, numResults).map(r => r.id);
+            const ingredientMap = await this.localRepo.findIngredientsByRecipeIds(ids);
+            return localRecipes.slice(0, numResults).map(r => toRecipePreview(r, ingredientMap.get(r.id)));
         }
 
         let remoteResults: Awaited<ReturnType<typeof this.remoteRepo.searchRecipes>> = [];
@@ -24,34 +26,45 @@ export class RecipeService {
             remoteResults = await this.remoteRepo.searchRecipes(query, userIp, numResults, filters);
         } catch (error) {
             console.error('Remote recipe search failed, returning local results only', error);
-            return localRecipes.map(toRecipePreview);
+            const ids = localRecipes.map(r => r.id);
+            const ingredientMap = await this.localRepo.findIngredientsByRecipeIds(ids);
+            return localRecipes.map(r => toRecipePreview(r, ingredientMap.get(r.id)));
         }
 
         this.localRepo.saveRecipesWithDetails(remoteResults).catch(console.error);
 
         const existingIds = new Set(localRecipes.map(r => r.id));
-        const combined: RecipeWithDetails[] = [...localRecipes];
-        for (const { recipe, details } of remoteResults) {
+        const combined: Array<{ details: RecipeWithDetails; ingredients?: Ingredient[] }> = localRecipes.map(r => ({ details: r }));
+        for (const { recipe, details, ingredients } of remoteResults) {
             if (!existingIds.has(recipe.id)) {
-                combined.push({ id: recipe.id, name: recipe.name, image: recipe.image, ...details });
+                combined.push({ details: { id: recipe.id, name: recipe.name, image: recipe.image, ...details }, ingredients });
             }
         }
 
-        return combined.slice(0, numResults).map(toRecipePreview);
+        const cachedIds = localRecipes.map(r => r.id);
+        const cachedIngredientMap = await this.localRepo.findIngredientsByRecipeIds(cachedIds);
+
+        return combined.slice(0, numResults).map(({ details, ingredients }) =>
+            toRecipePreview(details, ingredients ?? cachedIngredientMap.get(details.id))
+        );
     }
 
     async getRecipeById(id: number, userIp?: string): Promise<RecipePreviewResponse | undefined> {
         const localRecipe = await this.localRepo.findRecipeById(id);
         if (localRecipe) {
-            return toRecipePreview(localRecipe);
+            const ingredientMap = await this.localRepo.findIngredientsByRecipeIds([id]);
+            return toRecipePreview(localRecipe, ingredientMap.get(id));
         }
 
         const remote = await this.remoteRepo.getRecipeById(id, userIp);
         if (!remote) {
             return undefined;
         }
-        await this.localRepo.saveRecipeWithDetails(remote.recipe, remote.details);
-        return toRecipePreview({ id: remote.recipe.id, name: remote.recipe.name, image: remote.recipe.image, ...remote.details });
+        await this.localRepo.saveRecipeWithDetails(remote.recipe, remote.details, remote.ingredients);
+        return toRecipePreview(
+            { id: remote.recipe.id, name: remote.recipe.name, image: remote.recipe.image, ...remote.details },
+            remote.ingredients
+        );
     }
 
     async getRecipesByIds(ids: number[], userIp?: string): Promise<Map<number, RecipePreviewResponse>> {
@@ -59,16 +72,20 @@ export class RecipeService {
         if (ids.length === 0) return result;
 
         const cached = await this.localRepo.findRecipesByIds(ids);
+        const cachedIngredientMap = await this.localRepo.findIngredientsByRecipeIds(cached.map(r => r.id));
         for (const r of cached) {
-            result.set(r.id, toRecipePreview(r));
+            result.set(r.id, toRecipePreview(r, cachedIngredientMap.get(r.id)));
         }
 
         const uncachedIds = ids.filter(id => !result.has(id));
         if (uncachedIds.length > 0) {
             const remote = await this.remoteRepo.getRecipesByIds(uncachedIds, userIp);
             this.localRepo.saveRecipesWithDetails(remote).catch(console.error);
-            for (const { recipe, details } of remote) {
-                result.set(recipe.id, toRecipePreview({ id: recipe.id, name: recipe.name, image: recipe.image, ...details }));
+            for (const { recipe, details, ingredients } of remote) {
+                result.set(recipe.id, toRecipePreview(
+                    { id: recipe.id, name: recipe.name, image: recipe.image, ...details },
+                    ingredients
+                ));
             }
         }
 
@@ -80,7 +97,7 @@ export class RecipeService {
     }
 }
 
-function toRecipePreview(r: RecipeWithDetails): RecipePreviewResponse {
+function toRecipePreview(r: RecipeWithDetails, ingredients?: Ingredient[]): RecipePreviewResponse {
     return {
         id: r.id,
         title: r.name,
@@ -95,6 +112,7 @@ function toRecipePreview(r: RecipeWithDetails): RecipePreviewResponse {
             { icon: "users", text: `${r.servings} servings` },
         ],
         tags: buildTags(r),
+        ingredients: ingredients ?? [],
     };
 }
 
