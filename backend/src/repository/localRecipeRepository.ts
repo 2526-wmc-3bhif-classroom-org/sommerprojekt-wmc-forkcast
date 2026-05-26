@@ -2,6 +2,31 @@ import { Recipe, RecipeDetails, RecipeWithDetails } from '../types';
 import { Unit } from "../db/unit";
 import { CACHE_TTL_MS } from "../app";
 
+const NUTRIENT_COLUMNS = [
+    'calories', 'carbs', 'protein', 'fat', 'alcohol', 'caffeine', 'sugar',
+    'sodium', 'fiber', 'cholesterol', 'saturatedFat', 'vitaminA', 'vitaminC',
+    'vitaminD', 'vitaminE', 'vitaminK', 'vitaminB1', 'vitaminB2', 'vitaminB3',
+    'vitaminB5', 'vitaminB6', 'vitaminB12', 'calcium', 'copper', 'fluoride',
+    'iodine', 'iron', 'magnesium', 'manganese', 'phosphorus', 'potassium',
+    'selenium', 'zinc', 'choline', 'folate', 'folicAcid',
+] as const;
+
+type NutrientColumn = typeof NUTRIENT_COLUMNS[number];
+
+const RANGE_FILTERABLE_COLUMNS = new Set<string>([...NUTRIENT_COLUMNS, 'servings']);
+
+const NUTRIENT_SELECT = NUTRIENT_COLUMNS.map(c => `d.${c}`).join(', ');
+
+const BASE_SELECT = `
+    SELECT r.id, r.name, r.image,
+           d.readyInMinutes, d.servings, d.stepCount, d.ingredientCount, d.pricePerServing,
+           d.effortScore, d.rating, d.aggregateLikes,
+           d.vegetarian, d.vegan, d.glutenFree, d.dairyFree,
+           ${NUTRIENT_SELECT}
+    FROM Recipe r
+    INNER JOIN RecipeDetails d ON d.recipeId = r.id
+`;
+
 export class LocalRecipeRepository {
     async searchRecipes(query: string, filters: Record<string, any> = {}): Promise<RecipeWithDetails[]> {
         const unit = new Unit(true);
@@ -14,14 +39,18 @@ export class LocalRecipeRepository {
             conditions.push('d.readyInMinutes <= :maxReadyTime');
             params.maxReadyTime = filters.maxReadyTime;
         }
-        if (filters.minServings !== undefined) {
-            conditions.push('d.servings >= :minServings');
-            params.minServings = filters.minServings;
+
+        for (const [key, value] of Object.entries(filters)) {
+            if (value === undefined) continue;
+            const isMin = key.startsWith('min');
+            const isMax = key.startsWith('max');
+            if (!isMin && !isMax) continue;
+            const colName = key.slice(3).charAt(0).toLowerCase() + key.slice(4);
+            if (!RANGE_FILTERABLE_COLUMNS.has(colName)) continue;
+            conditions.push(`d.${colName} ${isMin ? '>=' : '<='} :${key}`);
+            params[key] = value;
         }
-        if (filters.maxServings !== undefined) {
-            conditions.push('d.servings <= :maxServings');
-            params.maxServings = filters.maxServings;
-        }
+
         if (filters.diet) {
             const diet = (filters.diet as string).toLowerCase();
             if (diet.includes('vegan')) {
@@ -40,15 +69,10 @@ export class LocalRecipeRepository {
             }
         }
 
-        const stmt = unit.prepare<RecipeWithDetails>(`
-            SELECT r.id, r.name, r.image,
-                   d.readyInMinutes, d.servings, d.stepCount, d.ingredientCount, d.pricePerServing,
-                   d.effortScore, d.rating, d.aggregateLikes,
-                   d.vegetarian, d.vegan, d.glutenFree, d.dairyFree
-            FROM Recipe r
-            INNER JOIN RecipeDetails d ON d.recipeId = r.id
-            WHERE ${conditions.join(' AND ')}
-        `, params);
+        const stmt = unit.prepare<RecipeWithDetails>(
+            `${BASE_SELECT} WHERE ${conditions.join(' AND ')}`,
+            params
+        );
         const recipes = stmt.all();
         unit.complete();
         return recipes;
@@ -58,6 +82,10 @@ export class LocalRecipeRepository {
         if (entries.length === 0) return;
         const unit = new Unit(false);
         const now = new Date().toISOString();
+        const nutrientCols = NUTRIENT_COLUMNS.join(', ');
+        const nutrientVals = NUTRIENT_COLUMNS.map(c => `:${c}`).join(', ');
+        const nutrientUpdates = NUTRIENT_COLUMNS.map(c => `${c} = excluded.${c}`).join(', ');
+
         for (const { recipe, details } of entries) {
             unit.prepare<void>(`
                 INSERT INTO Recipe (id, name, image, updatedAt) VALUES (:id, :name, :image, :updatedAt)
@@ -70,10 +98,12 @@ export class LocalRecipeRepository {
             unit.prepare<void>(`
                 INSERT INTO RecipeDetails (
                     recipeId, readyInMinutes, servings, stepCount, ingredientCount, pricePerServing,
-                    effortScore, rating, aggregateLikes, vegetarian, vegan, glutenFree, dairyFree
+                    effortScore, rating, aggregateLikes, vegetarian, vegan, glutenFree, dairyFree,
+                    ${nutrientCols}
                 ) VALUES (
                     :recipeId, :readyInMinutes, :servings, :stepCount, :ingredientCount, :pricePerServing,
-                    :effortScore, :rating, :aggregateLikes, :vegetarian, :vegan, :glutenFree, :dairyFree
+                    :effortScore, :rating, :aggregateLikes, :vegetarian, :vegan, :glutenFree, :dairyFree,
+                    ${nutrientVals}
                 )
                 ON CONFLICT(recipeId) DO UPDATE SET
                     readyInMinutes = excluded.readyInMinutes,
@@ -87,7 +117,8 @@ export class LocalRecipeRepository {
                     vegetarian = excluded.vegetarian,
                     vegan = excluded.vegan,
                     glutenFree = excluded.glutenFree,
-                    dairyFree = excluded.dairyFree
+                    dairyFree = excluded.dairyFree,
+                    ${nutrientUpdates}
             `, {
                 recipeId: recipe.id,
                 ...details,
@@ -111,15 +142,10 @@ export class LocalRecipeRepository {
         const placeholders = ids.map((_, i) => `:id${i}`).join(', ');
         const params: Record<string, any> = { cutoff };
         ids.forEach((id, i) => { params[`id${i}`] = id; });
-        const stmt = unit.prepare<RecipeWithDetails>(`
-            SELECT r.id, r.name, r.image,
-                   d.readyInMinutes, d.servings, d.stepCount, d.ingredientCount, d.pricePerServing,
-                   d.effortScore, d.rating, d.aggregateLikes,
-                   d.vegetarian, d.vegan, d.glutenFree, d.dairyFree
-            FROM Recipe r
-            INNER JOIN RecipeDetails d ON d.recipeId = r.id
-            WHERE r.id IN (${placeholders}) AND r.updatedAt > :cutoff
-        `, params);
+        const stmt = unit.prepare<RecipeWithDetails>(
+            `${BASE_SELECT} WHERE r.id IN (${placeholders}) AND r.updatedAt > :cutoff`,
+            params
+        );
         const recipes = stmt.all();
         unit.complete();
         return recipes;
@@ -128,15 +154,10 @@ export class LocalRecipeRepository {
     async findRecipeById(id: number): Promise<RecipeWithDetails | undefined> {
         const unit = new Unit(true);
         const cutoff = new Date(Date.now() - CACHE_TTL_MS).toISOString();
-        const stmt = unit.prepare<RecipeWithDetails>(`
-            SELECT r.id, r.name, r.image,
-                   d.readyInMinutes, d.servings, d.stepCount, d.ingredientCount, d.pricePerServing,
-                   d.effortScore, d.rating, d.aggregateLikes,
-                   d.vegetarian, d.vegan, d.glutenFree, d.dairyFree
-            FROM Recipe r
-            INNER JOIN RecipeDetails d ON d.recipeId = r.id
-            WHERE r.id = :id AND r.updatedAt > :cutoff
-        `, { id, cutoff });
+        const stmt = unit.prepare<RecipeWithDetails>(
+            `${BASE_SELECT} WHERE r.id = :id AND r.updatedAt > :cutoff`,
+            { id, cutoff }
+        );
         const recipe = stmt.get();
         unit.complete();
         return recipe;
