@@ -55,7 +55,7 @@ function onMaxInput(e: Event) {
 .track-bg {
   position: absolute;
   width: 100%;
-  height: 0.35rem;
+  height: 0.5rem;
   background: var(--color-base-300);
   border-radius: 9999px;
 }

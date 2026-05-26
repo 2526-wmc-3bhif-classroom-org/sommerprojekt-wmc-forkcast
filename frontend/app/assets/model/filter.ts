@@ -7,7 +7,6 @@ export type FilterOption = {
 };
 
 export type FilterGroup = {
-    pretty_name: string;
     icon: string;
     options: Record<string, FilterOption>;
 };

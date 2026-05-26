@@ -58,7 +58,7 @@ function buildFilterParams(): Record<string, string> {
 
 function onInput() {
   if (debounceTimer) clearTimeout(debounceTimer);
-  debounceTimer = setTimeout(doSearch, 400);
+  debounceTimer = setTimeout(doSearch, 600);
 }
 
 async function doSearch(reset = true) {
@@ -120,13 +120,12 @@ defineExpose({ loadMore });
                 class="rounded-xl border border-base-200 bg-base-200/40 p-3"
             >
               <!-- Group header -->
-              <p class="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-base-content/50 mb-3">
-                <i :class="`fa-solid fa-${group.icon} text-primary`"/>
-                {{ group.pretty_name }}
+              <p class="text-xs font-bold uppercase tracking-widest text-base-content/50 mb-3">
+                {{ String(groupKey).replace(/_/g, ' ') }}
               </p>
 
-              <div class="space-y-3">
-                <div v-for="(option, optKey) in group.options" :key="optKey">
+              <div class="space-y-4">
+                <div v-for="(option, optKey) in group.options" :key="optKey" v-if="optKey !== 'number'">
 
                   <!-- BOOLEAN — pill toggle -->
                   <template v-if="option.type === 'boolean'">
@@ -145,17 +144,17 @@ defineExpose({ loadMore });
 
                   <!-- RANGE — dual slider -->
                   <template v-else-if="option.type === 'range'">
-                    <div class="flex items-center justify-between mb-1.5">
-                      <label class="flex items-center gap-2 text-sm cursor-pointer select-none">
+                    <div class="flex items-center justify-between mb-2">
+                      <label class="flex items-center gap-2.5 text-base cursor-pointer select-none">
                         <input
                             type="checkbox"
-                            class="checkbox checkbox-xs checkbox-primary"
+                            class="checkbox checkbox-sm checkbox-primary"
                             v-model="filterState[optKey].enabled"
                             @change="doSearch"
                         />
                         {{ option.pretty_name }}
                       </label>
-                      <span v-if="filterState[optKey]?.enabled" class="text-xs text-base-content/40">
+                      <span v-if="filterState[optKey]?.enabled" class="text-sm text-base-content/40">
                         {{ filterState[optKey].min }} – {{ filterState[optKey].max }}
                       </span>
                     </div>
@@ -164,43 +163,47 @@ defineExpose({ loadMore });
                         :min="option.min ?? 0"
                         :max="option.max ?? 100"
                         :model-value="{ min: filterState[optKey].min, max: filterState[optKey].max }"
-                        @update:model-value="v => { filterState[optKey].min = v.min; filterState[optKey].max = v.max; doSearch() }"
+                        @update:model-value="v => { filterState[optKey].min = v.min; filterState[optKey].max = v.max; onInput() }"
                     />
                   </template>
 
                   <!-- NUMBER — single slider -->
                   <template v-else-if="option.type === 'number'">
-                    <div class="flex items-center justify-between mb-1.5">
-                      <label class="flex items-center gap-2 text-sm cursor-pointer select-none">
+                    <div class="flex items-center justify-between mb-2">
+                      <label class="flex items-center gap-2.5 text-base cursor-pointer select-none">
                         <input
                             type="checkbox"
-                            class="checkbox checkbox-xs checkbox-primary"
+                            class="checkbox checkbox-sm checkbox-primary"
                             v-model="filterState[optKey].enabled"
                             @change="doSearch"
                         />
                         {{ option.pretty_name }}
                       </label>
-                      <span v-if="filterState[optKey]?.enabled" class="text-xs text-base-content/40">
+                      <span v-if="filterState[optKey]?.enabled" class="text-sm text-base-content/40">
                         {{ filterState[optKey].value }}
                       </span>
                     </div>
-                    <input
-                        v-if="filterState[optKey]?.enabled"
-                        type="range"
-                        class="range range-xs range-primary w-full"
-                        :min="option.min ?? 0"
-                        :max="option.max ?? 100"
-                        v-model.number="filterState[optKey].value"
-                        @change="doSearch"
-                    />
+                    <div v-if="filterState[optKey]?.enabled" class="single-range-wrap">
+                      <div class="track-bg">
+                        <div class="track-fill" :style="{ width: ((filterState[optKey].value - (option.min ?? 0)) / ((option.max ?? 100) - (option.min ?? 0)) * 100) + '%' }"/>
+                      </div>
+                      <input
+                          type="range"
+                          class="thumb"
+                          :min="option.min ?? 0"
+                          :max="option.max ?? 100"
+                          v-model.number="filterState[optKey].value"
+                          @input="onInput"
+                      />
+                    </div>
                   </template>
 
                   <!-- STRING — text input -->
                   <template v-else>
-                    <label class="flex items-center gap-2 text-sm cursor-pointer select-none mb-1.5">
+                    <label class="flex items-center gap-2.5 text-base cursor-pointer select-none mb-1.5">
                       <input
                           type="checkbox"
-                          class="checkbox checkbox-xs checkbox-primary"
+                          class="checkbox checkbox-sm checkbox-primary"
                           v-model="filterState[optKey].enabled"
                           @change="doSearch"
                       />
@@ -231,3 +234,66 @@ defineExpose({ loadMore });
   </div>
   </div>
 </template>
+
+<style scoped>
+.single-range-wrap {
+  position: relative;
+  height: 1.5rem;
+  display: flex;
+  align-items: center;
+}
+
+.track-bg {
+  position: absolute;
+  width: 100%;
+  height: 0.5rem;
+  background: var(--color-base-300);
+  border-radius: 9999px;
+}
+
+.track-fill {
+  position: absolute;
+  height: 100%;
+  background: var(--color-primary);
+  border-radius: 9999px;
+}
+
+.thumb {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  pointer-events: none;
+  margin: 0;
+  padding: 0;
+}
+
+.thumb::-webkit-slider-runnable-track { background: transparent; }
+.thumb::-moz-range-track { background: transparent; }
+
+.thumb::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  background: var(--color-primary);
+  pointer-events: auto;
+  cursor: pointer;
+  border: 2px solid var(--color-base-100);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+}
+
+.thumb::-moz-range-thumb {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  background: var(--color-primary);
+  pointer-events: auto;
+  cursor: pointer;
+  border: 2px solid var(--color-base-100);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+}
+</style>
