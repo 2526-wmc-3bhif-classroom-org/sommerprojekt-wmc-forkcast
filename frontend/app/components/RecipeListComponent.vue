@@ -17,9 +17,9 @@ const effortTooltipColors = {
 }
 
 const effortLegend = {
-  low: "Low Effort",
-  medium: "Medium Effort",
-  high: "High Effort",
+  low: $t("component.recipe.low_effort"),
+  medium: $t("component.recipe.medium_effort"),
+  high: $t("component.recipe.high_effort"),
 }
 
 const color = computed(() => {
@@ -56,7 +56,7 @@ const legend = computed(() => {
 <template>
   <li class="list-row bg-base-100">
     <div>
-      <img :src="data.image" :alt="`Image for: ${data.title}`" class="object-cover rounded-box size-33"/>
+      <img :src="data.image" :alt="`Image for: ${data.title}`" class="object-cover rounded-box size-33" loading="lazy"/>
     </div>
     <div class="text-left flex flex-col space-y-2">
       <div class="text-left text-xl font-bold">{{data.title}}</div>

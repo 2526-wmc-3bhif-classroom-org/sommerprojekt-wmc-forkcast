@@ -12,6 +12,8 @@ export default function useAuthService() {
     const loading = computed(() => userStore.loading);
     const authenticated = computed(() => !userStore.loading && jwtStore.jwt !== undefined);
 
+    const jwt = computed(() => jwtStore.jwt);
+
     async function clearAuthState() {
         userStore.user = undefined
         jwtStore.jwt = undefined;
@@ -23,18 +25,22 @@ export default function useAuthService() {
     }
 
     async function logout() {
-        if (!authenticated.value) throw Error("Not authenticated");
-
+        if (!authenticated.value) return;
         await clearAuthState();
     }
 
     async function loadUserWithExistingJwt() {
+        if (!jwtStore.jwt) {
+            userStore.loading = false;
+            return { ok: false, error: "No JWT found" };
+        }
+
         let result = await getUserWithExistingJwt();
 
         if (result.ok) {
             userStore.user = result.value as User;
-        } else {
-            await clearAuthState(); // If the JWT is invalid or expired, clear the auth state to prevent using an invalid token
+        } else if (result.needsAuth) {
+            await clearAuthState();
         }
 
         userStore.loading = false; // Set loading to false after attempting to load the user
@@ -88,6 +94,7 @@ export default function useAuthService() {
     return {
         authenticated,
         loading,
+        jwt,
         login,
         logout,
         signup,
