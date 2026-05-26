@@ -3,9 +3,43 @@ import { Unit } from "../db/unit";
 import { CACHE_TTL_MS } from "../app";
 
 export class LocalRecipeRepository {
-    async searchRecipes(query: string): Promise<RecipeWithDetails[]> {
+    async searchRecipes(query: string, filters: Record<string, any> = {}): Promise<RecipeWithDetails[]> {
         const unit = new Unit(true);
         const cutoff = new Date(Date.now() - CACHE_TTL_MS).toISOString();
+
+        const conditions: string[] = ['r.name LIKE :query', 'r.updatedAt > :cutoff'];
+        const params: Record<string, any> = { query: `%${query}%`, cutoff };
+
+        if (filters.maxReadyTime !== undefined) {
+            conditions.push('d.readyInMinutes <= :maxReadyTime');
+            params.maxReadyTime = filters.maxReadyTime;
+        }
+        if (filters.minServings !== undefined) {
+            conditions.push('d.servings >= :minServings');
+            params.minServings = filters.minServings;
+        }
+        if (filters.maxServings !== undefined) {
+            conditions.push('d.servings <= :maxServings');
+            params.maxServings = filters.maxServings;
+        }
+        if (filters.diet) {
+            const diet = (filters.diet as string).toLowerCase();
+            if (diet.includes('vegan')) {
+                conditions.push('d.vegan = 1');
+            } else if (diet.includes('vegetarian')) {
+                conditions.push('d.vegetarian = 1');
+            }
+        }
+        if (filters.intolerances) {
+            const intolerances = (filters.intolerances as string).toLowerCase();
+            if (intolerances.includes('gluten') || intolerances.includes('wheat')) {
+                conditions.push('d.glutenFree = 1');
+            }
+            if (intolerances.includes('dairy')) {
+                conditions.push('d.dairyFree = 1');
+            }
+        }
+
         const stmt = unit.prepare<RecipeWithDetails>(`
             SELECT r.id, r.name, r.image,
                    d.readyInMinutes, d.servings, d.stepCount, d.ingredientCount, d.pricePerServing,
@@ -13,8 +47,8 @@ export class LocalRecipeRepository {
                    d.vegetarian, d.vegan, d.glutenFree, d.dairyFree
             FROM Recipe r
             INNER JOIN RecipeDetails d ON d.recipeId = r.id
-            WHERE r.name LIKE :query AND r.updatedAt > :cutoff
-        `, { query: `%${query}%`, cutoff });
+            WHERE ${conditions.join(' AND ')}
+        `, params);
         const recipes = stmt.all();
         unit.complete();
         return recipes;
