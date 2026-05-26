@@ -57,10 +57,15 @@ function onCalendarClick(event: Event) {
             <calendar-month></calendar-month>
           </calendar-date>
 
-          <nuxt-link-locale @click="blur" to="/dashboard/schedule" class="btn btn-primary m-2">
-            <i class="fa-solid fa-clock mr-1.5"/>
-            <span>{{$t('component.navbar.calendar.schedule')}}</span>
-          </nuxt-link-locale>
+          <div class="flex gap-2 m-2">
+            <nuxt-link-locale @click="blur" to="/dashboard/schedule" class="btn btn-primary flex-1">
+              <i class="fa-solid fa-clock mr-1.5"/>
+              <span>{{$t('component.navbar.calendar.schedule')}}</span>
+            </nuxt-link-locale>
+            <nuxt-link-locale @click="blur" to="/dashboard/shopping-list" class="btn btn-secondary">
+              <i class="fa-solid fa-cart-shopping"/>
+            </nuxt-link-locale>
+          </div>
         </div>
       </div>
       <div class="dropdown dropdown-end">
