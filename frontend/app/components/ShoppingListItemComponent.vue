@@ -18,8 +18,10 @@ defineEmits<{ toggle: [] }>();
   >
     <i
       :class="[
-        'fa-solid text-lg shrink-0 transition-colors',
-        checked ? 'fa-circle-check text-primary' : 'fa-circle text-base-content/20',
+        'text-lg shrink-0 transition-colors',
+        checked
+          ? 'fa-solid fa-circle-check text-primary'
+          : 'fa-regular fa-circle text-base-content/20',
       ]"
     />
     <div class="flex-1 min-w-0">
