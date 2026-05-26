@@ -14,7 +14,7 @@ export class RecipeService {
 
     async searchRecipes(query: string, userIp?: string, filters: Record<string, any> = {}, number: number = 10): Promise<RecipePreviewResponse[]> {
         const numResults = filters.number ?? number;
-        const localRecipes = await this.localRepo.searchRecipes(query);
+        const localRecipes = await this.localRepo.searchRecipes(query, filters);
         if (localRecipes.length >= numResults) {
             return localRecipes.slice(0, numResults).map(toRecipePreview);
         }
