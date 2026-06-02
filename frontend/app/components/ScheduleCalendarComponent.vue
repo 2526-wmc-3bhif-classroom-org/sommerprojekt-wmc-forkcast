@@ -2,7 +2,7 @@
 import draggable from 'vuedraggable';
 import useCalendarService from '~/assets/service/calendar-service';
 
-const { locale } = useI18n();
+const { locale, t } = useI18n();
 
 type WeekDay = {
   key: string;
@@ -73,7 +73,7 @@ async function loadWeek(weekStart: Date) {
 
   const result = await calendarService.getEntries(from, to);
   if (result.rateLimited) {
-    calendarError.value = 'Too many requests — please wait a moment.';
+    calendarError.value = t('error.rate_limited');
     loadingWeek.value = false;
     fetchedWeeks.delete(from);
     return;

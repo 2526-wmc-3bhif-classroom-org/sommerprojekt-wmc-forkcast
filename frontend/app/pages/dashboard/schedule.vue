@@ -99,7 +99,7 @@ function onMainListDragEnd() {
           </ul>
           <div v-else-if="datas.length === 0" class="flex flex-col items-center justify-center h-full gap-3 text-base-content/30 select-none">
             <i class="fa-solid fa-magnifying-glass text-4xl"/>
-            <span class="text-sm font-medium">Start by searching something...</span>
+            <span class="text-sm font-medium">{{ $t('component.search.start_searching') }}</span>
           </div>
           <draggable v-else
               v-model="datas"
