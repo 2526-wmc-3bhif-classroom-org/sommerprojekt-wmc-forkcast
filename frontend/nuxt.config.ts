@@ -50,7 +50,7 @@ export default defineNuxtConfig({
     },
     nitro: {
         prerender: {
-            crawlLinks: false,
+            ignore: [/dashboard/],
             routes: fs.readdirSync(path.resolve(__dirname, 'app/content'))
                 .filter(file => file.endsWith('.md'))
                 .map(file => `/${file.replace('.md', '')}`)
