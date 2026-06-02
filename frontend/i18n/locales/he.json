@@ -75,6 +75,8 @@
   "route./dashboard.desc": "צפה בתוכניות הארוחות שלך, גלה מתכונים חדשים ונהל את הגדרות החשבון שלך.",
   "route./dashboard/account": "חשבון",
   "route./dashboard/account.desc": "צפה וערוך את פרטי החשבון שלך, כולל שם המשתמש, הדוא\"ל והסיסמה.",
+  "route./dashboard/account/edit": "עריכת פרופיל",
+  "route./dashboard/account/edit.desc": "נהל את הגדרות הפרופיל שלך, כולל שם משתמש וסיסמה.",
   "route./dashboard/schedule": "לוח זמנים",
   "route./dashboard/schedule.desc": "צפה ונהל את תוכניות הארוחות שלך לשבוע. הוסף ארוחות חדשות, ערוך קיימות וארגן את הלוח שלך.",
   "route./dashboard/shopping-list": "רשימת קניות",

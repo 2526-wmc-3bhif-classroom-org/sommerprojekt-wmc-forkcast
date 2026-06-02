@@ -75,6 +75,8 @@
   "route./dashboard.desc": "ᐯᒲᒷᗐ ᔕᓄᑌᖇ ᓲᒷᔑᓪ ᓆᓪᔑᑎᓴ, ↸ᒲᓴᓵᓄᐯᒷᖇ ᑎᒷᗐ ᖇᒷᓵᒲᓆᒷᓴ, ᔑᑎ↸ ᓲᔑᑎᔑᓭᒷ ᔕᓄᑌᖇ ᔑᓵᓵᓄᑌᑎᖶ ᓴᒷᖶᖶᒲᑎᓭᓴ.",
   "route./dashboard/account": "ᔑᓵᓵᓄᑌᑎᖶ",
   "route./dashboard/account.desc": "ᐯᒲᒷᗐ ᔑᑎ↸ ᒷ↸ᒲᖶ ᔕᓄᑌᖇ ᔑᓵᓵᓄᑌᑎᖶ ᒲᑎ⌑ᓄᖇᓲᔑᖶᒲᓄᑎ, ᒲᑎᓵᓪᑌ↸ᒲᑎᓭ ᔕᓄᑌᖇ ᑌᓴᒷᖇᑎᔑᓲᒷ, ᒷᓲᔑᒲᓪ, ᔑᑎ↸ ᓆᔑᓴᓴᗐᓄᖇ↸.",
+  "route./dashboard/account/edit": "ᒷ↸ᒲᖶ ᓆᖇᓄ⌑ᒲᓪᒷ",
+  "route./dashboard/account/edit.desc": "ᓲᔑᑎᔑᓭᒷ ᔕᓄᑌᖇ ᓆᖇᓄ⌑ᒲᓪᒷ ᓴᒷᖶᖶᒲᑎᓭᓴ, ᒲᑎᓵᓪᑌ↸ᒲᑎᓭ ᑌᓴᒷᖇᑎᔑᓲᒷ ᔑᑎ↸ ᓆᔑᓴᓴᗐᓄᖇ↸.",
   "route./dashboard/schedule": "ᓴᓵʎᒷ↸ᑌᓪᒷ",
   "route./dashboard/schedule.desc": "ᐯᒲᒷᗐ ᔑᑎ↸ ᓲᔑᑎᔑᓭᒷ ᔕᓄᑌᖇ ᓲᒷᔑᓪ ᓆᓪᔑᑎᓴ ⌑ᓄᖇ ᖶʎᒷ ᗐᒷᒷᑕ. ᔑ↸↸ ᑎᒷᗐ ᓲᒷᔑᓪᓴ, ᒷ↸ᒲᖶ ᒷ᙭ᒲᓴᖶᒲᑎᓭ ᓄᑎᒷᓴ, ᔑᑎ↸ ᓄᖇᓭᔑᑎᒲᘓᒷ ᔕᓄᑌᖇ ᓴᓵʎᒷ↸ᑌᓪᒷ.",
   "route./dashboard/shopping-list": "ᓴʎᓄᓆᓆᒲᑎᓭ ᓪᒲᓴᖶ",

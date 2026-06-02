@@ -213,9 +213,8 @@ function goToToday() {
 </script>
 
 <template>
-  <div class="grid grid-rows-[4.5rem_1fr] grid-cols-1 gap-5">
-
-    <div class="bg-base-100 rounded-l-2xl text-base-content">
+  <div class="grid grid-rows-[4.5rem_1fr] grid-cols-1 gap-4 h-full rounded-2xl overflow-hidden">
+    <div class="bg-base-100 rounded-2xl text-base-content">
       <div class="flex items-center justify-between gap-4 px-4 py-4">
         <div class="flex flex-col gap-0.5 min-w-0">
           <h1 class="text-left text-2xl font-semibold tracking-tight sm:text-3xl lg:text-4xl whitespace-nowrap">
@@ -240,7 +239,7 @@ function goToToday() {
       </div>
     </div>
 
-    <div class="bg-base-100 rounded-tl-2xl text-base-content overflow-hidden">
+    <div class="bg-base-100 rounded-2xl text-base-content overflow-hidden">
       <div ref="calendarGridRef" class="grid grid-cols-7 gap-px bg-base-300 h-full">
         <div
             v-for="day in weekDays"

@@ -75,6 +75,8 @@
   "route./dashboard.desc": "Sieh deine Mahlzeitenpläne ein, entdecke neue Rezepte und verwalte deine Kontoeinstellungen.",
   "route./dashboard/account": "Konto",
   "route./dashboard/account.desc": "Zeige deine Kontoinformationen an und bearbeite sie, einschließlich Benutzername, E-Mail und Passwort.",
+  "route./dashboard/account/edit": "Profil bearbeiten",
+  "route./dashboard/account/edit.desc": "Verwalte deine Profileinstellungen, einschließlich Benutzername und Passwort.",
   "route./dashboard/schedule": "Zeitplan",
   "route./dashboard/schedule.desc": "Zeige deine Mahlzeitenpläne für die Woche an und verwalte sie.",
   "route./dashboard/shopping-list": "Einkaufsliste",

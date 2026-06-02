@@ -75,6 +75,8 @@
   "route./dashboard.desc": "Öğün planlarınızı görüntüleyin, yeni tarifler keşfedin ve hesap ayarlarınızı yönetin.",
   "route./dashboard/account": "Hesap",
   "route./dashboard/account.desc": "Kullanıcı adı, e-posta ve şifre dahil hesap bilgilerinizi görüntüleyin ve düzenleyin.",
+  "route./dashboard/account/edit": "Profili düzenle",
+  "route./dashboard/account/edit.desc": "Kullanıcı adı ve şifre dahil profil ayarlarınızı yönetin.",
   "route./dashboard/schedule": "Program",
   "route./dashboard/schedule.desc": "Haftanın öğün planlarını görüntüleyin ve yönetin.",
   "route./dashboard/shopping-list": "Alışveriş Listesi",

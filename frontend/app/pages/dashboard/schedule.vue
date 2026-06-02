@@ -79,13 +79,12 @@ function onMainListDragEnd() {
 </script>
 
 <template>
-  <div class="grid grid-rows-[4rem_1fr] grid-cols-[32.5rem_1fr] row-end-auto w-screen h-screen">
+  <div class="grid grid-rows-[4rem_1fr] grid-cols-[32.5rem_1fr] row-end-auto w-screen h-screen px-4 pb-4 gap-x-4">
     <div class="col-span-2"></div>
-    <div class="w-125 bg-base-100 rounded-tr-2xl col-span-1">
-      <div>
-        <recipe-search-component ref="searchRef" class="m-3 w-[stretch]" @results="onSearchResults" @loading="isSearchLoading = $event"/>
+    <div class="bg-base-100 rounded-2xl col-span-1 flex flex-col overflow-hidden">
+        <recipe-search-component ref="searchRef" class="m-3 w-[stretch] shrink-0" @results="onSearchResults" @loading="isSearchLoading = $event"/>
 
-        <div ref="listContainerRef" class="overflow-y-scroll h-[calc(100vh-8rem)]">
+        <div ref="listContainerRef" class="overflow-y-scroll flex-1">
           <ul v-if="isSearchLoading && datas.length === 0" class="list">
             <li v-for="i in 5" :key="i" class="list-row flex items-center gap-4 p-3">
               <div class="skeleton size-33 rounded-box shrink-0"/>
@@ -123,7 +122,6 @@ function onMainListDragEnd() {
           </draggable>
           <div ref="sentinelRef" class="h-1"/>
         </div>
-      </div>
     </div>
     <schedule-calendar-component />
   </div>

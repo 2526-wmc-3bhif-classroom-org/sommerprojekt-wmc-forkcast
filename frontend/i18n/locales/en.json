@@ -75,6 +75,8 @@
   "route./dashboard.desc": "View your meal plans, discover new recipes, and manage your account settings.",
   "route./dashboard/account": "Account",
   "route./dashboard/account.desc": "View and edit your account information, including your username, email, and password.",
+  "route./dashboard/account/edit": "Edit Profile",
+  "route./dashboard/account/edit.desc": "Manage your profile settings, including username and password.",
   "route./dashboard/schedule": "Schedule",
   "route./dashboard/schedule.desc": "View and manage your meal plans for the week. Add new meals, edit existing ones, and organize your schedule.",
   "route./dashboard/shopping-list": "Shopping List",

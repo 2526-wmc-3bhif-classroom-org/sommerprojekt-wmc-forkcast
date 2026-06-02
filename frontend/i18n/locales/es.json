@@ -75,6 +75,8 @@
   "route./dashboard.desc": "Ve tus planes de comidas, descubre nuevas recetas y gestiona tu cuenta.",
   "route./dashboard/account": "Cuenta",
   "route./dashboard/account.desc": "Ve y edita la información de tu cuenta, incluyendo nombre de usuario, correo y contraseña.",
+  "route./dashboard/account/edit": "Editar perfil",
+  "route./dashboard/account/edit.desc": "Administra la configuración de tu perfil, incluyendo nombre de usuario y contraseña.",
   "route./dashboard/schedule": "Horario",
   "route./dashboard/schedule.desc": "Ve y gestiona tus planes de comidas para la semana.",
   "route./dashboard/shopping-list": "Lista de compras",
