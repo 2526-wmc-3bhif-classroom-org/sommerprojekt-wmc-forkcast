@@ -31,8 +31,71 @@ definePageMeta({ showFooter: false })
 
 const {apiRequest} = useApiConnection();
 const jwtStore = useJwtStore();
+const { t } = useI18n();
 
 const user = ref<User | null>(null);
+
+// Edit modal: null | 'chooser' | 'username' | 'password'
+const editModal = ref<null | 'chooser' | 'username' | 'password'>(null);
+const newUsername = ref('');
+const currentPassword = ref('');
+const newPassword = ref('');
+const confirmPassword = ref('');
+const usernameSuccess = ref(false);
+const usernameError = ref('');
+const passwordSuccess = ref(false);
+const passwordError = ref('');
+const usernameLoading = ref(false);
+const passwordLoading = ref(false);
+
+function openEditModal() {
+  newUsername.value = '';
+  currentPassword.value = '';
+  newPassword.value = '';
+  confirmPassword.value = '';
+  usernameSuccess.value = false;
+  usernameError.value = '';
+  passwordSuccess.value = false;
+  passwordError.value = '';
+  editModal.value = 'chooser';
+}
+
+async function saveUsername() {
+  usernameError.value = '';
+  usernameSuccess.value = false;
+  if (!newUsername.value.trim()) { usernameError.value = t('page.modifyprofile.username.empty'); return; }
+  usernameLoading.value = true;
+  const result = await apiRequest('/users/me/name', 'PATCH', jwtStore.jwt, {name: newUsername.value.trim()}, false);
+  usernameLoading.value = false;
+  if (result.ok) {
+    usernameSuccess.value = true;
+    newUsername.value = '';
+    if (user.value) user.value = {...user.value, name: newUsername.value || user.value.name};
+  } else {
+    const errs = result.failure?.errors;
+    usernameError.value = errs?.length ? errs.map(e => e.msg).join(' · ') : (result.failure?.message ?? t('page.modifyprofile.username.error'));
+  }
+}
+
+async function savePassword() {
+  passwordError.value = '';
+  passwordSuccess.value = false;
+  if (!currentPassword.value) { passwordError.value = t('page.modifyprofile.password.empty_current'); return; }
+  if (newPassword.value.length < 8) { passwordError.value = t('page.modifyprofile.password.too_short'); return; }
+  if (newPassword.value !== confirmPassword.value) { passwordError.value = t('page.modifyprofile.password.mismatch'); return; }
+  passwordLoading.value = true;
+  const result = await apiRequest('/users/me/password', 'PATCH', jwtStore.jwt, {currentPassword: currentPassword.value, newPassword: newPassword.value}, false);
+  passwordLoading.value = false;
+  if (result.ok) {
+    passwordSuccess.value = true;
+    currentPassword.value = '';
+    newPassword.value = '';
+    confirmPassword.value = '';
+  } else {
+    const errs = result.failure?.errors;
+    passwordError.value = errs?.length ? errs.map(e => `${e.path}: ${e.msg}`).join(' · ') : (result.failure?.message ?? t('page.modifyprofile.password.error'));
+  }
+}
 const favorites = ref<FavoriteEntry[]>([]);
 const friends = ref<PublicUser[]>([]);
 const friendToRemove = ref<PublicUser | null>(null);
@@ -128,9 +191,9 @@ async function removeFriend() {
             <div class="stat-title">{{ user?.email }}</div>
             <div class="stat-value text-base-content flex items-center gap-2">
               {{ user?.name }}
-              <nuxt-link-locale to="/dashboard/account/edit" class="btn btn-ghost btn-xs btn-circle">
+              <button @click="openEditModal" class="btn btn-ghost btn-xs btn-circle">
                 <i class="fa-solid fa-pen text-base-content/40" />
-              </nuxt-link-locale>
+              </button>
             </div>
           </div>
           <div class="stat">
@@ -236,6 +299,113 @@ async function removeFriend() {
     </div>
 
   </div>
+
+  <!-- Chooser Modal -->
+  <dialog :open="editModal === 'chooser'" class="modal">
+    <div class="modal-box max-w-sm">
+      <div class="flex items-center justify-between mb-6">
+        <h3 class="font-bold text-lg">{{ $t('page.modifyprofile.title') }}</h3>
+        <button @click="editModal = null" class="btn btn-ghost btn-sm btn-circle">
+          <i class="fa-solid fa-xmark" />
+        </button>
+      </div>
+      <div class="flex flex-col gap-3">
+        <button @click="editModal = 'username'" class="btn btn-soft w-full justify-start gap-3 h-auto py-4">
+          <i class="fa-solid fa-user text-primary text-xl w-6" />
+          <span class="text-left flex flex-col">
+            <span class="font-semibold">{{ $t('page.modifyprofile.username.title') }}</span>
+            <span class="text-xs text-base-content/50 font-normal">{{ $t('page.modifyprofile.username.label') }}</span>
+          </span>
+          <i class="fa-solid fa-chevron-right ml-auto text-base-content/30" />
+        </button>
+        <button @click="editModal = 'password'" class="btn btn-soft w-full justify-start gap-3 h-auto py-4">
+          <i class="fa-solid fa-key text-primary text-xl w-6" />
+          <span class="text-left flex flex-col">
+            <span class="font-semibold">{{ $t('page.modifyprofile.password.title') }}</span>
+            <span class="text-xs text-base-content/50 font-normal">{{ $t('page.modifyprofile.password.current') }}</span>
+          </span>
+          <i class="fa-solid fa-chevron-right ml-auto text-base-content/30" />
+        </button>
+      </div>
+    </div>
+    <form method="dialog" class="modal-backdrop" @click="editModal = null"><button>close</button></form>
+  </dialog>
+
+  <!-- Username Modal -->
+  <dialog :open="editModal === 'username'" class="modal">
+    <div class="modal-box">
+      <div class="flex items-center gap-3 mb-4">
+        <button @click="editModal = 'chooser'" class="btn btn-ghost btn-sm btn-circle">
+          <i class="fa-solid fa-arrow-left" />
+        </button>
+        <h3 class="font-bold text-lg">{{ $t('page.modifyprofile.username.title') }}</h3>
+      </div>
+      <form class="fieldset w-full" onsubmit="return false">
+        <label class="label">
+          <i class="fa-solid fa-user" />
+          <span>{{ $t('page.modifyprofile.username.label') }}</span>
+        </label>
+        <input v-model="newUsername" type="text" :placeholder="$t('page.modifyprofile.username.placeholder')" class="input w-full" @keyup.enter="saveUsername" />
+        <label v-if="usernameError" class="label text-error">
+          <i class="fa-solid fa-triangle-exclamation" />
+          <span>{{ usernameError }}</span>
+        </label>
+        <label v-if="usernameSuccess" class="label text-success">
+          <i class="fa-solid fa-circle-check" />
+          <span>{{ $t('page.modifyprofile.username.success') }}</span>
+        </label>
+        <button @click="saveUsername" :disabled="usernameLoading" class="btn btn-primary mt-4 w-full">
+          <span v-if="usernameLoading" class="loading loading-spinner loading-sm" />
+          <i v-else class="fa-solid fa-user-pen" />
+          {{ $t('page.modifyprofile.username.save') }}
+        </button>
+      </form>
+    </div>
+    <form method="dialog" class="modal-backdrop" @click="editModal = null"><button>close</button></form>
+  </dialog>
+
+  <!-- Password Modal -->
+  <dialog :open="editModal === 'password'" class="modal">
+    <div class="modal-box">
+      <div class="flex items-center gap-3 mb-4">
+        <button @click="editModal = 'chooser'" class="btn btn-ghost btn-sm btn-circle">
+          <i class="fa-solid fa-arrow-left" />
+        </button>
+        <h3 class="font-bold text-lg">{{ $t('page.modifyprofile.password.title') }}</h3>
+      </div>
+      <form class="fieldset w-full" onsubmit="return false">
+        <label class="label">
+          <i class="fa-solid fa-key" />
+          <span>{{ $t('page.modifyprofile.password.current') }}</span>
+        </label>
+        <input v-model="currentPassword" type="password" :placeholder="$t('page.modifyprofile.password.current_placeholder')" class="input w-full" />
+        <label class="label">
+          <i class="fa-solid fa-lock" />
+          <span>{{ $t('page.modifyprofile.password.new') }}</span>
+        </label>
+        <input v-model="newPassword" type="password" :placeholder="$t('page.modifyprofile.password.new_placeholder')" class="input w-full" />
+        <label class="label">
+          <i class="fa-solid fa-lock-open" />
+          <span>{{ $t('page.modifyprofile.password.confirm') }}</span>
+        </label>
+        <input v-model="confirmPassword" type="password" :placeholder="$t('page.modifyprofile.password.confirm_placeholder')" class="input w-full" @keyup.enter="savePassword" />
+        <label v-if="passwordError" class="label text-error">
+          <i class="fa-solid fa-triangle-exclamation" />
+          <span>{{ passwordError }}</span>
+        </label>
+        <label v-if="passwordSuccess" class="label text-success">
+          <i class="fa-solid fa-circle-check" />
+          <span>{{ $t('page.modifyprofile.password.success') }}</span>
+        </label>
+        <button @click="savePassword" :disabled="passwordLoading" class="btn btn-primary mt-4 w-full">
+          <span v-if="passwordLoading" class="loading loading-spinner loading-sm" />
+          <i v-else class="fa-solid fa-key" />
+          {{ $t('page.modifyprofile.password.save') }}
+        </button>
+      </form>
+    </div>
+    <form method="dialog" class="modal-backdrop" @click="editModal = null"><button>close</button></form>
+  </dialog>
 
   <!-- Remove Favorite Modal -->
   <dialog :open="favoriteToRemove !== null" class="modal">
