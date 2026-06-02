@@ -1,30 +1,119 @@
-import { Recipe, RecipeDetails, RecipeWithDetails } from '../types';
+import { Recipe, RecipeDetails, RecipeWithDetails, Ingredient } from '../types';
 import { Unit } from "../db/unit";
 import { CACHE_TTL_MS } from "../app";
 
+const NUTRIENT_COLUMNS = [
+    'calories', 'carbs', 'protein', 'fat', 'alcohol', 'caffeine', 'sugar',
+    'sodium', 'fiber', 'cholesterol', 'saturatedFat', 'vitaminA', 'vitaminC',
+    'vitaminD', 'vitaminE', 'vitaminK', 'vitaminB1', 'vitaminB2', 'vitaminB3',
+    'vitaminB5', 'vitaminB6', 'vitaminB12', 'calcium', 'copper', 'fluoride',
+    'iodine', 'iron', 'magnesium', 'manganese', 'phosphorus', 'potassium',
+    'selenium', 'zinc', 'choline', 'folate', 'folicAcid',
+] as const;
+
+type NutrientColumn = typeof NUTRIENT_COLUMNS[number];
+
+const RANGE_FILTERABLE_COLUMNS = new Set<string>([...NUTRIENT_COLUMNS, 'servings']);
+
+const NUTRIENT_SELECT = NUTRIENT_COLUMNS.map(c => `d.${c}`).join(', ');
+
+const BASE_SELECT = `
+    SELECT r.id, r.name, r.image,
+           d.readyInMinutes, d.servings, d.stepCount, d.ingredientCount, d.pricePerServing,
+           d.effortScore, d.rating, d.aggregateLikes,
+           d.vegetarian, d.vegan, d.glutenFree, d.dairyFree,
+           ${NUTRIENT_SELECT}
+    FROM Recipe r
+    INNER JOIN RecipeDetails d ON d.recipeId = r.id
+`;
+
 export class LocalRecipeRepository {
-    async searchRecipes(query: string): Promise<RecipeWithDetails[]> {
+    async searchRecipes(query: string, filters: Record<string, any> = {}): Promise<RecipeWithDetails[]> {
         const unit = new Unit(true);
         const cutoff = new Date(Date.now() - CACHE_TTL_MS).toISOString();
-        const stmt = unit.prepare<RecipeWithDetails>(`
-            SELECT r.id, r.name, r.image,
-                   d.readyInMinutes, d.servings, d.stepCount, d.ingredientCount, d.pricePerServing,
-                   d.effortScore, d.rating, d.aggregateLikes,
-                   d.vegetarian, d.vegan, d.glutenFree, d.dairyFree
-            FROM Recipe r
-            INNER JOIN RecipeDetails d ON d.recipeId = r.id
-            WHERE r.name LIKE :query AND r.updatedAt > :cutoff
-        `, { query: `%${query}%`, cutoff });
+
+        const conditions: string[] = ['r.name LIKE :query', 'r.updatedAt > :cutoff'];
+        const params: Record<string, any> = { query: `%${query}%`, cutoff };
+
+        if (filters.maxReadyTime !== undefined) {
+            conditions.push('d.readyInMinutes <= :maxReadyTime');
+            params.maxReadyTime = filters.maxReadyTime;
+        }
+
+        for (const [key, value] of Object.entries(filters)) {
+            if (value === undefined) continue;
+            const isMin = key.startsWith('min');
+            const isMax = key.startsWith('max');
+            if (!isMin && !isMax) continue;
+            const colName = key.slice(3).charAt(0).toLowerCase() + key.slice(4);
+            if (!RANGE_FILTERABLE_COLUMNS.has(colName)) continue;
+            conditions.push(`d.${colName} ${isMin ? '>=' : '<='} :${key}`);
+            params[key] = value;
+        }
+
+        if (filters.diet) {
+            const diet = (filters.diet as string).toLowerCase();
+            if (diet.includes('vegan')) {
+                conditions.push('d.vegan = 1');
+            } else if (diet.includes('vegetarian')) {
+                conditions.push('d.vegetarian = 1');
+            }
+        }
+        if (filters.intolerances) {
+            const intolerances = (filters.intolerances as string).toLowerCase();
+            if (intolerances.includes('gluten') || intolerances.includes('wheat')) {
+                conditions.push('d.glutenFree = 1');
+            }
+            if (intolerances.includes('dairy')) {
+                conditions.push('d.dairyFree = 1');
+            }
+        }
+
+        const stmt = unit.prepare<RecipeWithDetails>(
+            `${BASE_SELECT} WHERE ${conditions.join(' AND ')}`,
+            params
+        );
         const recipes = stmt.all();
         unit.complete();
         return recipes;
     }
 
-    async saveRecipesWithDetails(entries: Array<{ recipe: Recipe; details: Omit<RecipeDetails, 'recipeId'> }>): Promise<void> {
+    async findIngredientsByRecipeIds(ids: number[]): Promise<Map<number, Ingredient[]>> {
+        const result = new Map<number, Ingredient[]>();
+        if (ids.length === 0) return result;
+        const unit = new Unit(true);
+        const placeholders = ids.map((_, i) => `:id${i}`).join(', ');
+        const params: Record<string, any> = {};
+        ids.forEach((id, i) => { params[`id${i}`] = id; });
+        const rows = unit.prepare<{ recipeId: number; name: string; amount: number; unit: string; usAmount: number | null; usUnit: string | null; metricAmount: number | null; metricUnit: string | null }>(
+            `SELECT recipeId, name, amount, unit, usAmount, usUnit, metricAmount, metricUnit FROM RecipeIngredient WHERE recipeId IN (${placeholders})`,
+            params
+        ).all();
+        unit.complete();
+        for (const row of rows) {
+            if (!result.has(row.recipeId)) result.set(row.recipeId, []);
+            result.get(row.recipeId)!.push({
+                name: row.name,
+                amount: row.amount,
+                unit: row.unit,
+                measures: {
+                    us: row.usAmount !== null ? { amount: row.usAmount, unitShort: row.usUnit ?? '' } : undefined,
+                    metric: row.metricAmount !== null ? { amount: row.metricAmount, unitShort: row.metricUnit ?? '' } : undefined,
+                },
+            });
+        }
+        return result;
+    }
+
+    async saveRecipesWithDetails(entries: Array<{ recipe: Recipe; details: Omit<RecipeDetails, 'recipeId'>; ingredients?: Ingredient[] }>): Promise<void> {
         if (entries.length === 0) return;
         const unit = new Unit(false);
         const now = new Date().toISOString();
-        for (const { recipe, details } of entries) {
+        const nutrientCols = NUTRIENT_COLUMNS.join(', ');
+        const nutrientVals = NUTRIENT_COLUMNS.map(c => `:${c}`).join(', ');
+        const nutrientUpdates = NUTRIENT_COLUMNS.map(c => `${c} = excluded.${c}`).join(', ');
+
+        for (const { recipe, details, ingredients } of entries) {
             unit.prepare<void>(`
                 INSERT INTO Recipe (id, name, image, updatedAt) VALUES (:id, :name, :image, :updatedAt)
                 ON CONFLICT(id) DO UPDATE SET
@@ -33,13 +122,34 @@ export class LocalRecipeRepository {
                     image = excluded.image
             `, { id: recipe.id, name: recipe.name, image: recipe.image, updatedAt: now }).run();
 
+            if (ingredients && ingredients.length > 0) {
+                unit.prepare<void>('DELETE FROM RecipeIngredient WHERE recipeId = :recipeId', { recipeId: recipe.id }).run();
+                for (const ing of ingredients) {
+                    unit.prepare<void>(`
+                        INSERT INTO RecipeIngredient (recipeId, name, amount, unit, usAmount, usUnit, metricAmount, metricUnit)
+                        VALUES (:recipeId, :name, :amount, :unit, :usAmount, :usUnit, :metricAmount, :metricUnit)
+                    `, {
+                        recipeId: recipe.id,
+                        name: ing.name,
+                        amount: ing.amount,
+                        unit: ing.unit,
+                        usAmount: ing.measures?.us?.amount ?? null,
+                        usUnit: ing.measures?.us?.unitShort ?? null,
+                        metricAmount: ing.measures?.metric?.amount ?? null,
+                        metricUnit: ing.measures?.metric?.unitShort ?? null,
+                    }).run();
+                }
+            }
+
             unit.prepare<void>(`
                 INSERT INTO RecipeDetails (
                     recipeId, readyInMinutes, servings, stepCount, ingredientCount, pricePerServing,
-                    effortScore, rating, aggregateLikes, vegetarian, vegan, glutenFree, dairyFree
+                    effortScore, rating, aggregateLikes, vegetarian, vegan, glutenFree, dairyFree,
+                    ${nutrientCols}
                 ) VALUES (
                     :recipeId, :readyInMinutes, :servings, :stepCount, :ingredientCount, :pricePerServing,
-                    :effortScore, :rating, :aggregateLikes, :vegetarian, :vegan, :glutenFree, :dairyFree
+                    :effortScore, :rating, :aggregateLikes, :vegetarian, :vegan, :glutenFree, :dairyFree,
+                    ${nutrientVals}
                 )
                 ON CONFLICT(recipeId) DO UPDATE SET
                     readyInMinutes = excluded.readyInMinutes,
@@ -53,7 +163,8 @@ export class LocalRecipeRepository {
                     vegetarian = excluded.vegetarian,
                     vegan = excluded.vegan,
                     glutenFree = excluded.glutenFree,
-                    dairyFree = excluded.dairyFree
+                    dairyFree = excluded.dairyFree,
+                    ${nutrientUpdates}
             `, {
                 recipeId: recipe.id,
                 ...details,
@@ -66,8 +177,8 @@ export class LocalRecipeRepository {
         unit.complete(true);
     }
 
-    async saveRecipeWithDetails(recipe: Recipe, details: Omit<RecipeDetails, 'recipeId'>): Promise<void> {
-        return this.saveRecipesWithDetails([{ recipe, details }]);
+    async saveRecipeWithDetails(recipe: Recipe, details: Omit<RecipeDetails, 'recipeId'>, ingredients?: Ingredient[]): Promise<void> {
+        return this.saveRecipesWithDetails([{ recipe, details, ingredients }]);
     }
 
     async findRecipesByIds(ids: number[]): Promise<RecipeWithDetails[]> {
@@ -77,15 +188,10 @@ export class LocalRecipeRepository {
         const placeholders = ids.map((_, i) => `:id${i}`).join(', ');
         const params: Record<string, any> = { cutoff };
         ids.forEach((id, i) => { params[`id${i}`] = id; });
-        const stmt = unit.prepare<RecipeWithDetails>(`
-            SELECT r.id, r.name, r.image,
-                   d.readyInMinutes, d.servings, d.stepCount, d.ingredientCount, d.pricePerServing,
-                   d.effortScore, d.rating, d.aggregateLikes,
-                   d.vegetarian, d.vegan, d.glutenFree, d.dairyFree
-            FROM Recipe r
-            INNER JOIN RecipeDetails d ON d.recipeId = r.id
-            WHERE r.id IN (${placeholders}) AND r.updatedAt > :cutoff
-        `, params);
+        const stmt = unit.prepare<RecipeWithDetails>(
+            `${BASE_SELECT} WHERE r.id IN (${placeholders}) AND r.updatedAt > :cutoff`,
+            params
+        );
         const recipes = stmt.all();
         unit.complete();
         return recipes;
@@ -94,15 +200,10 @@ export class LocalRecipeRepository {
     async findRecipeById(id: number): Promise<RecipeWithDetails | undefined> {
         const unit = new Unit(true);
         const cutoff = new Date(Date.now() - CACHE_TTL_MS).toISOString();
-        const stmt = unit.prepare<RecipeWithDetails>(`
-            SELECT r.id, r.name, r.image,
-                   d.readyInMinutes, d.servings, d.stepCount, d.ingredientCount, d.pricePerServing,
-                   d.effortScore, d.rating, d.aggregateLikes,
-                   d.vegetarian, d.vegan, d.glutenFree, d.dairyFree
-            FROM Recipe r
-            INNER JOIN RecipeDetails d ON d.recipeId = r.id
-            WHERE r.id = :id AND r.updatedAt > :cutoff
-        `, { id, cutoff });
+        const stmt = unit.prepare<RecipeWithDetails>(
+            `${BASE_SELECT} WHERE r.id = :id AND r.updatedAt > :cutoff`,
+            { id, cutoff }
+        );
         const recipe = stmt.get();
         unit.complete();
         return recipe;

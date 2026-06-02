@@ -1,14 +1,16 @@
 import { CalendarRepository } from '../repository/calendarRepository';
 import { RecipeService } from './recipeService';
 import { Unit } from '../db/unit';
-import { ingredientCache, CachedIngredient } from '../utils/ingredientCache';
 import { IngredientAggregator, UnitSystem } from '../utils/ingredientAggregator';
+import { Ingredient } from '../types';
 
 interface ShoppingListIngredient {
     name: string;
     us?: { amount: number; unit: string };
     metric?: { amount: number; unit: string };
 }
+
+type CachedIngredient = Ingredient;
 
 interface ShoppingListResponse {
     dateRange: {
@@ -53,19 +55,12 @@ export class ShoppingListService {
             }
 
             const allIngredients: CachedIngredient[] = [];
+            const uniqueIds = [...new Set(entries.map(e => e.recipeId))];
 
-            for (const entry of entries) {
-                const cached = ingredientCache.get(entry.recipeId);
-
-                if (cached) {
-                    allIngredients.push(...cached);
-                } else {
-                    const recipe = await this.recipeService.getRecipeById(entry.recipeId);
-                    if (recipe) {
-                        const ingredients = this.extractIngredients(recipe);
-                        ingredientCache.set(entry.recipeId, ingredients);
-                        allIngredients.push(...ingredients);
-                    }
+            for (const recipeId of uniqueIds) {
+                const recipe = await this.recipeService.getRecipeById(recipeId);
+                if (recipe?.ingredients) {
+                    allIngredients.push(...recipe.ingredients);
                 }
             }
 
@@ -84,16 +79,4 @@ export class ShoppingListService {
         }
     }
 
-    private extractIngredients(recipe: any): CachedIngredient[] {
-        if (!recipe || !recipe.extendedIngredients) {
-            return [];
-        }
-
-        return recipe.extendedIngredients.map((ing: any) => ({
-            name: ing.name,
-            amount: ing.amount,
-            unit: ing.unit,
-            measures: ing.measures,
-        }));
-    }
 }
