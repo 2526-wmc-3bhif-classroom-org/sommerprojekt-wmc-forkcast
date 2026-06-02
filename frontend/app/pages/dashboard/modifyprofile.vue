@@ -5,6 +5,7 @@ import {useJwtStore} from '~/assets/store/jwt-store';
 const {apiRequest} = useApiConnection();
 const jwtStore = useJwtStore();
 const router = useRouter();
+const { t } = useI18n();
 
 const newUsername = ref("");
 const currentPassword = ref("");
@@ -22,7 +23,7 @@ async function saveUsername() {
   usernameError.value = "";
   usernameSuccess.value = false;
   if (!newUsername.value.trim()) {
-    usernameError.value = "Username cannot be empty.";
+    usernameError.value = t('page.modifyprofile.username.empty');
     return;
   }
   usernameLoading.value = true;
@@ -35,7 +36,7 @@ async function saveUsername() {
     const errs = result.failure?.errors;
     usernameError.value = errs?.length
       ? errs.map(e => e.msg).join(' · ')
-      : (result.failure?.message ?? "Failed to update username.");
+      : (result.failure?.message ?? t('page.modifyprofile.username.error'));
   }
 }
 
@@ -43,15 +44,15 @@ async function savePassword() {
   passwordError.value = "";
   passwordSuccess.value = false;
   if (!currentPassword.value) {
-    passwordError.value = "Please enter your current password.";
+    passwordError.value = t('page.modifyprofile.password.empty_current');
     return;
   }
   if (newPassword.value.length < 8) {
-    passwordError.value = "New password must be at least 8 characters.";
+    passwordError.value = t('page.modifyprofile.password.too_short');
     return;
   }
   if (newPassword.value !== confirmPassword.value) {
-    passwordError.value = "New passwords do not match.";
+    passwordError.value = t('page.modifyprofile.password.mismatch');
     return;
   }
   passwordLoading.value = true;
@@ -69,7 +70,7 @@ async function savePassword() {
     const errs = result.failure?.errors;
     passwordError.value = errs?.length
       ? errs.map(e => `${e.path}: ${e.msg}`).join(' · ')
-      : (result.failure?.message ?? "Failed to update password.");
+      : (result.failure?.message ?? t('page.modifyprofile.password.error'));
   }
 }
 </script>
@@ -78,33 +79,32 @@ async function savePassword() {
   <div class="container mx-auto px-4 pt-20 pb-10 flex justify-center">
     <div class="w-full max-w-xl flex flex-col gap-6">
 
-      <!-- Back button -->
-      <button
-        @click="router.push('/dashboard/account')"
+      <nuxt-link-locale
+        to="/dashboard/account"
         class="btn btn-ghost w-fit"
       >
         <i class="fa-solid fa-arrow-left" />
-        Back to Account
-      </button>
+        {{ $t('page.modifyprofile.back') }}
+      </nuxt-link-locale>
 
-      <h1 class="text-3xl font-bold text-base-content">Manage Profile</h1>
+      <h1 class="text-3xl font-bold text-base-content">{{ $t('page.modifyprofile.title') }}</h1>
 
       <!-- Change Username -->
       <div class="card bg-base-100 shadow-xl">
         <div class="card-body flex flex-col gap-4">
-          <h2 class="card-title text-xl font-semibold text-base-content">Change Username</h2>
+          <h2 class="card-title text-xl font-semibold text-base-content">{{ $t('page.modifyprofile.username.title') }}</h2>
           <div class="flex flex-col gap-2">
-            <label class="text-base-content text-sm font-medium">New Username</label>
+            <label class="text-base-content text-sm font-medium">{{ $t('page.modifyprofile.username.label') }}</label>
             <input
               v-model="newUsername"
               type="text"
-              placeholder="Enter new username"
+              :placeholder="$t('page.modifyprofile.username.placeholder')"
               class="input input-bordered w-full"
               @keyup.enter="saveUsername"
             />
           </div>
           <p v-if="usernameError" class="text-error text-sm">{{ usernameError }}</p>
-          <p v-if="usernameSuccess" class="text-success text-sm">Username updated successfully.</p>
+          <p v-if="usernameSuccess" class="text-success text-sm">{{ $t('page.modifyprofile.username.success') }}</p>
           <div class="card-actions justify-end mt-2">
             <button
               @click="saveUsername"
@@ -112,7 +112,7 @@ async function savePassword() {
               class="btn btn-secondary text-secondary-content"
             >
               <span v-if="usernameLoading" class="loading loading-spinner loading-sm" />
-              Save Username
+              {{ $t('page.modifyprofile.username.save') }}
             </button>
           </div>
         </div>
@@ -121,37 +121,37 @@ async function savePassword() {
       <!-- Change Password -->
       <div class="card bg-base-100 shadow-xl">
         <div class="card-body flex flex-col gap-4">
-          <h2 class="card-title text-xl font-semibold text-base-content">Change Password</h2>
+          <h2 class="card-title text-xl font-semibold text-base-content">{{ $t('page.modifyprofile.password.title') }}</h2>
           <div class="flex flex-col gap-2">
-            <label class="text-base-content text-sm font-medium">Current Password</label>
+            <label class="text-base-content text-sm font-medium">{{ $t('page.modifyprofile.password.current') }}</label>
             <input
               v-model="currentPassword"
               type="password"
-              placeholder="Enter current password"
+              :placeholder="$t('page.modifyprofile.password.current_placeholder')"
               class="input input-bordered w-full"
             />
           </div>
           <div class="flex flex-col gap-2">
-            <label class="text-base-content text-sm font-medium">New Password</label>
+            <label class="text-base-content text-sm font-medium">{{ $t('page.modifyprofile.password.new') }}</label>
             <input
               v-model="newPassword"
               type="password"
-              placeholder="Enter new password"
+              :placeholder="$t('page.modifyprofile.password.new_placeholder')"
               class="input input-bordered w-full"
             />
           </div>
           <div class="flex flex-col gap-2">
-            <label class="text-base-content text-sm font-medium">Confirm New Password</label>
+            <label class="text-base-content text-sm font-medium">{{ $t('page.modifyprofile.password.confirm') }}</label>
             <input
               v-model="confirmPassword"
               type="password"
-              placeholder="Confirm new password"
+              :placeholder="$t('page.modifyprofile.password.confirm_placeholder')"
               class="input input-bordered w-full"
               @keyup.enter="savePassword"
             />
           </div>
           <p v-if="passwordError" class="text-error text-sm">{{ passwordError }}</p>
-          <p v-if="passwordSuccess" class="text-success text-sm">Password updated successfully.</p>
+          <p v-if="passwordSuccess" class="text-success text-sm">{{ $t('page.modifyprofile.password.success') }}</p>
           <div class="card-actions justify-end mt-2">
             <button
               @click="savePassword"
@@ -159,7 +159,7 @@ async function savePassword() {
               class="btn btn-secondary text-secondary-content"
             >
               <span v-if="passwordLoading" class="loading loading-spinner loading-sm" />
-              Save Password
+              {{ $t('page.modifyprofile.password.save') }}
             </button>
           </div>
         </div>

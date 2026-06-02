@@ -17,6 +17,7 @@ const mainError = ref<HTMLSpanElement>();
 
 const authService = useAuthService();
 const failureHandler = useFailureHandler();
+const { t } = useI18n();
 
 failureHandler.addHandler("name", (message) => {
   usernameError.value!!.innerText = message;
@@ -36,12 +37,12 @@ failureHandler.setMainHandler(message => {
 
 async function signup() {
   if (!username.value?.value || !email.value?.value || !password.value?.value) {
-    failureHandler.fail({ message: "Please fill in all fields." } as Failure);
+    failureHandler.fail({ message: t('error.fill_all_fields') } as Failure);
     return;
   }
 
   if (!terms.value?.checked) {
-    failureHandler.fail({ message: "You must accept the Terms of Use to continue." } as Failure);
+    failureHandler.fail({ message: t('error.accept_terms') } as Failure);
     return;
   }
 
