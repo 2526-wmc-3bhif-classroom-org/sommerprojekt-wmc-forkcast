@@ -3,7 +3,7 @@ import tailwindcss from "@tailwindcss/vite";
 import path from "node:path";
 import * as fs from "node:fs";
 
-const nativeElements = ["calendar-date", "calendar-month"]
+const nativeElements = ["calendar-date", "calendar-month", "calendar-range"]
 
 export default defineNuxtConfig({
     compatibilityDate: '2025-07-15',
