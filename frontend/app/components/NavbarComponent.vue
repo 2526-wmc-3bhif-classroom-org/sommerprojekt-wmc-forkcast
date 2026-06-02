@@ -30,8 +30,9 @@ function blur() {
 }
 
 function onCalendarClick(event: Event) {
-  let date = (event.target as any).value;
-  console.log("Clicked: " + date); //TODO
+  const date = (event.target as any).value;
+  blur();
+  router.push(localePath({ path: '/dashboard', query: { date } }));
 }
 </script>
 

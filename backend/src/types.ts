@@ -14,7 +14,56 @@ export interface Recipe {
     updatedAt?: Date;
 }
 
-export interface RecipeDetails {
+export interface Ingredient {
+    name: string;
+    amount: number;
+    unit: string;
+    measures?: {
+        us?: { amount: number; unitShort: string };
+        metric?: { amount: number; unitShort: string };
+    };
+}
+
+export interface RecipeNutrients {
+    calories: number;
+    carbs: number;
+    protein: number;
+    fat: number;
+    alcohol: number;
+    caffeine: number;
+    sugar: number;
+    sodium: number;
+    fiber: number;
+    cholesterol: number;
+    saturatedFat: number;
+    vitaminA: number;
+    vitaminC: number;
+    vitaminD: number;
+    vitaminE: number;
+    vitaminK: number;
+    vitaminB1: number;
+    vitaminB2: number;
+    vitaminB3: number;
+    vitaminB5: number;
+    vitaminB6: number;
+    vitaminB12: number;
+    calcium: number;
+    copper: number;
+    fluoride: number;
+    iodine: number;
+    iron: number;
+    magnesium: number;
+    manganese: number;
+    phosphorus: number;
+    potassium: number;
+    selenium: number;
+    zinc: number;
+    choline: number;
+    folate: number;
+    folicAcid: number;
+}
+
+export interface RecipeDetails extends RecipeNutrients {
     recipeId: number;
     readyInMinutes: number;
     servings: number;
@@ -30,7 +79,7 @@ export interface RecipeDetails {
     dairyFree: boolean;
 }
 
-export interface RecipeWithDetails {
+export interface RecipeWithDetails extends RecipeNutrients {
     id: number;
     name: string;
     image: string;
@@ -56,6 +105,7 @@ export interface RecipePreviewResponse {
     rating: { rating: number; count: number };
     attributes: Array<{ icon: string; text: string }>;
     tags: Array<{ icon: string; text: string; color: string }>;
+    ingredients?: Ingredient[];
 }
 
 export interface Notification {

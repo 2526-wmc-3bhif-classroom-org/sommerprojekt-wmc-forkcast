@@ -14,6 +14,7 @@ const localePath = useLocalePath();
 const router = useRouter();
 const auth = useAuthService();
 const failureHandler = useFailureHandler();
+const { t } = useI18n();
 
 const img = useImage();
 const bgImage = img('/images/signup-bg.jpg', { quality: 90, format: 'webp' });
@@ -32,7 +33,7 @@ failureHandler.setMainHandler(message => {
 
 async function login() {
   if (!identifier.value?.value || !password.value?.value) {
-    failureHandler.fail({ message: "Please fill in all fields." } as Failure);
+    failureHandler.fail({ message: t('error.fill_all_fields') } as Failure);
     return;
   }
 

@@ -111,7 +111,7 @@ async function removeFriend() {
             <img
                 v-if="user?.profilePicture"
                 :src="`data:image/png;base64,${user.profilePicture}`"
-                alt="Profile Picture"
+                :alt="$t('page.account.profile_picture')"
                 class="w-20 h-20 rounded-full object-cover border-4 border-accent shrink-0"
             />
             <div
@@ -126,12 +126,12 @@ async function removeFriend() {
             </div>
           </div>
           <div class="card-actions justify-end mt-4">
-            <NuxtLink
+            <nuxt-link-locale
                 to="/dashboard/modifyprofile"
                 class="btn btn-secondary text-secondary-content"
             >
-              Manage Profile
-            </NuxtLink>
+              {{ $t('page.account.manage_profile') }}
+            </nuxt-link-locale>
           </div>
         </div>
       </div>
@@ -140,11 +140,11 @@ async function removeFriend() {
       <div class="card bg-base-100 shadow-xl">
         <div class="card-body">
           <h3 class="card-title text-xl font-semibold text-base-content mb-4">
-            Favorite Foods
-            <span class="text-primary font-normal text-base ml-1">({{ favorites.length }} total)</span>
+            {{ $t('page.account.favorite_foods') }}
+            <span class="text-primary font-normal text-base ml-1">({{ favorites.length }} {{ $t('page.account.total') }})</span>
           </h3>
           <div v-if="favorites.length === 0" class="text-primary opacity-60 text-sm py-6 text-center">
-            No favorites yet.
+            {{ $t('page.account.no_favorites') }}
           </div>
           <ul v-else class="overflow-y-auto max-h-72 flex flex-col gap-3 pr-1">
             <li
@@ -162,7 +162,7 @@ async function removeFriend() {
                   @click="confirmRemoveFavorite(fav)"
                   class="btn btn-error btn-sm text-error-content"
               >
-                Remove
+                {{ $t('page.account.remove') }}
               </button>
             </li>
           </ul>
@@ -173,11 +173,11 @@ async function removeFriend() {
       <div class="card bg-base-100 shadow-xl">
         <div class="card-body">
           <h3 class="card-title text-xl font-semibold text-base-content mb-4">
-            Friends
-            <span class="text-primary font-normal text-base ml-1">({{ friends.length }} total)</span>
+            {{ $t('page.account.friends') }}
+            <span class="text-primary font-normal text-base ml-1">({{ friends.length }} {{ $t('page.account.total') }})</span>
           </h3>
           <div v-if="friends.length === 0" class="text-primary opacity-60 text-sm py-6 text-center">
-            No friends added yet.
+            {{ $t('page.account.no_friends') }}
           </div>
           <ul v-else class="overflow-y-auto max-h-72 flex flex-col gap-3 pr-1">
             <li
@@ -202,7 +202,7 @@ async function removeFriend() {
                   @click="confirmRemove(friend)"
                   class="btn btn-error btn-sm text-error-content"
               >
-                Remove
+                {{ $t('page.account.remove') }}
               </button>
             </li>
           </ul>
@@ -214,17 +214,15 @@ async function removeFriend() {
     <!-- Remove Favorite Confirmation Modal -->
     <dialog :open="favoriteToRemove !== null" class="modal">
       <div class="modal-box bg-base-100 border border-accent">
-        <h3 class="font-bold text-lg text-base-content">Remove Favorite</h3>
+        <h3 class="font-bold text-lg text-base-content">{{ $t('page.account.remove_favorite_title') }}</h3>
         <p class="py-4 text-primary">
-          Are you sure you want to remove
+          {{ $t('page.account.remove_confirm') }}
           <strong class="text-base-content">{{ favoriteToRemove?.name }}</strong>
-          from your favorites?
+          {{ $t('page.account.remove_from_favorites') }}
         </p>
         <div class="modal-action">
-          <button @click="cancelRemoveFavorite" class="btn btn-ghost text-primary">Cancel</button>
-          <button @click="removeFavorite" class="btn btn-error">
-            Remove
-          </button>
+          <button @click="cancelRemoveFavorite" class="btn btn-ghost text-primary">{{ $t('page.account.cancel') }}</button>
+          <button @click="removeFavorite" class="btn btn-error">{{ $t('page.account.remove') }}</button>
         </div>
       </div>
       <form method="dialog" class="modal-backdrop" @click="cancelRemoveFavorite">
@@ -235,17 +233,15 @@ async function removeFriend() {
     <!-- Remove Friend Confirmation Modal -->
     <dialog :open="friendToRemove !== null" class="modal">
       <div class="modal-box bg-base-100 border border-accent">
-        <h3 class="font-bold text-lg text-base-content">Remove Friend</h3>
+        <h3 class="font-bold text-lg text-base-content">{{ $t('page.account.remove_friend_title') }}</h3>
         <p class="py-4 text-primary">
-          Are you sure you want to remove
+          {{ $t('page.account.remove_confirm') }}
           <strong class="text-base-content">{{ friendToRemove?.name }}</strong>
-          from your friends?
+          {{ $t('page.account.remove_from_friends') }}
         </p>
         <div class="modal-action">
-          <button @click="cancelRemove" class="btn btn-ghost text-primary">Cancel</button>
-          <button @click="removeFriend" class="btn btn-error">
-            Remove
-          </button>
+          <button @click="cancelRemove" class="btn btn-ghost text-primary">{{ $t('page.account.cancel') }}</button>
+          <button @click="removeFriend" class="btn btn-error">{{ $t('page.account.remove') }}</button>
         </div>
       </div>
       <form method="dialog" class="modal-backdrop" @click="cancelRemove">
