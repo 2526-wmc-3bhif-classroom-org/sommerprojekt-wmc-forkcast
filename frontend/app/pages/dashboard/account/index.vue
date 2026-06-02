@@ -126,11 +126,10 @@ async function removeFriend() {
               </div>
             </div>
             <div class="stat-title">{{ user?.email }}</div>
-            <div class="stat-value text-base-content">{{ user?.name }}</div>
-            <div class="stat-desc mt-2">
-              <nuxt-link-locale to="/dashboard/account/edit" class="btn btn-primary btn-sm">
-                <i class="fa-solid fa-pen-to-square" />
-                {{ $t('page.account.manage_profile') }}
+            <div class="stat-value text-base-content flex items-center gap-2">
+              {{ user?.name }}
+              <nuxt-link-locale to="/dashboard/account/edit" class="btn btn-ghost btn-xs btn-circle">
+                <i class="fa-solid fa-pen text-base-content/40" />
               </nuxt-link-locale>
             </div>
           </div>
