@@ -1,10 +1,15 @@
 <script setup lang="ts">
+definePageMeta({
+  showFooter: false,
+})
+
 import useCalendarService from '~/assets/service/calendar-service';
 import type { CalendarEntry } from '~/assets/model/calendar-entry';
 
 const route = useRoute();
 const localePath = useLocalePath();
 const calendarService = useCalendarService();
+const { locale } = useI18n();
 
 function toLocalDateStr(d: Date): string {
   const y = d.getFullYear();
@@ -28,11 +33,11 @@ const parsedDate = computed(() => {
 });
 
 const weekday = computed(() =>
-  new Intl.DateTimeFormat(undefined, { weekday: 'long' }).format(parsedDate.value)
+  new Intl.DateTimeFormat(locale.value, { weekday: 'long' }).format(parsedDate.value)
 );
 
 const dateLabel = computed(() =>
-  new Intl.DateTimeFormat(undefined, { month: 'long', day: 'numeric' }).format(parsedDate.value)
+  new Intl.DateTimeFormat(locale.value, { month: 'long', day: 'numeric' }).format(parsedDate.value)
 );
 
 function offsetDate(base: string, days: number): string {
@@ -47,6 +52,7 @@ const entries = ref<CalendarEntry[]>([]);
 const loading = ref(true);
 const error = ref(false);
 
+
 async function fetchEntries() {
   loading.value = true;
   error.value = false;
@@ -60,16 +66,27 @@ async function fetchEntries() {
 }
 
 watch(selectedDate, fetchEntries, { immediate: true });
+
+const vPreventBackGesture = {
+  mounted(el: HTMLElement) {
+    el.addEventListener('wheel', (e: WheelEvent) => {
+      if (Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return
+      const atStart = el.scrollLeft <= 0 && e.deltaX < 0
+      const atEnd = el.scrollLeft >= el.scrollWidth - el.clientWidth && e.deltaX > 0
+      if (atStart || atEnd) e.preventDefault()
+    }, { passive: false })
+  },
+}
 </script>
 
 <template>
   <div class="grid grid-rows-[4rem_1fr] min-h-screen">
     <div/>
 
-    <div class="flex flex-col items-center gap-10 px-6 py-12">
+    <div class="flex flex-col items-center gap-10 py-12">
 
       <!-- Date header -->
-      <div class="flex flex-col items-center gap-3 w-full max-w-3xl">
+      <div class="flex flex-col items-center gap-3 w-full max-w-3xl px-6">
         <div class="flex items-center gap-4 w-full justify-center">
           <nuxt-link-locale
             :to="{ path: '/dashboard', query: { date: prevDate } }"
@@ -107,12 +124,12 @@ watch(selectedDate, fetchEntries, { immediate: true });
       </div>
 
       <!-- Divider -->
-      <div class="divider self-stretch max-w-3xl mx-auto text-base-content/30 text-sm uppercase tracking-widest font-semibold">
+      <div class="divider self-stretch max-w-3xl w-full mx-auto px-6 text-base-content/30 text-sm uppercase tracking-widest font-semibold">
         {{ $t('dashboard.on_menu') }}
       </div>
 
       <!-- Loading -->
-      <div v-if="loading" class="carousel carousel-center w-full gap-6 px-8">
+      <div v-if="loading" v-prevent-back-gesture class="carousel carousel-center w-full max-w-[100vw] min-w-0 gap-6 px-6" style="justify-content: safe center">
         <div v-for="i in 3" :key="i" class="carousel-item">
           <div class="card bg-base-100 w-80 shadow-sm animate-pulse">
             <div class="bg-base-300 h-52 w-full rounded-t-2xl"/>
@@ -152,18 +169,14 @@ watch(selectedDate, fetchEntries, { immediate: true });
         </nuxt-link-locale>
       </div>
 
-      <!-- Carousel -->
-      <div v-else class="relative w-full">
-        <div class="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-base-200 to-transparent z-10 pointer-events-none rounded-l"/>
-        <div class="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-base-200 to-transparent z-10 pointer-events-none rounded-r"/>
-        <div class="carousel carousel-center w-full gap-6 px-16 pb-2">
-          <div
-            v-for="entry in entries.filter(e => e.recipe)"
-            :key="entry.id"
-            class="carousel-item"
-          >
-            <recipe-card-component :data="entry.recipe"/>
-          </div>
+      <!-- Cards -->
+      <div v-else v-prevent-back-gesture class="carousel carousel-center w-full max-w-[100vw] min-w-0 gap-6 px-6" style="justify-content: safe center">
+        <div
+          v-for="entry in entries.filter(e => e.recipe)"
+          :key="entry.id"
+          class="carousel-item"
+        >
+          <recipe-card-component :data="entry.recipe"/>
         </div>
       </div>
 
