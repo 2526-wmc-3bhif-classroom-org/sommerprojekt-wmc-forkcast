@@ -14,6 +14,7 @@ const mainError = ref<HTMLSpanElement>();
 
 const authService = useAuthService();
 const failureHandler = useFailureHandler();
+const { t } = useI18n();
 
 const localePath = useLocalePath();
 const router = useRouter();
@@ -29,7 +30,7 @@ failureHandler.setMainHandler(message => {
 async function verify() {
   const codeStr = code.value.join("");
   if (!codeStr || codeStr.length < 6) {
-    failureHandler.fail({ message: "Please enter the verification code." } as Failure);
+    failureHandler.fail({ message: t('error.enter_code') } as Failure);
     return;
   }
   const failure = await authService.verify(props.enteredEmail, props.enteredPassword, codeStr);

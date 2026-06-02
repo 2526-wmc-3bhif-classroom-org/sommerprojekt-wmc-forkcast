@@ -13,6 +13,7 @@ const hasMore = ref(false);
 const searchError = ref<string | null>(null);
 
 const recipeService = useRecipeService();
+const { t } = useI18n();
 let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
 onMounted(async () => {
@@ -73,7 +74,7 @@ async function doSearch(reset = true) {
   const res = await recipeService.search(query.value.trim(), { ...buildFilterParams(), number: String(pageSize.value) });
   emit('loading', false);
   if (res.rateLimited) {
-    searchError.value = 'Too many requests — please wait a moment before searching again.';
+    searchError.value = t('error.rate_limited_search');
     return;
   }
   if (res.ok && res.value) {
@@ -96,12 +97,12 @@ defineExpose({ loadMore });
   <div class="join">
     <label class="input join-item w-full">
       <i class="fa-solid fa-magnifying-glass"/>
-      <input type="search" v-model="query" placeholder="Search" @input="onInput"/>
+      <input type="search" v-model="query" :placeholder="$t('component.search.placeholder')" @input="onInput"/>
     </label>
 
     <div class="dropdown dropdown-end join-item">
       <div tabindex="0" role="button" class="select join-item w-30">
-        <span>Filter</span>
+        <span>{{ $t('component.search.filter') }}</span>
       </div>
 
       <div tabindex="0" class="dropdown-content card card-sm bg-base-100 z-1 mt-2 w-96 shadow-2xl border border-base-300">
@@ -110,7 +111,7 @@ defineExpose({ loadMore });
           <div v-if="Object.keys(filterGroups).length === 0"
                class="text-sm text-base-content/40 text-center py-6">
             <i class="fa-solid fa-spinner fa-spin mr-2"/>
-            Loading filters…
+            {{ $t('component.search.loading_filters') }}
           </div>
 
           <div v-else class="overflow-y-auto max-h-[28rem] space-y-4 pr-1">
