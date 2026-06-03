@@ -188,7 +188,7 @@ onMounted(fetchShoppingList);
 
 <template>
   <div class="container mx-auto px-4 pb-10" style="padding-top: 5rem">
-    <div class="max-w-2xl mx-auto flex flex-col gap-6">
+    <div class="max-w-2xl mx-auto flex flex-col gap-6 opacity-0 animate-fade-in-slide-in-up">
 
       <!-- Header -->
       <div class="card bg-base-100 shadow-xl no-print">

@@ -159,7 +159,7 @@ async function removeFriend() {
     <div class="col-span-2" />
 
     <!-- Left column: profile card + friends card -->
-    <div class="flex flex-col gap-4 overflow-hidden">
+    <div class="flex flex-col gap-4 overflow-hidden opacity-0 animate-fade-in-slide-in-left">
 
       <!-- Profile stats card -->
       <div class="bg-base-100 rounded-2xl shrink-0">
@@ -246,7 +246,7 @@ async function removeFriend() {
     </div>
 
     <!-- Right column: favorites card -->
-    <div class="bg-base-100 rounded-2xl flex flex-col overflow-hidden">
+    <div class="bg-base-100 rounded-2xl flex flex-col overflow-hidden opacity-0 animate-fade-in-slide-in-right">
       <div class="flex items-center gap-3 px-4 py-3 border-b border-base-200 shrink-0">
         <i class="fa-solid fa-heart text-primary" />
         <span class="font-semibold text-base-content">{{ $t('page.account.favorite_foods') }}</span>

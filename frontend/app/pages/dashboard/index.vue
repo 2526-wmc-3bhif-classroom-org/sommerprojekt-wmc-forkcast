@@ -86,7 +86,7 @@ const vPreventBackGesture = {
     <div class="flex flex-col items-center gap-10 py-12">
 
       <!-- Date header -->
-      <div class="flex flex-col items-center gap-3 w-full max-w-3xl px-6">
+      <div class="flex flex-col items-center gap-3 w-full max-w-3xl px-6 opacity-0 animate-fade-in-slide-in-up">
         <div class="flex items-center gap-4 w-full justify-center">
           <nuxt-link-locale
             :to="{ path: '/dashboard', query: { date: prevDate } }"
@@ -124,7 +124,7 @@ const vPreventBackGesture = {
       </div>
 
       <!-- Divider -->
-      <div class="divider self-stretch max-w-3xl w-full mx-auto px-6 text-base-content/30 text-sm uppercase tracking-widest font-semibold">
+      <div class="divider self-stretch max-w-3xl w-full mx-auto px-6 text-base-content/30 text-sm uppercase tracking-widest font-semibold opacity-0 animate-fade-in-slide-in-up-delay">
         {{ $t('dashboard.on_menu') }}
       </div>
 
@@ -155,7 +155,7 @@ const vPreventBackGesture = {
       </div>
 
       <!-- Empty -->
-      <div v-else-if="entries.filter(e => e.recipe).length === 0" class="flex flex-col items-center gap-5 text-base-content/40 py-16">
+      <div v-else-if="entries.filter(e => e.recipe).length === 0" class="flex flex-col items-center gap-5 text-base-content/40 py-16 opacity-0 animate-fade-in-slide-in-up-delay">
         <div class="w-24 h-24 rounded-full bg-base-200 flex items-center justify-center">
           <i class="fa-solid fa-bowl-food text-4xl"/>
         </div>
@@ -170,7 +170,7 @@ const vPreventBackGesture = {
       </div>
 
       <!-- Cards -->
-      <div v-else v-prevent-back-gesture class="carousel carousel-center w-full max-w-[100vw] min-w-0 gap-6 px-6" style="justify-content: safe center">
+      <div v-else v-prevent-back-gesture class="carousel carousel-center w-full max-w-[100vw] min-w-0 gap-6 px-6 opacity-0 animate-fade-in-slide-in-up-delay" style="justify-content: safe center">
         <div
           v-for="entry in entries.filter(e => e.recipe)"
           :key="entry.id"

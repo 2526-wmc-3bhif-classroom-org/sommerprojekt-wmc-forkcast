@@ -81,7 +81,7 @@ function onMainListDragEnd() {
 <template>
   <div class="grid grid-rows-[4rem_1fr] grid-cols-[32.5rem_1fr] row-end-auto w-screen h-screen px-4 pb-4 gap-x-4">
     <div class="col-span-2"></div>
-    <div class="bg-base-100 rounded-2xl col-span-1 flex flex-col overflow-hidden">
+    <div class="bg-base-100 rounded-2xl col-span-1 flex flex-col overflow-hidden opacity-0 animate-fade-in-slide-in-left">
         <recipe-search-component ref="searchRef" class="m-3 w-[stretch] shrink-0" @results="onSearchResults" @loading="isSearchLoading = $event"/>
 
         <div ref="listContainerRef" class="overflow-y-scroll flex-1">
