@@ -159,5 +159,7 @@
   "route./source": "Source code",
   "route./source.desc": "Explore the source code of Forkcast on our GitHub repository.",
   "route./terms-of-use": "Terms of use",
-  "route./terms-of-use.desc": "Read the terms of use for Forkcast to understand your rights and responsibilities when using our app."
+  "route./terms-of-use.desc": "Read the terms of use for Forkcast to understand your rights and responsibilities when using our app.",
+  "component.search.browse": "Browse",
+  "dashboard.schedule.calendar": "Calendar"
 }

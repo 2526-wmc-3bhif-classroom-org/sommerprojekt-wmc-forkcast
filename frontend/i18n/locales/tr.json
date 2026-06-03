@@ -159,5 +159,7 @@
   "route./source": "Kaynak Kodu",
   "route./source.desc": "GitHub depomuzda Forkcast'in kaynak kodunu keşfedin.",
   "route./terms-of-use": "Kullanım Şartları",
-  "route./terms-of-use.desc": "Forkcast kullanım şartlarını okuyarak uygulamamızı kullanırken haklarınızı ve sorumluluklarınızı anlayın."
+  "route./terms-of-use.desc": "Forkcast kullanım şartlarını okuyarak uygulamamızı kullanırken haklarınızı ve sorumluluklarınızı anlayın.",
+  "component.search.browse": "Keşfet",
+  "dashboard.schedule.calendar": "Takvim"
 }

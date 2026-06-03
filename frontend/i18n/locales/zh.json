@@ -159,5 +159,7 @@
   "route./source": "源代码",
   "route./source.desc": "在我们的 GitHub 仓库中探索 Forkcast 的源代码。",
   "route./terms-of-use": "使用条款",
-  "route./terms-of-use.desc": "阅读 Forkcast 的使用条款，了解您使用我们应用时的权利和责任。"
+  "route./terms-of-use.desc": "阅读 Forkcast 的使用条款，了解您使用我们应用时的权利和责任。",
+  "component.search.browse": "浏览",
+  "dashboard.schedule.calendar": "日历"
 }

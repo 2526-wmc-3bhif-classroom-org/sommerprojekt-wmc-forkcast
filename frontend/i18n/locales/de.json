@@ -159,5 +159,7 @@
   "route./source": "Quellcode",
   "route./source.desc": "Entdecke den Quellcode von Forkcast in unserem GitHub-Repository.",
   "route./terms-of-use": "Nutzungsbedingungen",
-  "route./terms-of-use.desc": "Lies die Nutzungsbedingungen von Forkcast, um deine Rechte und Pflichten bei der Nutzung unserer App zu verstehen."
+  "route./terms-of-use.desc": "Lies die Nutzungsbedingungen von Forkcast, um deine Rechte und Pflichten bei der Nutzung unserer App zu verstehen.",
+  "component.search.browse": "Suchen",
+  "dashboard.schedule.calendar": "Kalender"
 }

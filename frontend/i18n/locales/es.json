@@ -159,5 +159,7 @@
   "route./source": "Código fuente",
   "route./source.desc": "Explora el código fuente de Forkcast en nuestro repositorio de GitHub.",
   "route./terms-of-use": "Términos de uso",
-  "route./terms-of-use.desc": "Lee los términos de uso de Forkcast para entender tus derechos y responsabilidades."
+  "route./terms-of-use.desc": "Lee los términos de uso de Forkcast para entender tus derechos y responsabilidades.",
+  "component.search.browse": "Explorar",
+  "dashboard.schedule.calendar": "Calendario"
 }

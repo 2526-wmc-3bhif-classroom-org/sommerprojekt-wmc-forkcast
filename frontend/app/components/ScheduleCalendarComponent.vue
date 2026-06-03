@@ -204,32 +204,77 @@ function goNext() {
   currentWeekStart.value = d;
 }
 
+const mobileDayIndex = ref((() => {
+  const d = today.getDay();
+  return d === 0 ? 6 : d - 1; // Mon=0..Sun=6
+})());
+
+function goPrevDay() {
+  if (mobileDayIndex.value > 0) {
+    mobileDayIndex.value--;
+  } else {
+    goPrev();
+    mobileDayIndex.value = 6;
+  }
+}
+
+function goNextDay() {
+  if (mobileDayIndex.value < 6) {
+    mobileDayIndex.value++;
+  } else {
+    goNext();
+    mobileDayIndex.value = 0;
+  }
+}
+
 function goToToday() {
   currentWeekStart.value = getWeekStart(today);
+  const d = today.getDay();
+  mobileDayIndex.value = d === 0 ? 6 : d - 1;
 }
 </script>
 
 <template>
-  <div class="grid grid-rows-[4.5rem_1fr] grid-cols-1 gap-4 h-full rounded-2xl overflow-hidden opacity-0 animate-fade-in-slide-in-right">
+  <div class="grid grid-rows-[4.5rem_1fr] grid-cols-1 gap-4 h-full min-h-0 rounded-2xl overflow-hidden opacity-0 animate-fade-in-slide-in-right">
     <div class="bg-base-100 rounded-2xl text-base-content">
       <div class="flex items-center justify-between gap-4 px-4 py-4">
         <div class="flex flex-col gap-0.5 min-w-0">
-          <h1 class="text-left text-2xl font-semibold tracking-tight sm:text-3xl lg:text-4xl whitespace-nowrap">
+          <!-- Desktop: week range -->
+          <h1 class="hidden md:block text-left text-2xl font-semibold tracking-tight lg:text-4xl whitespace-nowrap">
             {{ weekLabel }}
           </h1>
+          <!-- Mobile: single day -->
+          <div class="md:hidden">
+            <h1 class="text-left text-xl font-semibold tracking-tight">
+              {{ weekDays[mobileDayIndex]?.dayName }}, {{ weekDays[mobileDayIndex]?.date.toLocaleDateString(locale, { month: 'short', day: 'numeric' }) }}
+            </h1>
+          </div>
           <p v-if="calendarError" class="flex items-center gap-1.5 text-xs text-error">
             <i class="fa-solid fa-circle-exclamation shrink-0"/>
             {{ calendarError }}
           </p>
         </div>
-        <div class="flex items-center gap-2 sm:gap-3">
-          <button type="button" class="btn btn-circle btn-sm sm:btn-md" aria-label="Previous week" @click="goPrev">
+        <!-- Desktop nav: week -->
+        <div class="hidden md:flex items-center gap-3">
+          <button type="button" class="btn btn-circle btn-md" aria-label="Previous week" @click="goPrev">
             <i class="fa-solid fa-arrow-left"/>
           </button>
-          <button type="button" class="btn btn-sm sm:btn-md rounded-full px-4" aria-label="Today" @click="goToToday">
+          <button type="button" class="btn btn-md rounded-full px-4" aria-label="Today" @click="goToToday">
             <i class="fa-solid fa-calendar-day"/>
           </button>
-          <button type="button" class="btn btn-circle btn-sm sm:btn-md" aria-label="Next week" @click="goNext">
+          <button type="button" class="btn btn-circle btn-md" aria-label="Next week" @click="goNext">
+            <i class="fa-solid fa-arrow-right"/>
+          </button>
+        </div>
+        <!-- Mobile nav: day -->
+        <div class="flex md:hidden items-center gap-2">
+          <button type="button" class="btn btn-circle btn-sm" aria-label="Previous day" @click="goPrevDay">
+            <i class="fa-solid fa-arrow-left"/>
+          </button>
+          <button type="button" class="btn btn-sm rounded-full px-3" aria-label="Today" @click="goToToday">
+            <i class="fa-solid fa-calendar-day"/>
+          </button>
+          <button type="button" class="btn btn-circle btn-sm" aria-label="Next day" @click="goNextDay">
             <i class="fa-solid fa-arrow-right"/>
           </button>
         </div>
@@ -237,13 +282,14 @@ function goToToday() {
     </div>
 
     <div class="bg-base-100 rounded-2xl text-base-content overflow-hidden">
-      <div ref="calendarGridRef" class="grid grid-cols-7 gap-px bg-base-300 h-full">
+      <div ref="calendarGridRef" class="grid grid-cols-1 md:grid-cols-7 gap-px bg-base-300 h-full">
         <div
-            v-for="day in weekDays"
+            v-for="(day, i) in weekDays"
             :key="day.key"
             class="bg-base-100 flex flex-col overflow-hidden min-h-0"
+            :class="i !== mobileDayIndex ? 'hidden md:flex' : ''"
         >
-          <div class="flex flex-col items-center py-3 shrink-0 border-b border-base-300">
+          <div class="hidden md:flex flex-col items-center py-3 shrink-0 border-b border-base-300">
             <span class="text-xs font-semibold uppercase tracking-widest text-base-content/50">{{ day.dayName }}</span>
             <span
                 class="mt-1 inline-flex size-9 items-center justify-center rounded-full text-lg font-bold"
@@ -268,7 +314,7 @@ function goToToday() {
           >
             <template #item="{ element: data }">
               <li
-                  class="cursor-grab active:cursor-grabbing touch-none flex items-center gap-2 rounded-xl bg-base-200/70 hover:bg-base-200 px-2 py-1.5 transition-colors"
+                  class="cursor-grab active:cursor-grabbing touch-none flex items-center gap-1.5 rounded-xl bg-base-200/70 hover:bg-base-200 px-1.5 md:px-2 py-1.5 transition-colors"
                   @click.stop="openRecipe(data as Record<string, unknown>)"
               >
                 <img :src="(data as any).image" :alt="(data as any).title" class="size-7 rounded-lg object-cover shrink-0" loading="lazy"/>
@@ -287,7 +333,7 @@ function goToToday() {
   <dialog ref="dialogRef" class="modal" @click.self="closeRecipe">
     <div class="modal-box p-0 overflow-hidden w-auto max-w-sm">
       <button
-          class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 z-10"
+          class="btn btn-sm btn-circle absolute left-2 top-2 z-10 bg-base-100/70 hover:bg-base-100 border-0 backdrop-blur-sm"
           @click="closeRecipe"
       >
         <i class="fa-solid fa-xmark"/>

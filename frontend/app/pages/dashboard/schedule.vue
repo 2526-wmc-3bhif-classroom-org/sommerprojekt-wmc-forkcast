@@ -31,6 +31,7 @@ function cloneRecipeForDrop(recipe: Record<string, unknown>) {
 
 const datas = ref<(RecipePreview & { __sourceItemId: string })[]>([]);
 const isSearchLoading = ref(false);
+const activeTab = ref<'browse' | 'calendar'>('browse');
 
 function onSearchResults(results: RecipePreview[]) {
   datas.value = results.map(r => ({
@@ -79,9 +80,35 @@ function onMainListDragEnd() {
 </script>
 
 <template>
-  <div class="grid grid-rows-[4rem_1fr] grid-cols-[32.5rem_1fr] row-end-auto w-screen h-screen px-4 pb-4 gap-x-4">
-    <div class="col-span-2"></div>
-    <div class="bg-base-100 rounded-2xl col-span-1 flex flex-col overflow-hidden opacity-0 animate-fade-in-slide-in-left">
+  <!-- Mobile tab bar -->
+  <div class="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-base-100 border-t border-base-300 flex">
+    <button
+      class="flex-1 flex flex-col items-center py-3 gap-1 text-xs font-semibold transition-colors"
+      :class="activeTab === 'browse' ? 'text-primary' : 'text-base-content/50'"
+      @click="activeTab = 'browse'"
+    >
+      <i class="fa-solid fa-magnifying-glass text-base"/>
+      {{ $t('component.search.browse') }}
+    </button>
+    <button
+      class="flex-1 flex flex-col items-center py-3 gap-1 text-xs font-semibold transition-colors"
+      :class="activeTab === 'calendar' ? 'text-primary' : 'text-base-content/50'"
+      @click="activeTab = 'calendar'"
+    >
+      <i class="fa-solid fa-calendar-week text-base"/>
+      {{ $t('dashboard.schedule.calendar') }}
+    </button>
+  </div>
+
+  <!-- Desktop: side-by-side grid. Mobile: full-width panels toggled by tab -->
+  <div class="md:grid md:grid-rows-[4rem_1fr] md:grid-cols-[32.5rem_1fr] w-screen md:h-screen px-4 pt-16 pb-[calc(3.5rem+1rem)] md:pt-0 md:pb-4 gap-x-4 flex flex-col h-[100dvh]">
+    <div class="hidden md:block md:col-span-2"></div>
+
+    <!-- Browse panel -->
+    <div
+      class="bg-base-100 rounded-2xl overflow-hidden opacity-0 animate-fade-in-slide-in-left"
+      :class="activeTab === 'browse' ? 'flex flex-col flex-1 min-h-0' : 'hidden md:flex md:flex-col'"
+    >
         <recipe-search-component ref="searchRef" class="m-3 w-[stretch] shrink-0" @results="onSearchResults" @loading="isSearchLoading = $event"/>
 
         <div ref="listContainerRef" class="overflow-y-scroll flex-1">
@@ -123,6 +150,10 @@ function onMainListDragEnd() {
           <div ref="sentinelRef" class="h-1"/>
         </div>
     </div>
-    <schedule-calendar-component />
+
+    <!-- Calendar panel -->
+    <div :class="activeTab === 'calendar' ? 'flex flex-col flex-1 min-h-0' : 'hidden md:contents'">
+      <schedule-calendar-component class="flex-1 min-h-0 md:h-full"/>
+    </div>
   </div>
 </template>

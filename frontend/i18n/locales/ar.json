@@ -159,5 +159,7 @@
   "route./source": "الكود المصدري",
   "route./source.desc": "استكشف الكود المصدري لـ Forkcast على مستودعنا في GitHub.",
   "route./terms-of-use": "شروط الاستخدام",
-  "route./terms-of-use.desc": "اقرأ شروط استخدام Forkcast لفهم حقوقك ومسؤولياتك عند استخدام تطبيقنا."
+  "route./terms-of-use.desc": "اقرأ شروط استخدام Forkcast لفهم حقوقك ومسؤولياتك عند استخدام تطبيقنا.",
+  "component.search.browse": "تصفح",
+  "dashboard.schedule.calendar": "التقويم"
 }

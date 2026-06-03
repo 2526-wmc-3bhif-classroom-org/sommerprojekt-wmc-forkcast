@@ -159,5 +159,7 @@
   "route./source": "קוד מקור",
   "route./source.desc": "חקור את קוד המקור של Forkcast במאגר GitHub שלנו.",
   "route./terms-of-use": "תנאי שימוש",
-  "route./terms-of-use.desc": "קרא את תנאי השימוש של Forkcast כדי להבין את זכויותיך ואחריותיותיך בעת השימוש באפליקציה שלנו."
+  "route./terms-of-use.desc": "קרא את תנאי השימוש של Forkcast כדי להבין את זכויותיך ואחריותיותיך בעת השימוש באפליקציה שלנו.",
+  "component.search.browse": "עיון",
+  "dashboard.schedule.calendar": "לוח שנה"
 }
