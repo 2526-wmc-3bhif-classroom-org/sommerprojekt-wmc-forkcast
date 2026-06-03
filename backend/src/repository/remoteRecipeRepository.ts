@@ -75,7 +75,7 @@ export class RemoteRecipeRepository {
 
         const res = await response.json();
         return res.results.map((r: any) => ({
-            recipe: { id: r.id, name: r.title, image: r.image },
+            recipe: { id: r.id, name: r.title, image: r.image, sourceName: r.sourceName ?? null, sourceUrl: r.sourceUrl ?? null },
             details: this.extractDetails(r),
             ingredients: this.extractIngredients(r),
         }));
@@ -97,7 +97,7 @@ export class RemoteRecipeRepository {
 
         const results: any[] = await response.json();
         return results.map((r: any) => ({
-            recipe: { id: r.id, name: r.title, image: r.image },
+            recipe: { id: r.id, name: r.title, image: r.image, sourceName: r.sourceName ?? null, sourceUrl: r.sourceUrl ?? null },
             details: this.extractDetails(r),
             ingredients: this.extractIngredients(r),
         }));
@@ -122,7 +122,7 @@ export class RemoteRecipeRepository {
 
         const r = await response.json();
         return {
-            recipe: { id: r.id, name: r.title, image: r.image },
+            recipe: { id: r.id, name: r.title, image: r.image, sourceName: r.sourceName ?? null, sourceUrl: r.sourceUrl ?? null },
             details: this.extractDetails(r),
             ingredients: this.extractIngredients(r),
         };

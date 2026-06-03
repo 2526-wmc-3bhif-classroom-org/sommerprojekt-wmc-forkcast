@@ -18,7 +18,7 @@ const RANGE_FILTERABLE_COLUMNS = new Set<string>([...NUTRIENT_COLUMNS, 'servings
 const NUTRIENT_SELECT = NUTRIENT_COLUMNS.map(c => `d.${c}`).join(', ');
 
 const BASE_SELECT = `
-    SELECT r.id, r.name, r.image,
+    SELECT r.id, r.name, r.image, r.sourceName, r.sourceUrl,
            d.readyInMinutes, d.servings, d.stepCount, d.ingredientCount, d.pricePerServing,
            d.effortScore, d.rating, d.aggregateLikes,
            d.vegetarian, d.vegan, d.glutenFree, d.dairyFree,
@@ -115,12 +115,14 @@ export class LocalRecipeRepository {
 
         for (const { recipe, details, ingredients } of entries) {
             unit.prepare<void>(`
-                INSERT INTO Recipe (id, name, image, updatedAt) VALUES (:id, :name, :image, :updatedAt)
+                INSERT INTO Recipe (id, name, image, sourceName, sourceUrl, updatedAt) VALUES (:id, :name, :image, :sourceName, :sourceUrl, :updatedAt)
                 ON CONFLICT(id) DO UPDATE SET
                     updatedAt = excluded.updatedAt,
                     name = excluded.name,
-                    image = excluded.image
-            `, { id: recipe.id, name: recipe.name, image: recipe.image, updatedAt: now }).run();
+                    image = excluded.image,
+                    sourceName = excluded.sourceName,
+                    sourceUrl = excluded.sourceUrl
+            `, { id: recipe.id, name: recipe.name, image: recipe.image, sourceName: recipe.sourceName ?? null, sourceUrl: recipe.sourceUrl ?? null, updatedAt: now }).run();
 
             if (ingredients && ingredients.length > 0) {
                 unit.prepare<void>('DELETE FROM RecipeIngredient WHERE recipeId = :recipeId', { recipeId: recipe.id }).run();
