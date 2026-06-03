@@ -1,3 +1,13 @@
+export type RecipeIngredient = {
+    name: string;
+    amount: number;
+    unit: string;
+    measures?: {
+        us?: { amount: number; unitShort: string };
+        metric?: { amount: number; unitShort: string };
+    };
+}
+
 export type RecipePreview = {
     image: string;
     title: string;
@@ -6,6 +16,7 @@ export type RecipePreview = {
     rating: RecipePreviewRating;
     attributes: RecipePreviewAttribute[];
     tags: RecipePreviewTag[];
+    ingredients?: RecipeIngredient[];
     sourceName?: string | null;
     sourceUrl?: string | null;
 }
