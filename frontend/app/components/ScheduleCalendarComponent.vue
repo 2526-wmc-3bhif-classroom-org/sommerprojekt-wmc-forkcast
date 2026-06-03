@@ -314,7 +314,7 @@ function goToToday() {
           >
             <template #item="{ element: data }">
               <li
-                  class="cursor-grab active:cursor-grabbing touch-none flex items-center gap-1.5 rounded-xl bg-base-200/70 hover:bg-base-200 px-1.5 md:px-2 py-1.5 transition-colors"
+                  class="cursor-grab active:cursor-grabbing touch-none select-none flex items-center gap-1.5 rounded-xl bg-base-200/70 hover:bg-base-200 px-1.5 md:px-2 py-1.5 transition-colors"
                   @click.stop="openRecipe(data as Record<string, unknown>)"
               >
                 <img :src="(data as any).image" :alt="(data as any).title" class="size-7 rounded-lg object-cover shrink-0" loading="lazy"/>

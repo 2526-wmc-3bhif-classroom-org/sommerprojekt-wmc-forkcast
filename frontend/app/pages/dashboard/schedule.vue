@@ -53,24 +53,25 @@ function onMainListDragStart(evt: any) {
 
   dragGhostEl = document.createElement('div');
   dragGhostEl.style.cssText =
-    `position:fixed;top:0;left:0;transform:translate(-9999px,-9999px);` +
+    `position:absolute;top:-9999px;left:-9999px;` +
     `display:flex;align-items:center;gap:8px;` +
     `background:${bg};border:1px solid ${border};` +
-    `border-radius:10px;padding:6px 10px;color:${color};` +
-    `font-size:12px;font-weight:500;width:200px;white-space:nowrap;overflow:hidden;`;
+    `border-radius:12px;padding:8px 12px;color:${color};` +
+    `font-size:13px;font-weight:500;max-width:220px;` +
+    `box-shadow:0 4px 16px rgba(0,0,0,0.3);`;
 
   const img = document.createElement('img');
   img.src = recipe.image;
-  img.style.cssText = 'width:24px;height:24px;border-radius:4px;object-fit:cover;flex-shrink:0;';
+  img.style.cssText = 'width:32px;height:32px;border-radius:8px;object-fit:cover;flex-shrink:0;';
   dragGhostEl.appendChild(img);
 
   const label = document.createElement('span');
   label.textContent = recipe.title;
-  label.style.cssText = 'overflow:hidden;text-overflow:ellipsis;flex:1;';
+  label.style.cssText = 'overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;';
   dragGhostEl.appendChild(label);
 
   document.body.appendChild(dragGhostEl);
-  evt.originalEvent.dataTransfer.setDragImage(dragGhostEl, 16, 16);
+  evt.originalEvent.dataTransfer.setDragImage(dragGhostEl, 24, 24);
 }
 
 function onMainListDragEnd() {
@@ -142,7 +143,7 @@ function onMainListDragEnd() {
               :data-zone="'main'"
           >
             <template #item="{ element: data }">
-              <div class="cursor-grab active:cursor-grabbing touch-none">
+              <div class="cursor-grab active:cursor-grabbing touch-none select-none">
                 <recipe-list-component :data="data"/>
               </div>
             </template>
