@@ -50,7 +50,7 @@ const legend = computed(() => {
 </script>
 
 <template>
-  <div v-if="data" class="card bg-base-100 w-96 max-h-full shadow-sm">
+  <div v-if="data" class="card bg-base-100 w-[calc(100vw-3rem)] sm:w-96 max-h-full shadow-sm">
     <figure class="relative">
       <img :src="data.image" :alt="`Image for: ${data.title}`" class="object-cover h-60 w-full" loading="lazy"/>
       <button @click="favStore.toggle(data.id)" class="btn btn-circle btn-sm absolute top-2 right-2 bg-base-100/70 hover:bg-base-100 border-0 backdrop-blur-sm">
