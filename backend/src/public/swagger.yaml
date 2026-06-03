@@ -29,29 +29,41 @@ components:
           format: uri
           nullable: true
         isVerified:
-          type: boolean
+           type: boolean
     Friend:
-      type: object
-      properties:
-        userId:
-          type: integer
-        friendId:
-          type: integer
+       type: object
+       properties:
+         userId:
+           type: integer
+         friendId:
+           type: integer
     FavoriteFood:
-      type: object
-      properties:
-        userId:
-          type: integer
-        recipeId:
-          type: integer
+       type: object
+       properties:
+         userId:
+           type: integer
+         recipeId:
+           type: integer
+    FavoriteFoodWithRecipe:
+       type: object
+       properties:
+         userId:
+           type: integer
+         recipeId:
+           type: integer
+         recipe:
+           allOf:
+             - $ref: '#/components/schemas/RecipePreview'
+             - type: object
+               nullable: true
     User:
-      type: object
-      required:
-        - id
-        - name
-        - email
-        - profilePicture
-      properties:
+       type: object
+       required:
+         - id
+         - name
+         - email
+         - profilePicture
+       properties:
         id:
           type: integer
         name:
@@ -794,50 +806,76 @@ paths:
         '500':
           description: Internal server error
   /users/me/favorites:
-    get:
-      summary: Get favorite recipes
-      tags: [Favorites]
-      responses:
-        '200':
-           description: Favorite recipes
+     get:
+       summary: Get favorite recipes
+       tags: [Favorites]
+       parameters:
+         - in: query
+           name: populate
+           schema:
+             type: boolean
+           description: 'When true, includes full recipe details. When false (default), returns only IDs'
+         - in: query
+           name: offset
+           schema:
+             type: integer
+             minimum: 0
+           description: Number of results to skip (pagination). Applied before population for performance.
+         - in: query
+           name: limit
+           schema:
+             type: integer
+             minimum: 1
+           description: Maximum number of results to return. Unlimited if omitted.
+       responses:
+         '200':
+            description: Favorite recipes (with or without full recipe details based on populate flag)
+            content:
+             application/json:
+               schema:
+                 type: array
+                 items:
+                   oneOf:
+                     - $ref: '#/components/schemas/FavoriteFood'
+                     - $ref: '#/components/schemas/FavoriteFoodWithRecipe'
+         '400':
+           description: Invalid query parameters
            content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/FavoriteFood'
-        '401':
-          description: Missing or invalid authentication
-        '500':
-          description: Internal server error
-    post:
-      summary: Add recipe to favorites
-      tags: [Favorites]
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AddFavoriteRequest'
-      responses:
-        '201':
-          description: Added to favorites
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/FavoriteFood'
-        '400':
-          description: Invalid request body
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ValidationErrorResponse'
-        '401':
-          description: Missing or invalid authentication
-        '404':
-          description: Recipe not found
-        '500':
-          description: Internal server error
+             application/json:
+               schema:
+                 $ref: '#/components/schemas/ValidationErrorResponse'
+         '401':
+           description: Missing or invalid authentication
+         '500':
+           description: Internal server error
+     post:
+       summary: Add recipe to favorites
+       tags: [Favorites]
+       requestBody:
+         required: true
+         content:
+           application/json:
+             schema:
+               $ref: '#/components/schemas/AddFavoriteRequest'
+       responses:
+         '201':
+           description: Added to favorites
+           content:
+             application/json:
+               schema:
+                 $ref: '#/components/schemas/FavoriteFood'
+         '400':
+           description: Invalid request body
+           content:
+             application/json:
+               schema:
+                 $ref: '#/components/schemas/ValidationErrorResponse'
+         '401':
+           description: Missing or invalid authentication
+         '404':
+           description: Recipe not found
+         '500':
+           description: Internal server error
   /users/me/favorites/{recipeId}:
     delete:
       summary: Remove recipe from favorites
