@@ -2,7 +2,7 @@
   <company-pages-component>
 
     <!-- Header -->
-    <div class="card bg-base-100 shadow-xl">
+    <div class="card shadow-xl">
       <div class="card-body">
         <div class="flex items-center gap-4 mb-2">
           <i class="fa-solid fa-book-open text-primary text-3xl" />
@@ -16,7 +16,7 @@
     </div>
 
     <!-- Steps -->
-    <div class="card bg-base-100 shadow-xl">
+    <div class="card shadow-xl">
       <div class="card-body">
         <h2 class="card-title text-xl font-bold text-base-content mb-6">
           <i class="fa-solid fa-list-ol text-primary mr-2" />
@@ -24,7 +24,7 @@
         </h2>
         <ol class="flex flex-col gap-4">
 
-          <li class="flex gap-4 bg-base-200 rounded-box p-4">
+          <li class="flex gap-4 rounded-box p-4">
             <div class="w-10 h-10 rounded-full bg-primary text-primary-content flex items-center justify-center font-bold text-lg shrink-0">
               1
             </div>
@@ -37,7 +37,7 @@
             </div>
           </li>
 
-          <li class="flex gap-4 bg-base-200 rounded-box p-4">
+          <li class="flex gap-4 rounded-box p-4">
             <div class="w-10 h-10 rounded-full bg-primary text-primary-content flex items-center justify-center font-bold text-lg shrink-0">
               2
             </div>
@@ -50,7 +50,7 @@
             </div>
           </li>
 
-          <li class="flex gap-4 bg-base-200 rounded-box p-4">
+          <li class="flex gap-4 rounded-box p-4">
             <div class="w-10 h-10 rounded-full bg-primary text-primary-content flex items-center justify-center font-bold text-lg shrink-0">
               3
             </div>
@@ -63,7 +63,7 @@
             </div>
           </li>
 
-          <li class="flex gap-4 bg-base-200 rounded-box p-4">
+          <li class="flex gap-4 rounded-box p-4">
             <div class="w-10 h-10 rounded-full bg-primary text-primary-content flex items-center justify-center font-bold text-lg shrink-0">
               4
             </div>
@@ -76,7 +76,7 @@
             </div>
           </li>
 
-          <li class="flex gap-4 bg-base-200 rounded-box p-4">
+          <li class="flex gap-4 rounded-box p-4">
             <div class="w-10 h-10 rounded-full bg-primary text-primary-content flex items-center justify-center font-bold text-lg shrink-0">
               5
             </div>
@@ -88,7 +88,7 @@
             </div>
           </li>
 
-          <li class="flex gap-4 bg-base-200 rounded-box p-4">
+          <li class="flex gap-4 rounded-box p-4">
             <div class="w-10 h-10 rounded-full bg-primary text-primary-content flex items-center justify-center font-bold text-lg shrink-0">
               6
             </div>
@@ -106,7 +106,7 @@
     </div>
 
     <!-- Tips -->
-    <div class="card bg-base-100 shadow-xl">
+    <div class="card shadow-xl">
       <div class="card-body">
         <h2 class="card-title text-xl font-bold text-base-content mb-4">
           <i class="fa-solid fa-lightbulb text-primary mr-2" />
