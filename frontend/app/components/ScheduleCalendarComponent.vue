@@ -61,13 +61,32 @@ const weekDays = computed<WeekDay[]>(() =>
 
 async function loadWeek(weekStart: Date) {
   const from = toDateKey(weekStart);
-  if (calendarStore.fetchedWeeks.has(from)) return;
-  calendarError.value = null;
-  loadingWeek.value = true;
-
   const end = new Date(weekStart);
   end.setDate(end.getDate() + 6);
   const to = toDateKey(end);
+
+  // Clear stale display data for this week (prevents duplicates on week nav, handles remount)
+  for (const key of Object.keys(recipesByDay)) {
+    if (key >= from && key <= to) recipesByDay[key] = [];
+  }
+
+  if (calendarStore.fetchedWeeks.has(from)) {
+    for (const [dayKey, entries] of Object.entries(calendarStore.entriesByDate)) {
+      if (dayKey < from || dayKey > to) continue;
+      for (const entry of entries) {
+        if (!entry.recipe) continue;
+        getDayRecipes(dayKey).push({
+          ...entry.recipe,
+          __dropItemId: `day-recipe-${dropItemCounter++}`,
+          __calendarEntryId: entry.id,
+        });
+      }
+    }
+    return;
+  }
+
+  calendarError.value = null;
+  loadingWeek.value = true;
 
   const result = await calendarStore.getEntries(from, to);
   if (result.rateLimited) {
