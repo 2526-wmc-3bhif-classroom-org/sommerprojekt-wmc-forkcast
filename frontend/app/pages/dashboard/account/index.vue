@@ -2,8 +2,9 @@
 import type {User} from '~/assets/model/user';
 import type {RecipePreview} from '~/assets/model/recipe-preview';
 import useApiConnection from '~/assets/util/api-connector';
-import {useJwtStore} from '~/assets/store/jwt-store';
+import {useAuthStore} from '~/assets/store/auth-store';
 import {useFavoritesStore} from '~/assets/store/favorites-store';
+import {useRecipeStore} from '~/assets/store/recipe-store';
 
 type PublicUser = {
   id: number;
@@ -20,8 +21,9 @@ type FavoriteFood = {
 definePageMeta({ showFooter: false })
 
 const {apiRequest} = useApiConnection();
-const jwtStore = useJwtStore();
+const authStore = useAuthStore();
 const favStore = useFavoritesStore();
+const recipeStore = useRecipeStore();
 const { t } = useI18n();
 
 const user = ref<User | null>(null);
@@ -56,7 +58,7 @@ async function saveUsername() {
   usernameSuccess.value = false;
   if (!newUsername.value.trim()) { usernameError.value = t('page.modifyprofile.username.empty'); return; }
   usernameLoading.value = true;
-  const result = await apiRequest('/users/me/name', 'PATCH', jwtStore.jwt, {name: newUsername.value.trim()}, false);
+  const result = await apiRequest('/users/me/name', 'PATCH', authStore.jwt, {name: newUsername.value.trim()}, false);
   usernameLoading.value = false;
   if (result.ok) {
     usernameSuccess.value = true;
@@ -75,7 +77,7 @@ async function savePassword() {
   if (newPassword.value.length < 8) { passwordError.value = t('page.modifyprofile.password.too_short'); return; }
   if (newPassword.value !== confirmPassword.value) { passwordError.value = t('page.modifyprofile.password.mismatch'); return; }
   passwordLoading.value = true;
-  const result = await apiRequest('/users/me/password', 'PATCH', jwtStore.jwt, {currentPassword: currentPassword.value, newPassword: newPassword.value}, false);
+  const result = await apiRequest('/users/me/password', 'PATCH', authStore.jwt, {currentPassword: currentPassword.value, newPassword: newPassword.value}, false);
   passwordLoading.value = false;
   if (result.ok) {
     passwordSuccess.value = true;
@@ -94,7 +96,7 @@ const friendToRemove = ref<PublicUser | null>(null);
 const favoriteToRemove = ref<RecipePreview | null>(null);
 
 async function loadData() {
-  const jwt = jwtStore.jwt;
+  const jwt = authStore.jwt;
 
   const profileResult = await apiRequest<User>('/users/me', 'GET', jwt);
   if (profileResult.ok && profileResult.value) {
@@ -103,9 +105,7 @@ async function loadData() {
 
   const favResult = await apiRequest<FavoriteFood[]>('/users/me/favorites', 'GET', jwt);
   if (favResult.ok && favResult.value) {
-    const results = await Promise.all(
-      favResult.value.map(fav => apiRequest<RecipePreview>(`/recipes/${fav.recipeId}`, 'GET', jwt))
-    );
+    const results = await Promise.all(favResult.value.map(fav => recipeStore.getRecipe(fav.recipeId)));
     favorites.value = results.filter(r => r.ok && r.value).map(r => r.value!);
   }
 
@@ -127,7 +127,7 @@ function cancelRemoveFavorite() {
 
 async function removeFavorite() {
   if (!favoriteToRemove.value) return;
-  const result = await apiRequest(`/users/me/favorites/${favoriteToRemove.value.id}`, 'DELETE', jwtStore.jwt);
+  const result = await apiRequest(`/users/me/favorites/${favoriteToRemove.value.id}`, 'DELETE', authStore.jwt);
   if (result.ok) {
     favorites.value = favorites.value.filter(f => f.id !== favoriteToRemove.value!.id);
   }
@@ -144,7 +144,7 @@ function cancelRemove() {
 
 async function removeFriend() {
   if (!friendToRemove.value) return;
-  const result = await apiRequest(`/users/me/friends/${friendToRemove.value.id}`, 'DELETE', jwtStore.jwt);
+  const result = await apiRequest(`/users/me/friends/${friendToRemove.value.id}`, 'DELETE', authStore.jwt);
   if (result.ok) {
     friends.value = friends.value.filter(f => f.id !== friendToRemove.value!.id);
   }

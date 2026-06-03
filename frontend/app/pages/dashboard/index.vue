@@ -3,12 +3,12 @@ definePageMeta({
   showFooter: false,
 })
 
-import useCalendarService from '~/assets/service/calendar-service';
+import { useCalendarStore } from '~/assets/store/calendar-store';
 import type { CalendarEntry } from '~/assets/model/calendar-entry';
 
 const route = useRoute();
 const localePath = useLocalePath();
-const calendarService = useCalendarService();
+const calendarStore = useCalendarStore();
 const { locale } = useI18n();
 
 function toLocalDateStr(d: Date): string {
@@ -28,7 +28,7 @@ const selectedDate = computed(() => {
 const isToday = computed(() => selectedDate.value === todayStr);
 
 const parsedDate = computed(() => {
-  const [year, month, day] = selectedDate.value.split('-').map(Number);
+  const [year, month, day] = selectedDate.value.split('-').map(Number) as [number, number, number];
   return new Date(year, month - 1, day);
 });
 
@@ -41,7 +41,7 @@ const dateLabel = computed(() =>
 );
 
 function offsetDate(base: string, days: number): string {
-  const [year, month, day] = base.split('-').map(Number);
+  const [year, month, day] = base.split('-').map(Number) as [number, number, number];
   return toLocalDateStr(new Date(year, month - 1, day + days));
 }
 
@@ -56,7 +56,7 @@ const error = ref(false);
 async function fetchEntries() {
   loading.value = true;
   error.value = false;
-  const result = await calendarService.getEntries(selectedDate.value, selectedDate.value);
+  const result = await calendarStore.getEntries(selectedDate.value, selectedDate.value);
   loading.value = false;
   if (result.ok) {
     entries.value = result.value ?? [];

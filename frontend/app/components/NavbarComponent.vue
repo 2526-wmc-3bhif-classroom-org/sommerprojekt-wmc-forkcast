@@ -110,7 +110,7 @@ function onCalendarClick(event: Event) {
         <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar">
           <i class="fa-solid fa-user"/>
         </div>
-        <ul tabindex="-1" class="menu menu-md dropdown-content bg-base-100 rounded-box z-1 mt-3 p-2 shadow">
+        <ul tabindex="-1" class="menu menu-md dropdown-content bg-base-100 rounded-box z-1 mt-3 p-2 shadow min-w-max w-40">
           <li>
             <nuxt-link-locale @click="blur" to="/dashboard">
               <i class="fa-solid fa-house"/>

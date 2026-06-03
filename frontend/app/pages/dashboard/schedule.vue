@@ -13,7 +13,7 @@ const sentinelRef = ref<HTMLElement | null>(null);
 
 onMounted(() => {
   const observer = new IntersectionObserver(
-    (entries) => { if (entries[0].isIntersecting) searchRef.value?.loadMore(); },
+    (entries) => { if (entries[0]?.isIntersecting) searchRef.value?.loadMore(); },
     { root: listContainerRef.value, threshold: 0 }
   );
   if (sentinelRef.value) observer.observe(sentinelRef.value);

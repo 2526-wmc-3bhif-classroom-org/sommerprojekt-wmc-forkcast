@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import draggable from 'vuedraggable';
-import useCalendarService from '~/assets/service/calendar-service';
+import { useCalendarStore } from '~/assets/store/calendar-store';
 
 const { locale, t } = useI18n();
 
@@ -31,11 +31,10 @@ function closeRecipe() {
   selectedRecipe.value = null;
 }
 let dropItemCounter = 0;
-const fetchedWeeks = new Set<string>();
 const loadingWeek = ref(false);
 const calendarError = ref<string | null>(null);
 
-const calendarService = useCalendarService();
+const calendarStore = useCalendarStore();
 
 const weekLabel = computed(() => {
   const start = currentWeekStart.value;
@@ -62,8 +61,7 @@ const weekDays = computed<WeekDay[]>(() =>
 
 async function loadWeek(weekStart: Date) {
   const from = toDateKey(weekStart);
-  if (fetchedWeeks.has(from)) return;
-  fetchedWeeks.add(from);
+  if (calendarStore.fetchedWeeks.has(from)) return;
   calendarError.value = null;
   loadingWeek.value = true;
 
@@ -71,11 +69,10 @@ async function loadWeek(weekStart: Date) {
   end.setDate(end.getDate() + 6);
   const to = toDateKey(end);
 
-  const result = await calendarService.getEntries(from, to);
+  const result = await calendarStore.getEntries(from, to);
   if (result.rateLimited) {
     calendarError.value = t('error.rate_limited');
     loadingWeek.value = false;
-    fetchedWeeks.delete(from);
     return;
   }
   if (!result.ok || !result.value) { loadingWeek.value = false; return; }
@@ -100,7 +97,7 @@ function toDateKey(date: Date): string {
 }
 
 function dayKeyToDate(dayKey: string): Date {
-  const [year, month, day] = dayKey.split('-').map(Number);
+  const [year, month, day] = dayKey.split('-').map(Number) as [number, number, number];
   // Use noon local time to avoid UTC boundary issues.
   return new Date(year, month - 1, day, 12, 0, 0);
 }
@@ -148,11 +145,11 @@ async function onDayListAdd(dayKey: string, event: { newIndex?: number }) {
   const dropped = dayRecipes[index];
   if (!dropped) return;
 
-  const itemWithId = { ...dropped, __dropItemId: `day-recipe-${dropItemCounter++}` };
+  const itemWithId: Record<string, unknown> = { ...dropped, __dropItemId: `day-recipe-${dropItemCounter++}` };
   dayRecipes[index] = itemWithId;
 
   const recipeId = dropped.id as number;
-  const result = await calendarService.addEntry(recipeId, dayKeyToDate(dayKey));
+  const result = await calendarStore.addEntry(recipeId, dayKeyToDate(dayKey));
   if (result.ok && result.value) {
     itemWithId.__calendarEntryId = result.value.id;
   }
@@ -182,12 +179,12 @@ async function onDayListDragEnd(_dayKey: string, event: {
     const idx = typeof event.oldIndex === 'number' ? event.oldIndex : -1;
     if (idx >= 0 && idx < dayRecipes.length) dayRecipes.splice(idx, 1);
     if (sourceItem?.__calendarEntryId) {
-      await calendarService.deleteEntry(sourceItem.__calendarEntryId as number);
+      await calendarStore.deleteEntry(sourceItem.__calendarEntryId as number);
     }
   } else if (!didReturnToSameList && !droppedOutside) {
     // Moved to a different calendar day — old entry deleted, new one created via onDayListAdd.
     if (sourceItem?.__calendarEntryId) {
-      await calendarService.deleteEntry(sourceItem.__calendarEntryId as number);
+      await calendarStore.deleteEntry(sourceItem.__calendarEntryId as number);
     }
   }
 

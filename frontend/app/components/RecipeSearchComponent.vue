@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import useRecipeService from "~/assets/service/recipe-service";
+import { useRecipeStore } from "~/assets/store/recipe-store";
 import type { RecipePreview } from "~/assets/model/recipe-preview";
 import type { FilterGroup } from "~/assets/model/filter";
 
@@ -12,12 +12,12 @@ const pageSize = ref(10);
 const hasMore = ref(false);
 const searchError = ref<string | null>(null);
 
-const recipeService = useRecipeService();
+const recipeStore = useRecipeStore();
 const { t } = useI18n();
 let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
 onMounted(async () => {
-  const res = await recipeService.getFilters();
+  const res = await recipeStore.getFilters();
   if (!res.ok || !res.value) return;
 
   filterGroups.value = res.value.filters;
@@ -71,7 +71,7 @@ async function doSearch(reset = true) {
   }
   searchError.value = null;
   emit('loading', true);
-  const res = await recipeService.search(query.value.trim(), { ...buildFilterParams(), number: String(pageSize.value) });
+  const res = await recipeStore.search(query.value.trim(), { ...buildFilterParams(), number: String(pageSize.value) });
   emit('loading', false);
   if (res.rateLimited) {
     searchError.value = t('error.rate_limited_search');
@@ -114,7 +114,7 @@ defineExpose({ loadMore });
             {{ $t('component.search.loading_filters') }}
           </div>
 
-          <div v-else class="overflow-y-auto max-h-[28rem] space-y-4 pr-1">
+          <div v-else class="overflow-y-auto max-h-112 space-y-4 pr-1">
             <div
                 v-for="(group, groupKey) in filterGroups"
                 :key="groupKey"
@@ -137,7 +137,7 @@ defineExpose({ loadMore });
                           type="checkbox"
                           class="hidden"
                           v-model="filterState[optKey].enabled"
-                          @change="doSearch"
+                          @change="() => doSearch()"
                       />
                       <i class="fa-solid fa-check text-[10px]" v-if="filterState[optKey]?.enabled"/>
                       {{ option.pretty_name }}
@@ -152,7 +152,7 @@ defineExpose({ loadMore });
                             type="checkbox"
                             class="checkbox checkbox-sm checkbox-primary"
                             v-model="filterState[optKey].enabled"
-                            @change="doSearch"
+                            @change="() => doSearch()"
                         />
                         {{ option.pretty_name }}
                       </label>
@@ -177,7 +177,7 @@ defineExpose({ loadMore });
                             type="checkbox"
                             class="checkbox checkbox-sm checkbox-primary"
                             v-model="filterState[optKey].enabled"
-                            @change="doSearch"
+                            @change="() => doSearch()"
                         />
                         {{ option.pretty_name }}
                       </label>
@@ -207,7 +207,7 @@ defineExpose({ loadMore });
                           type="checkbox"
                           class="checkbox checkbox-sm checkbox-primary"
                           v-model="filterState[optKey].enabled"
-                          @change="doSearch"
+                          @change="() => doSearch()"
                       />
                       {{ option.pretty_name }}
                     </label>
