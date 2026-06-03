@@ -5,6 +5,7 @@ import {useFavoritesStore} from "~/assets/store/favorites-store";
 const props = defineProps(["data"]);
 const data = computed(() => props.data as RecipePreview);
 
+const infoModal = ref();
 const favStore = useFavoritesStore();
 onMounted(() => favStore.load());
 const isFav = computed(() => data.value ? favStore.has(data.value.id) : false);
@@ -98,14 +99,11 @@ const legend = computed(() => {
       <button @click.stop="favStore.toggle(data.id)" class="btn btn-ghost btn-sm btn-circle">
         <i :class="['fa-heart text-lg', isFav ? 'fa-solid text-error' : 'fa-regular text-base-content/30']" />
       </button>
-      <a v-if="data.sourceUrl" :href="data.sourceUrl" target="_blank" rel="noopener noreferrer" @click.stop class="tooltip tooltip-left leading-none" :data-tip="data.sourceName || $t('component.recipe.source')">
+      <button @click.stop="infoModal?.open()" class="btn btn-ghost btn-sm btn-circle">
         <i class="fa-solid fa-circle-info text-base-content/30 text-lg"/>
-      </a>
-      <span v-else-if="data.sourceName" class="tooltip tooltip-left leading-none" :data-tip="data.sourceName">
-        <i class="fa-solid fa-circle-info text-base-content/30 text-lg"/>
-      </span>
+      </button>
     </div>
-
+    <RecipeInfoModalComponent ref="infoModal" :data="data" />
   </li>
 </template>
 

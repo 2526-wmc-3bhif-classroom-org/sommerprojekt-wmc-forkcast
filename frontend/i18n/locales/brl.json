@@ -162,5 +162,7 @@
   "route./terms-of-use.desc": "⠠⠗⠑⠁⠙⠀⠞⠓⠑⠀⠞⠑⠗⠍⠎⠀⠕⠋⠀⠥⠎⠑⠀⠋⠕⠗⠀⠠⠋⠕⠗⠅⠉⠁⠎⠞⠀⠞⠕⠀⠥⠝⠙⠑⠗⠎⠞⠁⠝⠙⠀⠽⠕⠥⠗⠀⠗⠊⠛⠓⠞⠎⠀⠁⠝⠙⠀⠗⠑⠎⠏⠕⠝⠎⠊⠃⠊⠇⠊⠞⠊⠑⠎⠀⠺⠓⠑⠝⠀⠥⠎⠊⠝⠛⠀⠕⠥⠗⠀⠁⠏⠏.",
   "component.search.browse": "Explorar",
   "dashboard.schedule.calendar": "Calendário",
-  "component.recipe.source": "Fonte"
+  "component.recipe.source": "Fonte",
+  "component.recipe.info.ingredients": "Ingredients",
+  "component.recipe.info.no_ingredients": "No ingredient data available."
 }
