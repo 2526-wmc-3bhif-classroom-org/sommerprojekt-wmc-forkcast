@@ -162,5 +162,7 @@
   "route./terms-of-use.desc": "اقرأ شروط استخدام Forkcast لفهم حقوقك ومسؤولياتك عند استخدام تطبيقنا.",
   "component.search.browse": "تصفح",
   "dashboard.schedule.calendar": "التقويم",
-  "component.recipe.source": "المصدر"
+  "component.recipe.source": "المصدر",
+  "component.recipe.info.ingredients": "المكونات",
+  "component.recipe.info.no_ingredients": "لا تتوفر بيانات المكونات."
 }

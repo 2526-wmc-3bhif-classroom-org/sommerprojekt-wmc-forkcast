@@ -5,6 +5,7 @@ import {useFavoritesStore} from "~/assets/store/favorites-store";
 const props = defineProps(["data"]);
 const data = computed(() => props.data as RecipePreview);
 
+const infoModal = ref();
 const favStore = useFavoritesStore();
 onMounted(() => favStore.load());
 const isFav = computed(() => data.value ? favStore.has(data.value.id) : false);
@@ -56,7 +57,11 @@ const legend = computed(() => {
       <button @click="favStore.toggle(data.id)" class="btn btn-circle btn-sm absolute top-2 right-2 bg-base-100/70 hover:bg-base-100 border-0 backdrop-blur-sm">
         <i :class="['fa-heart text-lg', isFav ? 'fa-solid text-error' : 'fa-regular text-base-content/50']" />
       </button>
+      <button @click.stop="infoModal?.open()" class="btn btn-circle btn-sm absolute top-11 right-2 bg-base-100/70 hover:bg-base-100 border-0 backdrop-blur-sm">
+        <i class="fa-solid fa-circle-info text-base-content/50 text-lg"/>
+      </button>
     </figure>
+    <RecipeInfoModalComponent ref="infoModal" :data="data" />
     <div class="card-body text-left">
       <div class="flex items-start gap-2">
         <div class="flex-1 min-w-0">
@@ -68,7 +73,7 @@ const legend = computed(() => {
             </span>
           </div>
           <h2 class="text-2xl font-bold leading-tight">
-            {{data.title}}<a v-if="data.sourceUrl" :href="data.sourceUrl" target="_blank" rel="noopener noreferrer" class="tooltip tooltip-bottom ml-1" :data-tip="data.sourceName || $t('component.recipe.source')"><i class="fa-solid fa-circle-info text-base-content/30 text-base"/></a><span v-else-if="data.sourceName" class="tooltip tooltip-bottom inline-block align-middle ml-1" :data-tip="data.sourceName"><i class="fa-solid fa-circle-info text-base-content/30 text-base"/></span>
+            {{data.title}}
           </h2>
         </div>
         <div :class="`tooltip shrink-0 ${tooltipColor}`">

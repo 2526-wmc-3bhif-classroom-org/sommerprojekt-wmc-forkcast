@@ -162,5 +162,7 @@
   "route./terms-of-use.desc": "Forkcast kullanım şartlarını okuyarak uygulamamızı kullanırken haklarınızı ve sorumluluklarınızı anlayın.",
   "component.search.browse": "Keşfet",
   "dashboard.schedule.calendar": "Takvim",
-  "component.recipe.source": "Kaynak"
+  "component.recipe.source": "Kaynak",
+  "component.recipe.info.ingredients": "Malzemeler",
+  "component.recipe.info.no_ingredients": "Malzeme verisi mevcut değil."
 }

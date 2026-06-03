@@ -4,7 +4,7 @@ definePageMeta({
 })
 
 import { useCalendarStore } from '~/assets/store/calendar-store';
-import type { CalendarEntry } from '~/assets/model/calendar-entry';
+import { useAuthStore } from '~/assets/store/auth-store';
 
 const route = useRoute();
 const localePath = useLocalePath();
@@ -48,24 +48,24 @@ function offsetDate(base: string, days: number): string {
 const prevDate = computed(() => offsetDate(selectedDate.value, -1));
 const nextDate = computed(() => offsetDate(selectedDate.value, 1));
 
-const entries = ref<CalendarEntry[]>([]);
+const entries = computed(() => calendarStore.entriesByDate[selectedDate.value] ?? []);
 const loading = ref(true);
 const error = ref(false);
 
+const authenticated = computed(() => !useAuthStore().loading && useAuthStore().jwt !== undefined);
 
 async function fetchEntries() {
-  loading.value = true;
+  if (!authenticated.value) return;
+  const alreadyCached = calendarStore.fetchedWeeks.has(selectedDate.value);
+  if (!alreadyCached) loading.value = true;
   error.value = false;
   const result = await calendarStore.getEntries(selectedDate.value, selectedDate.value);
   loading.value = false;
-  if (result.ok) {
-    entries.value = result.value ?? [];
-  } else {
-    error.value = true;
-  }
+  if (!result.ok && !result.needsAuth) error.value = true;
 }
 
 watch(selectedDate, fetchEntries, { immediate: true });
+watch(authenticated, (auth) => { if (auth) fetchEntries(); });
 
 const vPreventBackGesture = {
   mounted(el: HTMLElement) {

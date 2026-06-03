@@ -162,5 +162,7 @@
   "route./terms-of-use.desc": "Lee los términos de uso de Forkcast para entender tus derechos y responsabilidades.",
   "component.search.browse": "Explorar",
   "dashboard.schedule.calendar": "Calendario",
-  "component.recipe.source": "Fuente"
+  "component.recipe.source": "Fuente",
+  "component.recipe.info.ingredients": "Ingredientes",
+  "component.recipe.info.no_ingredients": "No hay datos de ingredientes disponibles."
 }

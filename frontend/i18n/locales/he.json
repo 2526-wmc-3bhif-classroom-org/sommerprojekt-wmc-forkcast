@@ -162,5 +162,7 @@
   "route./terms-of-use.desc": "קרא את תנאי השימוש של Forkcast כדי להבין את זכויותיך ואחריותיותיך בעת השימוש באפליקציה שלנו.",
   "component.search.browse": "עיון",
   "dashboard.schedule.calendar": "לוח שנה",
-  "component.recipe.source": "מקור"
+  "component.recipe.source": "מקור",
+  "component.recipe.info.ingredients": "מרכיבים",
+  "component.recipe.info.no_ingredients": "אין נתוני מרכיבים זמינים."
 }
