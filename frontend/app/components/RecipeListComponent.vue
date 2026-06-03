@@ -51,12 +51,12 @@ const legend = computed(() => {
 
 <template>
   <li v-if="data" class="list-row bg-base-100">
-    <div>
-      <img :src="data.image" :alt="`Image for: ${data.title}`" class="object-cover rounded-box size-33" loading="lazy"/>
+    <div class="shrink-0">
+      <img :src="data.image" :alt="`Image for: ${data.title}`" class="object-cover rounded-box size-20 sm:size-33" loading="lazy"/>
     </div>
-    <div class="text-left flex flex-col space-y-2">
-      <div class="text-left text-xl font-bold">{{data.title}}</div>
-      <div class="inline-flex space-x-1">
+    <div class="text-left flex flex-col space-y-2 min-w-0">
+      <div class="text-left text-base sm:text-xl font-bold truncate">{{data.title}}</div>
+      <div class="flex flex-wrap gap-1">
         <!-- We cannot use concatenation here, because tailwind does not detect it and does not generate the required classes -->
         <span v-for="tag in data.tags" :class="`badge badge-xs ${tag.color == 'primary' ? 'badge-primary' : tag.color == 'error' ? 'badge-error' : tag.color == 'success' ? 'badge-success' : tag.color == 'warning' ? 'badge-warning' : 'badge-neutral'}`" class="inline-flex items-center gap-1">
           <i :class="`fa-solid fa-${tag.icon}`"/>
@@ -78,9 +78,9 @@ const legend = computed(() => {
       </div>
 
       <ul class="grid grid-cols-2 gap-x-2 gap-y-1 text-[0.7rem]">
-        <li v-for="attribute in data.attributes" :key="attribute.icon" class="inline-flex items-center gap-1">
-          <i :class="`fa-solid fa-${attribute.icon} mr-1`"/>
-          <span>{{attribute.text}}</span>
+        <li v-for="attribute in data.attributes" :key="attribute.icon" class="inline-flex items-center gap-1 min-w-0">
+          <i :class="`fa-solid fa-${attribute.icon} mr-1 shrink-0`"/>
+          <span class="truncate">{{attribute.text}}</span>
         </li>
       </ul>
     </div>

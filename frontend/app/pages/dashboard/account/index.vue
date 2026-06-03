@@ -153,17 +153,17 @@ async function removeFriend() {
 </script>
 
 <template>
-  <div class="grid grid-rows-[4rem_1fr] grid-cols-2 w-screen h-screen px-4 pb-4 gap-x-4">
+  <div class="grid grid-rows-[4rem_auto] md:grid-rows-[4rem_1fr] grid-cols-1 md:grid-cols-2 w-screen min-h-screen md:h-screen px-4 pb-4 gap-4">
 
     <!-- Navbar spacer -->
-    <div class="col-span-2" />
+    <div class="col-span-full" />
 
     <!-- Left column: profile card + friends card -->
-    <div class="flex flex-col gap-4 overflow-hidden opacity-0 animate-fade-in-slide-in-left">
+    <div class="flex flex-col gap-4 overflow-visible md:overflow-hidden opacity-0 animate-fade-in-slide-in-left">
 
       <!-- Profile stats card -->
       <div class="bg-base-100 rounded-2xl shrink-0">
-        <div class="stats stats-horizontal w-full rounded-2xl">
+        <div class="stats stats-vertical sm:stats-horizontal w-full rounded-2xl">
           <div class="stat">
             <div class="stat-figure flex items-center justify-center">
               <div class="avatar placeholder">
@@ -206,11 +206,11 @@ async function removeFriend() {
           <i class="fa-solid fa-user-group text-primary" />
           <span class="font-semibold text-base-content">{{ $t('page.account.friends') }}</span>
         </div>
-        <div v-if="friends.length === 0" class="flex-1 flex items-center justify-center text-base-content/30 select-none flex-col gap-3">
+        <div v-if="friends.length === 0" class="flex-1 flex items-center justify-center text-base-content/30 select-none flex-col gap-3 py-8">
           <i class="fa-solid fa-user-group text-4xl" />
           <span class="text-sm font-medium">{{ $t('page.account.no_friends') }}</span>
         </div>
-        <div v-else class="flex-1 overflow-y-auto">
+        <div v-else class="flex-1 overflow-y-auto md:overflow-y-auto overflow-visible">
           <table class="table table-zebra w-full">
             <thead class="sticky top-0 bg-base-200 z-10">
               <tr>
@@ -246,7 +246,7 @@ async function removeFriend() {
     </div>
 
     <!-- Right column: favorites card -->
-    <div class="bg-base-100 rounded-2xl flex flex-col overflow-hidden opacity-0 animate-fade-in-slide-in-right">
+    <div class="bg-base-100 rounded-2xl flex flex-col overflow-visible md:overflow-hidden opacity-0 animate-fade-in-slide-in-right min-h-64 md:min-h-0">
       <div class="flex items-center gap-3 px-4 py-3 border-b border-base-200 shrink-0">
         <i class="fa-solid fa-heart text-primary" />
         <span class="font-semibold text-base-content">{{ $t('page.account.favorite_foods') }}</span>
@@ -255,7 +255,7 @@ async function removeFriend() {
         <i class="fa-solid fa-heart text-4xl" />
         <span class="text-sm font-medium">{{ $t('page.account.no_favorites') }}</span>
       </div>
-      <ul v-else class="list flex-1 overflow-y-auto">
+      <ul v-else class="list flex-1 overflow-y-auto md:overflow-y-auto overflow-visible">
         <recipe-list-component v-for="fav in favorites" :key="fav.id" :data="fav" />
       </ul>
     </div>
