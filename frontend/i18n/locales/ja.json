@@ -75,6 +75,8 @@
   "route./dashboard.desc": "食事計画を確認し、新しいレシピを発見し、アカウント設定を管理しましょう。",
   "route./dashboard/account": "アカウント",
   "route./dashboard/account.desc": "ユーザー名、メールアドレス、パスワードなどのアカウント情報を確認・編集できます。",
+  "route./dashboard/account/edit": "プロフィール編集",
+  "route./dashboard/account/edit.desc": "ユーザー名やパスワードなどのプロフィール設定を管理します。",
   "route./dashboard/schedule": "スケジュール",
   "route./dashboard/schedule.desc": "週の食事計画を確認・管理しましょう。新しい食事を追加したり、既存のものを編集したりできます。",
   "route./dashboard/shopping-list": "買い物リスト",
@@ -157,5 +159,8 @@
   "route./source": "ソースコード",
   "route./source.desc": "GitHubリポジトリでForkcastのソースコードを探索しましょう。",
   "route./terms-of-use": "利用規約",
-  "route./terms-of-use.desc": "アプリ使用時の権利と責任を理解するためにForkcastの利用規約をお読みください。"
+  "route./terms-of-use.desc": "アプリ使用時の権利と責任を理解するためにForkcastの利用規約をお読みください。",
+  "component.search.browse": "検索",
+  "dashboard.schedule.calendar": "カレンダー",
+  "component.recipe.source": "出典"
 }

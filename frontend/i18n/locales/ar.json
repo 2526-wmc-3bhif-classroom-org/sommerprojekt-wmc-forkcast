@@ -75,6 +75,8 @@
   "route./dashboard.desc": "اعرض خطط وجباتك، اكتشف وصفات جديدة، وأدر إعدادات حسابك.",
   "route./dashboard/account": "الحساب",
   "route./dashboard/account.desc": "اعرض وعدّل معلومات حسابك، بما في ذلك اسم المستخدم والبريد الإلكتروني وكلمة المرور.",
+  "route./dashboard/account/edit": "تعديل الملف الشخصي",
+  "route./dashboard/account/edit.desc": "إدارة إعدادات ملفك الشخصي، بما في ذلك اسم المستخدم وكلمة المرور.",
   "route./dashboard/schedule": "الجدول",
   "route./dashboard/schedule.desc": "اعرض وأدر خطط وجباتك للأسبوع. أضف وجبات جديدة وعدّل الموجودة ونظّم جدولك.",
   "route./dashboard/shopping-list": "قائمة التسوق",
@@ -157,5 +159,8 @@
   "route./source": "الكود المصدري",
   "route./source.desc": "استكشف الكود المصدري لـ Forkcast على مستودعنا في GitHub.",
   "route./terms-of-use": "شروط الاستخدام",
-  "route./terms-of-use.desc": "اقرأ شروط استخدام Forkcast لفهم حقوقك ومسؤولياتك عند استخدام تطبيقنا."
+  "route./terms-of-use.desc": "اقرأ شروط استخدام Forkcast لفهم حقوقك ومسؤولياتك عند استخدام تطبيقنا.",
+  "component.search.browse": "تصفح",
+  "dashboard.schedule.calendar": "التقويم",
+  "component.recipe.source": "المصدر"
 }

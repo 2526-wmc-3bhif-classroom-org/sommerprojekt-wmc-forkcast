@@ -1,27 +1,24 @@
 import type {User} from "~/assets/model/user";
 import useApiConnection from "~/assets/util/api-connector";
 import type {AuthResponse} from "~/assets/model/auth-response";
-import {useJwtStore} from "~/assets/store/jwt-store";
-import {useUserStore} from "~/assets/store/user-store";
+import {useAuthStore} from "~/assets/store/auth-store";
 
 export default function useAuthService() {
     const connection = useApiConnection();
-    const jwtStore = useJwtStore();
-    const userStore = useUserStore();
+    const authStore = useAuthStore();
 
-    const loading = computed(() => userStore.loading);
-    const authenticated = computed(() => !userStore.loading && jwtStore.jwt !== undefined);
-
-    const jwt = computed(() => jwtStore.jwt);
+    const loading = computed(() => authStore.loading);
+    const authenticated = computed(() => !authStore.loading && authStore.jwt !== undefined);
+    const jwt = computed(() => authStore.jwt);
 
     async function clearAuthState() {
-        userStore.user = undefined
-        jwtStore.jwt = undefined;
+        authStore.user = undefined;
+        authStore.jwt = undefined;
     }
 
     async function setAuthState(res: AuthResponse) {
-        userStore.user = res.user;
-        jwtStore.jwt = res.token;
+        authStore.user = res.user;
+        authStore.jwt = res.token;
     }
 
     async function logout() {
@@ -30,48 +27,39 @@ export default function useAuthService() {
     }
 
     async function loadUserWithExistingJwt() {
-        if (!jwtStore.jwt) {
-            userStore.loading = false;
+        if (!authStore.jwt) {
+            authStore.loading = false;
             return { ok: false, error: "No JWT found" };
         }
 
         let result = await getUserWithExistingJwt();
 
         if (result.ok) {
-            userStore.user = result.value as User;
+            authStore.user = result.value as User;
         } else if (result.needsAuth) {
             await clearAuthState();
         }
 
-        userStore.loading = false; // Set loading to false after attempting to load the user
+        authStore.loading = false;
         return result;
     }
 
     async function login(identifier: string, password: string) {
         if (authenticated.value) throw Error("Already authenticated");
-
         let result = await loginUser(identifier, password);
-        if (result.ok) {
-            await setAuthState(result.value as AuthResponse);
-        }
-
+        if (result.ok) await setAuthState(result.value as AuthResponse);
         return result;
     }
 
     async function verify(email: string, password: string, code: string) {
         if (authenticated.value) throw Error("Already authenticated");
-
         let result = await verifyUser(email, code);
-        if (result.ok) {
-            await login(email, password); // Automatically log in the user after successful verification
-        }
-
+        if (result.ok) await login(email, password);
         return result;
     }
 
     async function signup(username: string, email: string, password: string) {
         if (authenticated.value) throw Error("Already authenticated");
-
         return await registerUser(username, email, password);
     }
 
@@ -88,17 +76,8 @@ export default function useAuthService() {
     }
 
     function getUserWithExistingJwt() {
-        return connection.apiRequest<User>("/users/me", "GET", jwtStore.jwt);
+        return connection.apiRequest<User>("/users/me", "GET", authStore.jwt);
     }
 
-    return {
-        authenticated,
-        loading,
-        jwt,
-        login,
-        logout,
-        signup,
-        verify,
-        loadUserWithExistingJwt
-    };
+    return { authenticated, loading, jwt, login, logout, signup, verify, loadUserWithExistingJwt };
 }

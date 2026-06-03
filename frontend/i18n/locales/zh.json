@@ -75,6 +75,8 @@
   "route./dashboard.desc": "查看您的餐食计划，发现新食谱，管理您的账户设置。",
   "route./dashboard/account": "账户",
   "route./dashboard/account.desc": "查看和编辑您的账户信息，包括用户名、电子邮件和密码。",
+  "route./dashboard/account/edit": "编辑资料",
+  "route./dashboard/account/edit.desc": "管理您的个人资料设置，包括用户名和密码。",
   "route./dashboard/schedule": "日程",
   "route./dashboard/schedule.desc": "查看和管理本周的餐食计划。",
   "route./dashboard/shopping-list": "购物清单",
@@ -157,5 +159,8 @@
   "route./source": "源代码",
   "route./source.desc": "在我们的 GitHub 仓库中探索 Forkcast 的源代码。",
   "route./terms-of-use": "使用条款",
-  "route./terms-of-use.desc": "阅读 Forkcast 的使用条款，了解您使用我们应用时的权利和责任。"
+  "route./terms-of-use.desc": "阅读 Forkcast 的使用条款，了解您使用我们应用时的权利和责任。",
+  "component.search.browse": "浏览",
+  "dashboard.schedule.calendar": "日历",
+  "component.recipe.source": "来源"
 }

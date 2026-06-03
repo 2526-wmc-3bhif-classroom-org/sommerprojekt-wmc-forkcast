@@ -1,6 +1,6 @@
   <script setup lang="ts">
 import useApiConnection from '~/assets/util/api-connector';
-import { useJwtStore } from '~/assets/store/jwt-store';
+import { useAuthStore } from '~/assets/store/auth-store';
 
 // --- Types ---
 type ShoppingItem = {
@@ -43,8 +43,8 @@ function toInputStr(date: Date): string {
 }
 
 function parseLocalDate(str: string): Date {
-  const [y, m, d] = str.split('-').map(Number);
-  return new Date(y, (m as number) - 1, d as number);
+  const [y, m, d] = str.split('-').map(Number) as [number, number, number];
+  return new Date(y, m - 1, d);
 }
 
 function addDays(date: Date, n: number): Date {
@@ -55,7 +55,7 @@ function addDays(date: Date, n: number): Date {
 
 // --- API ---
 const { apiRequest } = useApiConnection();
-const jwtStore = useJwtStore();
+const authStore = useAuthStore();
 
 // --- State ---
 const PRESETS = [3, 7, 14, 30] as const;
@@ -162,7 +162,7 @@ async function fetchShoppingList() {
   const result = await apiRequest<ShoppingListResponse>(
     `/users/me/calendar/shopping-list?${params}`,
     'GET',
-    jwtStore.jwt,
+    authStore.jwt,
   );
 
   if (result.ok && result.value) {
@@ -188,7 +188,7 @@ onMounted(fetchShoppingList);
 
 <template>
   <div class="container mx-auto px-4 pb-10" style="padding-top: 5rem">
-    <div class="max-w-2xl mx-auto flex flex-col gap-6">
+    <div class="max-w-2xl mx-auto flex flex-col gap-6 opacity-0 animate-fade-in-slide-in-up">
 
       <!-- Header -->
       <div class="card bg-base-100 shadow-xl no-print">

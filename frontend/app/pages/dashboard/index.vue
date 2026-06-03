@@ -3,12 +3,12 @@ definePageMeta({
   showFooter: false,
 })
 
-import useCalendarService from '~/assets/service/calendar-service';
+import { useCalendarStore } from '~/assets/store/calendar-store';
 import type { CalendarEntry } from '~/assets/model/calendar-entry';
 
 const route = useRoute();
 const localePath = useLocalePath();
-const calendarService = useCalendarService();
+const calendarStore = useCalendarStore();
 const { locale } = useI18n();
 
 function toLocalDateStr(d: Date): string {
@@ -28,7 +28,7 @@ const selectedDate = computed(() => {
 const isToday = computed(() => selectedDate.value === todayStr);
 
 const parsedDate = computed(() => {
-  const [year, month, day] = selectedDate.value.split('-').map(Number);
+  const [year, month, day] = selectedDate.value.split('-').map(Number) as [number, number, number];
   return new Date(year, month - 1, day);
 });
 
@@ -41,7 +41,7 @@ const dateLabel = computed(() =>
 );
 
 function offsetDate(base: string, days: number): string {
-  const [year, month, day] = base.split('-').map(Number);
+  const [year, month, day] = base.split('-').map(Number) as [number, number, number];
   return toLocalDateStr(new Date(year, month - 1, day + days));
 }
 
@@ -56,7 +56,7 @@ const error = ref(false);
 async function fetchEntries() {
   loading.value = true;
   error.value = false;
-  const result = await calendarService.getEntries(selectedDate.value, selectedDate.value);
+  const result = await calendarStore.getEntries(selectedDate.value, selectedDate.value);
   loading.value = false;
   if (result.ok) {
     entries.value = result.value ?? [];
@@ -86,7 +86,7 @@ const vPreventBackGesture = {
     <div class="flex flex-col items-center gap-10 py-12">
 
       <!-- Date header -->
-      <div class="flex flex-col items-center gap-3 w-full max-w-3xl px-6">
+      <div class="flex flex-col items-center gap-3 w-full max-w-3xl px-6 opacity-0 animate-fade-in-slide-in-up">
         <div class="flex items-center gap-4 w-full justify-center">
           <nuxt-link-locale
             :to="{ path: '/dashboard', query: { date: prevDate } }"
@@ -124,7 +124,7 @@ const vPreventBackGesture = {
       </div>
 
       <!-- Divider -->
-      <div class="divider self-stretch max-w-3xl w-full mx-auto px-6 text-base-content/30 text-sm uppercase tracking-widest font-semibold">
+      <div class="divider self-stretch max-w-3xl w-full mx-auto px-6 text-base-content/30 text-sm uppercase tracking-widest font-semibold opacity-0 animate-fade-in-slide-in-up-delay">
         {{ $t('dashboard.on_menu') }}
       </div>
 
@@ -155,7 +155,7 @@ const vPreventBackGesture = {
       </div>
 
       <!-- Empty -->
-      <div v-else-if="entries.filter(e => e.recipe).length === 0" class="flex flex-col items-center gap-5 text-base-content/40 py-16">
+      <div v-else-if="entries.filter(e => e.recipe).length === 0" class="flex flex-col items-center gap-5 text-base-content/40 py-16 opacity-0 animate-fade-in-slide-in-up-delay">
         <div class="w-24 h-24 rounded-full bg-base-200 flex items-center justify-center">
           <i class="fa-solid fa-bowl-food text-4xl"/>
         </div>
@@ -170,7 +170,7 @@ const vPreventBackGesture = {
       </div>
 
       <!-- Cards -->
-      <div v-else v-prevent-back-gesture class="carousel carousel-center w-full max-w-[100vw] min-w-0 gap-6 px-6" style="justify-content: safe center">
+      <div v-else v-prevent-back-gesture class="carousel carousel-center w-full max-w-[100vw] min-w-0 gap-6 px-6 opacity-0 animate-fade-in-slide-in-up-delay" style="justify-content: safe center">
         <div
           v-for="entry in entries.filter(e => e.recipe)"
           :key="entry.id"

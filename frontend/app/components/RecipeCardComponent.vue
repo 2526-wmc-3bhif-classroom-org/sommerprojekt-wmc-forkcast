@@ -1,8 +1,13 @@
 <script setup lang="ts">
 import type {RecipePreview} from "~/assets/model/recipe-preview";
+import {useFavoritesStore} from "~/assets/store/favorites-store";
 
 const props = defineProps(["data"]);
 const data = computed(() => props.data as RecipePreview);
+
+const favStore = useFavoritesStore();
+onMounted(() => favStore.load());
+const isFav = computed(() => data.value ? favStore.has(data.value.id) : false);
 
 const effortColors = {
   low: "bg-success border-success",
@@ -23,56 +28,50 @@ const effortLegend = {
 }
 
 const color = computed(() => {
-  if (data.value.effort <= 30) {
-    return effortColors.low;
-  } else if (data.value.effort <= 60) {
-    return effortColors.medium;
-  } else {
-    return effortColors.high;
-  }
+  const e = data.value?.effort ?? 100;
+  if (e <= 30) return effortColors.low;
+  if (e <= 60) return effortColors.medium;
+  return effortColors.high;
 });
 
 const tooltipColor = computed(() => {
-  if (data.value.effort <= 30) {
-    return effortTooltipColors.low;
-  } else if (data.value.effort <= 60) {
-    return effortTooltipColors.medium;
-  } else {
-    return effortTooltipColors.high;
-  }
+  const e = data.value?.effort ?? 100;
+  if (e <= 30) return effortTooltipColors.low;
+  if (e <= 60) return effortTooltipColors.medium;
+  return effortTooltipColors.high;
 });
 
 const legend = computed(() => {
-  if (data.value.effort <= 30) {
-    return effortLegend.low;
-  } else if (data.value.effort <= 60) {
-    return effortLegend.medium;
-  } else {
-    return effortLegend.high;
-  }
+  const e = data.value?.effort ?? 100;
+  if (e <= 30) return effortLegend.low;
+  if (e <= 60) return effortLegend.medium;
+  return effortLegend.high;
 });
 </script>
 
 <template>
-  <div class="card bg-base-100 w-96 max-h-full shadow-sm">
-    <figure>
+  <div v-if="data" class="card bg-base-100 w-[calc(100vw-3rem)] sm:w-96 max-h-full shadow-sm">
+    <figure class="relative">
       <img :src="data.image" :alt="`Image for: ${data.title}`" class="object-cover h-60 w-full" loading="lazy"/>
+      <button @click="favStore.toggle(data.id)" class="btn btn-circle btn-sm absolute top-2 right-2 bg-base-100/70 hover:bg-base-100 border-0 backdrop-blur-sm">
+        <i :class="['fa-heart text-lg', isFav ? 'fa-solid text-error' : 'fa-regular text-base-content/50']" />
+      </button>
     </figure>
     <div class="card-body text-left">
-      <div class="inline-flex">
-        <div>
-          <div class="inline-flex space-x-1">
+      <div class="flex items-start gap-2">
+        <div class="flex-1 min-w-0">
+          <div class="flex flex-wrap gap-1 mb-1">
             <!-- We cannot use concatenation here, because tailwind does not detect it and does not generate the required classes -->
             <span v-for="tag in data.tags" :class="`badge badge-xs ${tag.color == 'primary' ? 'badge-primary' : tag.color == 'error' ? 'badge-error' : tag.color == 'success' ? 'badge-success' : tag.color == 'warning' ? 'badge-warning' : 'badge-neutral'}`" class="inline-flex items-center gap-1">
               <i :class="`fa-solid fa-${tag.icon}`"/>
               <span>{{tag.text}}</span>
             </span>
           </div>
-          <div class="flex justify-between">
-            <h2 class="text-2xl font-bold">{{data.title}}</h2>
-          </div>
+          <h2 class="text-2xl font-bold leading-tight">
+            {{data.title}}<a v-if="data.sourceUrl" :href="data.sourceUrl" target="_blank" rel="noopener noreferrer" class="tooltip tooltip-bottom ml-1" :data-tip="data.sourceName || $t('component.recipe.source')"><i class="fa-solid fa-circle-info text-base-content/30 text-base"/></a><span v-else-if="data.sourceName" class="tooltip tooltip-bottom inline-block align-middle ml-1" :data-tip="data.sourceName"><i class="fa-solid fa-circle-info text-base-content/30 text-base"/></span>
+          </h2>
         </div>
-        <div :class="`tooltip ml-auto ${tooltipColor}`">
+        <div :class="`tooltip shrink-0 ${tooltipColor}`">
           <div class="tooltip-content">
             <span class="font-semibold">{{data.effort}} - {{legend}}</span>
           </div>
@@ -103,9 +102,9 @@ const legend = computed(() => {
         </li>
       </ul>
 
-      <div class="mt-auto">
-        <!--nuxt-link-locale :to="`/cook/${id}`" class="btn btn-primary btn-block mt-3"-->
-        <nuxt-link-locale :to="`/`" class="btn btn-primary btn-block mt-3">
+      <div class="mt-auto flex gap-2">
+        <!--nuxt-link-locale :to="`/cook/${id}`" class="btn btn-primary flex-1 mt-3"-->
+        <nuxt-link-locale :to="`/`" class="btn btn-primary flex-1 mt-3">
           <i class="fa-solid fa-utensils"/>
           <span>{{$t("component.recipe.card.open")}}</span>
         </nuxt-link-locale>

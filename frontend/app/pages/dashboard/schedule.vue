@@ -13,7 +13,7 @@ const sentinelRef = ref<HTMLElement | null>(null);
 
 onMounted(() => {
   const observer = new IntersectionObserver(
-    (entries) => { if (entries[0].isIntersecting) searchRef.value?.loadMore(); },
+    (entries) => { if (entries[0]?.isIntersecting) searchRef.value?.loadMore(); },
     { root: listContainerRef.value, threshold: 0 }
   );
   if (sentinelRef.value) observer.observe(sentinelRef.value);
@@ -31,6 +31,7 @@ function cloneRecipeForDrop(recipe: Record<string, unknown>) {
 
 const datas = ref<(RecipePreview & { __sourceItemId: string })[]>([]);
 const isSearchLoading = ref(false);
+const activeTab = ref<'browse' | 'calendar'>('browse');
 
 function onSearchResults(results: RecipePreview[]) {
   datas.value = results.map(r => ({
@@ -52,24 +53,25 @@ function onMainListDragStart(evt: any) {
 
   dragGhostEl = document.createElement('div');
   dragGhostEl.style.cssText =
-    `position:fixed;top:0;left:0;transform:translate(-9999px,-9999px);` +
+    `position:absolute;top:-9999px;left:-9999px;` +
     `display:flex;align-items:center;gap:8px;` +
     `background:${bg};border:1px solid ${border};` +
-    `border-radius:10px;padding:6px 10px;color:${color};` +
-    `font-size:12px;font-weight:500;width:200px;white-space:nowrap;overflow:hidden;`;
+    `border-radius:12px;padding:8px 12px;color:${color};` +
+    `font-size:13px;font-weight:500;max-width:220px;` +
+    `box-shadow:0 4px 16px rgba(0,0,0,0.3);`;
 
   const img = document.createElement('img');
   img.src = recipe.image;
-  img.style.cssText = 'width:24px;height:24px;border-radius:4px;object-fit:cover;flex-shrink:0;';
+  img.style.cssText = 'width:32px;height:32px;border-radius:8px;object-fit:cover;flex-shrink:0;';
   dragGhostEl.appendChild(img);
 
   const label = document.createElement('span');
   label.textContent = recipe.title;
-  label.style.cssText = 'overflow:hidden;text-overflow:ellipsis;flex:1;';
+  label.style.cssText = 'overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;';
   dragGhostEl.appendChild(label);
 
   document.body.appendChild(dragGhostEl);
-  evt.originalEvent.dataTransfer.setDragImage(dragGhostEl, 16, 16);
+  evt.originalEvent.dataTransfer.setDragImage(dragGhostEl, 24, 24);
 }
 
 function onMainListDragEnd() {
@@ -79,13 +81,38 @@ function onMainListDragEnd() {
 </script>
 
 <template>
-  <div class="grid grid-rows-[4rem_1fr] grid-cols-[32.5rem_1fr] row-end-auto w-screen h-screen">
-    <div class="col-span-2"></div>
-    <div class="w-125 bg-base-100 rounded-tr-2xl col-span-1">
-      <div>
-        <recipe-search-component ref="searchRef" class="m-3 w-[stretch]" @results="onSearchResults" @loading="isSearchLoading = $event"/>
+  <!-- Mobile tab bar -->
+  <div class="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-base-100 border-t border-base-300 flex">
+    <button
+      class="flex-1 flex flex-col items-center py-3 gap-1 text-xs font-semibold transition-colors"
+      :class="activeTab === 'browse' ? 'text-primary' : 'text-base-content/50'"
+      @click="activeTab = 'browse'"
+    >
+      <i class="fa-solid fa-magnifying-glass text-base"/>
+      {{ $t('component.search.browse') }}
+    </button>
+    <button
+      class="flex-1 flex flex-col items-center py-3 gap-1 text-xs font-semibold transition-colors"
+      :class="activeTab === 'calendar' ? 'text-primary' : 'text-base-content/50'"
+      @click="activeTab = 'calendar'"
+    >
+      <i class="fa-solid fa-calendar-week text-base"/>
+      {{ $t('dashboard.schedule.calendar') }}
+    </button>
+  </div>
 
-        <div ref="listContainerRef" class="overflow-y-scroll h-[calc(100vh-8rem)]">
+  <!-- Desktop: side-by-side grid. Mobile: full-width panels toggled by tab -->
+  <div class="md:grid md:grid-rows-[4rem_1fr] md:grid-cols-[32.5rem_1fr] w-screen md:h-screen px-4 pt-16 pb-[calc(3.5rem+1rem)] md:pt-0 md:pb-4 gap-x-4 flex flex-col h-[100dvh]">
+    <div class="hidden md:block md:col-span-2"></div>
+
+    <!-- Browse panel -->
+    <div
+      class="bg-base-100 rounded-2xl overflow-hidden opacity-0 animate-fade-in-slide-in-left"
+      :class="activeTab === 'browse' ? 'flex flex-col flex-1 min-h-0' : 'hidden md:flex md:flex-col'"
+    >
+        <recipe-search-component ref="searchRef" class="m-3 w-[stretch] shrink-0" @results="onSearchResults" @loading="isSearchLoading = $event"/>
+
+        <div ref="listContainerRef" class="overflow-y-scroll flex-1">
           <ul v-if="isSearchLoading && datas.length === 0" class="list">
             <li v-for="i in 5" :key="i" class="list-row flex items-center gap-4 p-3">
               <div class="skeleton size-33 rounded-box shrink-0"/>
@@ -116,15 +143,18 @@ function onMainListDragEnd() {
               :data-zone="'main'"
           >
             <template #item="{ element: data }">
-              <div class="cursor-grab active:cursor-grabbing touch-none">
+              <div class="cursor-grab active:cursor-grabbing touch-none select-none">
                 <recipe-list-component :data="data"/>
               </div>
             </template>
           </draggable>
           <div ref="sentinelRef" class="h-1"/>
         </div>
-      </div>
     </div>
-    <schedule-calendar-component />
+
+    <!-- Calendar panel -->
+    <div :class="activeTab === 'calendar' ? 'flex flex-col flex-1 min-h-0' : 'hidden md:contents'">
+      <schedule-calendar-component class="flex-1 min-h-0 md:h-full"/>
+    </div>
   </div>
 </template>
