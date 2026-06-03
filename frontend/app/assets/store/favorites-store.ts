@@ -1,5 +1,6 @@
-import useApiConnection from '~/assets/util/api-connector';
+import useApiConnection, { type ApiResponse } from '~/assets/util/api-connector';
 import { useAuthStore } from '~/assets/store/auth-store';
+import type { RecipePreview } from '~/assets/model/recipe-preview';
 
 export const useFavoritesStore = defineStore('favoritesStore', () => {
   const { apiRequest } = useApiConnection();
@@ -32,5 +33,16 @@ export const useFavoritesStore = defineStore('favoritesStore', () => {
     }
   }
 
-  return { ids, loaded, load, has, toggle };
+  async function getPopulated(offset: number, limit: number): Promise<ApiResponse<RecipePreview[]>> {
+    if (!authStore.jwt) return { ok: false, needsAuth: true, rateLimited: false };
+    const result = await apiRequest<{ recipeId: number; recipe: RecipePreview | null }[]>(
+      `/users/me/favorites?populate=true&offset=${offset}&limit=${limit}`,
+      'GET',
+      authStore.jwt
+    );
+    if (!result.ok || !result.value) return { ok: false, needsAuth: result.needsAuth, rateLimited: result.rateLimited };
+    return { ok: true, needsAuth: false, rateLimited: false, value: result.value.flatMap(f => f.recipe ? [f.recipe] : []) };
+  }
+
+  return { ids, loaded, load, has, toggle, getPopulated };
 })

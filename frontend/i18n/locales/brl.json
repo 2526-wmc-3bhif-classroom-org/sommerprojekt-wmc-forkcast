@@ -161,5 +161,6 @@
   "route./terms-of-use": "⠠⠞⠑⠗⠍⠎⠀⠕⠋⠀⠥⠎⠑",
   "route./terms-of-use.desc": "⠠⠗⠑⠁⠙⠀⠞⠓⠑⠀⠞⠑⠗⠍⠎⠀⠕⠋⠀⠥⠎⠑⠀⠋⠕⠗⠀⠠⠋⠕⠗⠅⠉⠁⠎⠞⠀⠞⠕⠀⠥⠝⠙⠑⠗⠎⠞⠁⠝⠙⠀⠽⠕⠥⠗⠀⠗⠊⠛⠓⠞⠎⠀⠁⠝⠙⠀⠗⠑⠎⠏⠕⠝⠎⠊⠃⠊⠇⠊⠞⠊⠑⠎⠀⠺⠓⠑⠝⠀⠥⠎⠊⠝⠛⠀⠕⠥⠗⠀⠁⠏⠏.",
   "component.search.browse": "Explorar",
-  "dashboard.schedule.calendar": "Calendário"
+  "dashboard.schedule.calendar": "Calendário",
+  "component.recipe.source": "Fonte"
 }

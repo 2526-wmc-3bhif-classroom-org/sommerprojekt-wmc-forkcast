@@ -98,6 +98,12 @@ const legend = computed(() => {
       <button @click.stop="favStore.toggle(data.id)" class="btn btn-ghost btn-sm btn-circle">
         <i :class="['fa-heart text-lg', isFav ? 'fa-solid text-error' : 'fa-regular text-base-content/30']" />
       </button>
+      <a v-if="data.sourceUrl" :href="data.sourceUrl" target="_blank" rel="noopener noreferrer" @click.stop class="tooltip tooltip-left leading-none" :data-tip="data.sourceName || $t('component.recipe.source')">
+        <i class="fa-solid fa-circle-info text-base-content/30 text-lg"/>
+      </a>
+      <span v-else-if="data.sourceName" class="tooltip tooltip-left leading-none" :data-tip="data.sourceName">
+        <i class="fa-solid fa-circle-info text-base-content/30 text-lg"/>
+      </span>
     </div>
 
   </li>

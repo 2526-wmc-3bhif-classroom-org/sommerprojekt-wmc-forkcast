@@ -161,5 +161,6 @@
   "route./terms-of-use": "תנאי שימוש",
   "route./terms-of-use.desc": "קרא את תנאי השימוש של Forkcast כדי להבין את זכויותיך ואחריותיותיך בעת השימוש באפליקציה שלנו.",
   "component.search.browse": "עיון",
-  "dashboard.schedule.calendar": "לוח שנה"
+  "dashboard.schedule.calendar": "לוח שנה",
+  "component.recipe.source": "מקור"
 }

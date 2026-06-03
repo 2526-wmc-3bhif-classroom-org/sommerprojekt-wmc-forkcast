@@ -58,20 +58,20 @@ const legend = computed(() => {
       </button>
     </figure>
     <div class="card-body text-left">
-      <div class="inline-flex">
-        <div>
-          <div class="inline-flex space-x-1">
+      <div class="flex items-start gap-2">
+        <div class="flex-1 min-w-0">
+          <div class="flex flex-wrap gap-1 mb-1">
             <!-- We cannot use concatenation here, because tailwind does not detect it and does not generate the required classes -->
             <span v-for="tag in data.tags" :class="`badge badge-xs ${tag.color == 'primary' ? 'badge-primary' : tag.color == 'error' ? 'badge-error' : tag.color == 'success' ? 'badge-success' : tag.color == 'warning' ? 'badge-warning' : 'badge-neutral'}`" class="inline-flex items-center gap-1">
               <i :class="`fa-solid fa-${tag.icon}`"/>
               <span>{{tag.text}}</span>
             </span>
           </div>
-          <div class="flex justify-between">
-            <h2 class="text-2xl font-bold">{{data.title}}</h2>
-          </div>
+          <h2 class="text-2xl font-bold leading-tight">
+            {{data.title}}<a v-if="data.sourceUrl" :href="data.sourceUrl" target="_blank" rel="noopener noreferrer" class="tooltip tooltip-bottom ml-1" :data-tip="data.sourceName || $t('component.recipe.source')"><i class="fa-solid fa-circle-info text-base-content/30 text-base"/></a><span v-else-if="data.sourceName" class="tooltip tooltip-bottom inline-block align-middle ml-1" :data-tip="data.sourceName"><i class="fa-solid fa-circle-info text-base-content/30 text-base"/></span>
+          </h2>
         </div>
-        <div :class="`tooltip ml-auto ${tooltipColor}`">
+        <div :class="`tooltip shrink-0 ${tooltipColor}`">
           <div class="tooltip-content">
             <span class="font-semibold">{{data.effort}} - {{legend}}</span>
           </div>

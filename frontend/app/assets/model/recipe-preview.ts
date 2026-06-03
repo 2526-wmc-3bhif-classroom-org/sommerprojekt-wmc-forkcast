@@ -6,6 +6,8 @@ export type RecipePreview = {
     rating: RecipePreviewRating;
     attributes: RecipePreviewAttribute[];
     tags: RecipePreviewTag[];
+    sourceName?: string | null;
+    sourceUrl?: string | null;
 }
 
 export type RecipePreviewRating = {

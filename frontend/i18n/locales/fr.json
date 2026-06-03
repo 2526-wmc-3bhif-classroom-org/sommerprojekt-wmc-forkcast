@@ -161,5 +161,6 @@
   "route./terms-of-use": "Conditions d'utilisation",
   "route./terms-of-use.desc": "Lisez les conditions d'utilisation de Forkcast pour comprendre vos droits et responsabilités.",
   "component.search.browse": "Parcourir",
-  "dashboard.schedule.calendar": "Calendrier"
+  "dashboard.schedule.calendar": "Calendrier",
+  "component.recipe.source": "Source"
 }

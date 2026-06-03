@@ -4,7 +4,6 @@ import type {RecipePreview} from '~/assets/model/recipe-preview';
 import useApiConnection from '~/assets/util/api-connector';
 import {useAuthStore} from '~/assets/store/auth-store';
 import {useFavoritesStore} from '~/assets/store/favorites-store';
-import {useRecipeStore} from '~/assets/store/recipe-store';
 
 type PublicUser = {
   id: number;
@@ -13,17 +12,11 @@ type PublicUser = {
   isVerified: boolean;
 };
 
-type FavoriteFood = {
-  userId: number;
-  recipeId: number;
-};
-
 definePageMeta({ showFooter: false })
 
 const {apiRequest} = useApiConnection();
 const authStore = useAuthStore();
 const favStore = useFavoritesStore();
-const recipeStore = useRecipeStore();
 const { t } = useI18n();
 
 const user = ref<User | null>(null);
@@ -89,11 +82,30 @@ async function savePassword() {
     passwordError.value = errs?.length ? errs.map(e => `${e.path}: ${e.msg}`).join(' · ') : (result.failure?.message ?? t('page.modifyprofile.password.error'));
   }
 }
+const FAV_PAGE_SIZE = 20;
 const favorites = ref<RecipePreview[]>([]);
+const favOffset = ref(0);
+const favHasMore = ref(true);
+const favLoading = ref(false);
 const favCount = computed(() => favorites.value.filter(f => favStore.has(f.id)).length);
 const friends = ref<PublicUser[]>([]);
 const friendToRemove = ref<PublicUser | null>(null);
 const favoriteToRemove = ref<RecipePreview | null>(null);
+const favSentinelRef = ref<HTMLElement | null>(null);
+
+async function loadMoreFavorites() {
+  if (favLoading.value || !favHasMore.value) return;
+  favLoading.value = true;
+  const result = await favStore.getPopulated(favOffset.value, FAV_PAGE_SIZE);
+  favLoading.value = false;
+  if (result.ok && result.value) {
+    favorites.value.push(...result.value);
+    favOffset.value += result.value.length;
+    favHasMore.value = result.value.length >= FAV_PAGE_SIZE;
+  } else {
+    favHasMore.value = false;
+  }
+}
 
 async function loadData() {
   const jwt = authStore.jwt;
@@ -103,19 +115,24 @@ async function loadData() {
     user.value = profileResult.value;
   }
 
-  const favResult = await apiRequest<FavoriteFood[]>('/users/me/favorites', 'GET', jwt);
-  if (favResult.ok && favResult.value) {
-    const results = await Promise.all(favResult.value.map(fav => recipeStore.getRecipe(fav.recipeId)));
-    favorites.value = results.filter(r => r.ok && r.value).map(r => r.value!);
-  }
-
   const friendsResult = await apiRequest<PublicUser[]>('/users/me/friends', 'GET', jwt);
   if (friendsResult.ok && friendsResult.value) {
     friends.value = friendsResult.value;
   }
 }
 
-onMounted(() => { loadData(); favStore.load(); });
+onMounted(() => {
+  loadData();
+  favStore.load();
+  loadMoreFavorites();
+
+  const observer = new IntersectionObserver(
+    (entries) => { if (entries[0]?.isIntersecting) loadMoreFavorites(); },
+    { threshold: 0 }
+  );
+  watch(favSentinelRef, (el) => { if (el) observer.observe(el); }, { immediate: true });
+  onUnmounted(() => observer.disconnect());
+});
 
 function confirmRemoveFavorite(fav: RecipePreview) {
   favoriteToRemove.value = fav;
@@ -257,6 +274,9 @@ async function removeFriend() {
       </div>
       <ul v-else class="list flex-1 overflow-y-auto md:overflow-y-auto overflow-visible">
         <recipe-list-component v-for="fav in favorites" :key="fav.id" :data="fav" />
+        <li v-if="favHasMore" ref="favSentinelRef" class="flex justify-center py-3">
+          <span class="loading loading-spinner loading-sm text-base-content/30"/>
+        </li>
       </ul>
     </div>
 

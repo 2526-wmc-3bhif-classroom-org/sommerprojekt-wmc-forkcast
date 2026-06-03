@@ -161,5 +161,6 @@
   "route./terms-of-use": "使用条款",
   "route./terms-of-use.desc": "阅读 Forkcast 的使用条款，了解您使用我们应用时的权利和责任。",
   "component.search.browse": "浏览",
-  "dashboard.schedule.calendar": "日历"
+  "dashboard.schedule.calendar": "日历",
+  "component.recipe.source": "来源"
 }

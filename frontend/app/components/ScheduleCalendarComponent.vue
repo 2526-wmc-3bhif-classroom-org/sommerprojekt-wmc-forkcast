@@ -331,7 +331,7 @@ function goToToday() {
 
   <!-- Recipe detail popover -->
   <dialog ref="dialogRef" class="modal" @click.self="closeRecipe">
-    <div class="modal-box p-0 overflow-hidden w-auto max-w-sm">
+    <div class="modal-box p-0 overflow-hidden max-w-sm">
       <button
           class="btn btn-sm btn-circle absolute left-2 top-2 z-10 bg-base-100/70 hover:bg-base-100 border-0 backdrop-blur-sm"
           @click="closeRecipe"

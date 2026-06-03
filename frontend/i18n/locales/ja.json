@@ -161,5 +161,6 @@
   "route./terms-of-use": "利用規約",
   "route./terms-of-use.desc": "アプリ使用時の権利と責任を理解するためにForkcastの利用規約をお読みください。",
   "component.search.browse": "検索",
-  "dashboard.schedule.calendar": "カレンダー"
+  "dashboard.schedule.calendar": "カレンダー",
+  "component.recipe.source": "出典"
 }

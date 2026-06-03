@@ -161,5 +161,6 @@
   "route./terms-of-use": "Kullanım Şartları",
   "route./terms-of-use.desc": "Forkcast kullanım şartlarını okuyarak uygulamamızı kullanırken haklarınızı ve sorumluluklarınızı anlayın.",
   "component.search.browse": "Keşfet",
-  "dashboard.schedule.calendar": "Takvim"
+  "dashboard.schedule.calendar": "Takvim",
+  "component.recipe.source": "Kaynak"
 }

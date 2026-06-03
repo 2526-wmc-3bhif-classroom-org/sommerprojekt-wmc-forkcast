@@ -161,5 +161,6 @@
   "route./terms-of-use": "ᖶᒷᖇᓲᓴ ᓄ⌑ ᑌᓴᒷ",
   "route./terms-of-use.desc": "ᖇᒷᔑ↸ ᖶʎᒷ ᖶᒷᖇᓲᓴ ᓄ⌑ ᑌᓴᒷ ⌑ᓄᖇ ⌑ᓄᖇᑕᓵᔑᓴᖶ ᖶᓄ ᑌᑎ↸ᒷᖇᓴᖶᔑᑎ↸ ᔕᓄᑌᖇ ᖇᒲᓭʎᖶᓴ ᔑᑎ↸ ᖇᒷᓴᓆᓄᑎᓴᒲʖᒲᓪᒲᖶᒲᒷᓴ ᗐʎᒷᑎ ᑌᓴᒲᑎᓭ ᓄᑌᖇ ᔑᓆᓆ.",
   "component.search.browse": "Browse",
-  "dashboard.schedule.calendar": "Calendar"
+  "dashboard.schedule.calendar": "Calendar",
+  "component.recipe.source": "Source"
 }
