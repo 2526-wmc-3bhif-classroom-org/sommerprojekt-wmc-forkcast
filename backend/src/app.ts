@@ -29,6 +29,8 @@ const allowedOrigins = (process.env.CORS_ORIGIN ?? "")
 export const CACHE_TTL_MS =
     parseDurationToMilliseconds(process.env.CACHE_TTL_MS
         ,24 * 60 * 60 * 1000);
+const RATE_LIMIT_WINDOW_MS = parseInt(process.env.RATE_LIMIT_WINDOW_MS || "900000", 10); // 15 minutes
+const RATE_LIMIT_MAX_REQUESTS = parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || "200", 10);
 
 const app = express();
 
@@ -44,11 +46,11 @@ app.use(cors({ origin: allowedOrigins, credentials: true }));
 app.use(cookieParser());
 app.use(express.json());
 app.use(rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    limit: 200, // Limit each IP to 200 requests per time window
-    standardHeaders: 'draft-8', // draft-6: `RateLimit-*` headers; draft-7 & draft-8: combined `RateLimit` header
-    legacyHeaders: false, // Disable the `X-RateLimit-*` headers.
-    ipv6Subnet: 56, // Set to 60 or 64 to be less aggressive, or 52 or 48 to be more aggressive
+    windowMs: RATE_LIMIT_WINDOW_MS,
+    limit: RATE_LIMIT_MAX_REQUESTS,
+    standardHeaders: 'draft-8',
+    legacyHeaders: false,
+    ipv6Subnet: 56,
     handler: (req, res) => {
         res.status(429).json({ message: "Too many requests, please try again later." });
     }

@@ -113,6 +113,8 @@ function toRecipePreview(r: RecipeWithDetails, ingredients?: Ingredient[]): Reci
         ],
         tags: buildTags(r),
         ingredients: ingredients ?? [],
+        sourceName: r.sourceName ?? null,
+        sourceUrl: r.sourceUrl ?? null,
     };
 }
 

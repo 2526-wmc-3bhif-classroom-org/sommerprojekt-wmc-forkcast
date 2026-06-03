@@ -1,6 +1,11 @@
 import { Unit } from "../db/unit";
 import { FavoriteRepository } from "../repository/favoriteRepository";
 import { FavoriteFood } from "../types";
+import { RecipeService } from "./recipeService";
+
+interface FavoriteFoodWithRecipe extends FavoriteFood {
+    recipe?: any;
+}
 
 export class FavoriteService {
     private favoriteRepository: FavoriteRepository;
@@ -9,8 +14,20 @@ export class FavoriteService {
         this.favoriteRepository = new FavoriteRepository(unit);
     }
 
-    public getFavorites(userId: number): FavoriteFood[] {
-        return this.favoriteRepository.findByUserId(userId);
+    public getFavorites(userId: number, offset?: number, limit?: number): FavoriteFood[] {
+        return this.favoriteRepository.findByUserId(userId, offset, limit);
+    }
+
+    public async populateWithRecipes(favorites: FavoriteFood[], userIp?: string): Promise<FavoriteFoodWithRecipe[]> {
+        const recipeIds = [...new Set(favorites.map(f => f.recipeId))];
+        
+        const recipeService = new RecipeService();
+        const recipeMap = await recipeService.getRecipesByIds(recipeIds, userIp);
+        
+        return favorites.map(favorite => ({
+            ...favorite,
+            recipe: recipeMap.get(favorite.recipeId) ?? null,
+        }));
     }
 
     public addFavorite(userId: number, recipeId: number): FavoriteFood {

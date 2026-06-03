@@ -11,6 +11,8 @@ export interface Recipe {
     id: number;
     name: string;
     image: string;
+    sourceName?: string | null;
+    sourceUrl?: string | null;
     updatedAt?: Date;
 }
 
@@ -83,6 +85,8 @@ export interface RecipeWithDetails extends RecipeNutrients {
     id: number;
     name: string;
     image: string;
+    sourceName?: string | null;
+    sourceUrl?: string | null;
     readyInMinutes: number;
     servings: number;
     stepCount: number;
@@ -106,6 +110,8 @@ export interface RecipePreviewResponse {
     attributes: Array<{ icon: string; text: string }>;
     tags: Array<{ icon: string; text: string; color: string }>;
     ingredients?: Ingredient[];
+    sourceName?: string | null;
+    sourceUrl?: string | null;
 }
 
 export interface Notification {

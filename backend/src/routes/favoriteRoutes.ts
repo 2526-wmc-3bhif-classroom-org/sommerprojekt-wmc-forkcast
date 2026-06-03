@@ -1,7 +1,7 @@
 import { ErrorResponse } from "../utils/errorResponse";
 import {authenticateToken, AuthRequest} from "../middleware/authMiddleware";
 import {StatusCodes} from "http-status-codes";
-import { body, param } from 'express-validator';
+import { body, param, query } from 'express-validator';
 import {Router} from "express";
 import {validateRequest} from "../middleware/validationMiddleware";
 import { Unit } from "../db/unit";
@@ -11,12 +11,28 @@ import { RecipeService } from "../services/recipeService";
 
 const router = Router();
 
-router.get('/', authenticateToken, (req: AuthRequest, res) => {
+router.get('/',
+    authenticateToken,
+    query('populate').optional().isBoolean(),
+    query('offset').optional().isInt({ min: 0 }).toInt(),
+    query('limit').optional().isInt({ min: 1 }).toInt(),
+    validateRequest,
+    async (req: AuthRequest, res) => {
     const unit = new Unit(true);
     try {
+        const populate = req.query.populate === 'true';
+        const offset = req.query.offset as number | undefined;
+        const limit = req.query.limit as number | undefined;
+        
         const favoriteService = new FavoriteService(unit);
         const userId = parseInt(req.user!.userId as unknown as string, 10);
-        const favorites = favoriteService.getFavorites(userId);
+        const favorites = favoriteService.getFavorites(userId, offset, limit);
+        
+        if (populate) {
+            const populated = await favoriteService.populateWithRecipes(favorites, req.ip);
+            return res.status(StatusCodes.OK).json(populated);
+        }
+        
         res.status(StatusCodes.OK).json(favorites);
     } catch (error) {
         console.error("Get favorites error:", error);

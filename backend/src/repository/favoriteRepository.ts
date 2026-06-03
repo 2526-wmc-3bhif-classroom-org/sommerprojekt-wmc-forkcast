@@ -8,11 +8,20 @@ export class FavoriteRepository {
         this.unit = unit;
     }
 
-    public findByUserId(userId: number): FavoriteFood[] {
-        const stmt = this.unit.prepare<FavoriteFood>(
-            "SELECT * FROM FavoriteFood WHERE userId = :userId", 
-            { userId }
-        );
+    public findByUserId(userId: number, offset?: number, limit?: number): FavoriteFood[] {
+        let query = "SELECT * FROM FavoriteFood WHERE userId = :userId";
+        const params: any = { userId };
+        
+        if (offset !== undefined && offset > 0) {
+            query += " LIMIT :limit OFFSET :offset";
+            params.offset = offset;
+            params.limit = limit ?? -1;
+        } else if (limit !== undefined && limit > 0) {
+            query += " LIMIT :limit";
+            params.limit = limit;
+        }
+        
+        const stmt = this.unit.prepare<FavoriteFood>(query, params);
         return stmt.all();
     }
 
