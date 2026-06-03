@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import type {User} from '~/assets/model/user';
+import type {RecipePreview} from '~/assets/model/recipe-preview';
 import useApiConnection from '~/assets/util/api-connector';
 import {useJwtStore} from '~/assets/store/jwt-store';
+import {useFavoritesStore} from '~/assets/store/favorites-store';
 
 type PublicUser = {
   id: number;
@@ -15,22 +17,11 @@ type FavoriteFood = {
   recipeId: number;
 };
 
-type Recipe = {
-  id: number;
-  name: string;
-  image: string;
-};
-
-type FavoriteEntry = {
-  recipeId: number;
-  name: string;
-  image: string;
-};
-
 definePageMeta({ showFooter: false })
 
 const {apiRequest} = useApiConnection();
 const jwtStore = useJwtStore();
+const favStore = useFavoritesStore();
 const { t } = useI18n();
 
 const user = ref<User | null>(null);
@@ -96,10 +87,11 @@ async function savePassword() {
     passwordError.value = errs?.length ? errs.map(e => `${e.path}: ${e.msg}`).join(' · ') : (result.failure?.message ?? t('page.modifyprofile.password.error'));
   }
 }
-const favorites = ref<FavoriteEntry[]>([]);
+const favorites = ref<RecipePreview[]>([]);
+const favCount = computed(() => favorites.value.filter(f => favStore.has(f.id)).length);
 const friends = ref<PublicUser[]>([]);
 const friendToRemove = ref<PublicUser | null>(null);
-const favoriteToRemove = ref<FavoriteEntry | null>(null);
+const favoriteToRemove = ref<RecipePreview | null>(null);
 
 async function loadData() {
   const jwt = jwtStore.jwt;
@@ -111,15 +103,10 @@ async function loadData() {
 
   const favResult = await apiRequest<FavoriteFood[]>('/users/me/favorites', 'GET', jwt);
   if (favResult.ok && favResult.value) {
-    favorites.value = await Promise.all(
-      favResult.value.map(async (fav) => {
-        const recipeResult = await apiRequest<Recipe>(`/recipes/${fav.recipeId}`, 'GET', jwt);
-        if (recipeResult.ok && recipeResult.value) {
-          return {recipeId: fav.recipeId, name: recipeResult.value.name, image: recipeResult.value.image};
-        }
-        return {recipeId: fav.recipeId, name: `Recipe #${fav.recipeId}`, image: ''};
-      })
+    const results = await Promise.all(
+      favResult.value.map(fav => apiRequest<RecipePreview>(`/recipes/${fav.recipeId}`, 'GET', jwt))
     );
+    favorites.value = results.filter(r => r.ok && r.value).map(r => r.value!);
   }
 
   const friendsResult = await apiRequest<PublicUser[]>('/users/me/friends', 'GET', jwt);
@@ -128,9 +115,9 @@ async function loadData() {
   }
 }
 
-onMounted(loadData);
+onMounted(() => { loadData(); favStore.load(); });
 
-function confirmRemoveFavorite(fav: FavoriteEntry) {
+function confirmRemoveFavorite(fav: RecipePreview) {
   favoriteToRemove.value = fav;
 }
 
@@ -140,9 +127,9 @@ function cancelRemoveFavorite() {
 
 async function removeFavorite() {
   if (!favoriteToRemove.value) return;
-  const result = await apiRequest(`/users/me/favorites/${favoriteToRemove.value.recipeId}`, 'DELETE', jwtStore.jwt);
+  const result = await apiRequest(`/users/me/favorites/${favoriteToRemove.value.id}`, 'DELETE', jwtStore.jwt);
   if (result.ok) {
-    favorites.value = favorites.value.filter(f => f.recipeId !== favoriteToRemove.value!.recipeId);
+    favorites.value = favorites.value.filter(f => f.id !== favoriteToRemove.value!.id);
   }
   favoriteToRemove.value = null;
 }
@@ -201,7 +188,7 @@ async function removeFriend() {
               <i class="fa-solid fa-heart text-3xl" />
             </div>
             <div class="stat-title">{{ $t('page.account.favorite_foods') }}</div>
-            <div class="stat-value text-primary">{{ favorites.length }}</div>
+            <div class="stat-value text-primary">{{ favCount }}</div>
           </div>
           <div class="stat">
             <div class="stat-figure text-secondary">
@@ -268,34 +255,9 @@ async function removeFriend() {
         <i class="fa-solid fa-heart text-4xl" />
         <span class="text-sm font-medium">{{ $t('page.account.no_favorites') }}</span>
       </div>
-      <div v-else class="flex-1 overflow-y-auto">
-        <table class="table table-zebra w-full">
-          <thead class="sticky top-0 bg-base-200 z-10">
-            <tr>
-              <th></th>
-              <th>{{ $t('page.account.favorite_foods') }}</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="fav in favorites" :key="fav.recipeId">
-              <td class="w-16">
-                <div class="avatar">
-                  <div class="mask mask-squircle w-12 h-12">
-                    <img :src="fav.image || 'https://via.placeholder.com/48'" :alt="fav.name" />
-                  </div>
-                </div>
-              </td>
-              <td class="font-medium text-base-content">{{ fav.name }}</td>
-              <td class="text-right">
-                <button @click="confirmRemoveFavorite(fav)" class="btn btn-error btn-sm">
-                  {{ $t('page.account.remove') }}
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <ul v-else class="list flex-1 overflow-y-auto">
+        <recipe-list-component v-for="fav in favorites" :key="fav.id" :data="fav" />
+      </ul>
     </div>
 
   </div>
@@ -413,7 +375,7 @@ async function removeFriend() {
       <h3 class="font-bold text-lg">{{ $t('page.account.remove_favorite_title') }}</h3>
       <p class="py-4">
         {{ $t('page.account.remove_confirm') }}
-        <strong>{{ favoriteToRemove?.name }}</strong>
+        <strong>{{ favoriteToRemove?.title }}</strong>
         {{ $t('page.account.remove_from_favorites') }}
       </p>
       <div class="modal-action">

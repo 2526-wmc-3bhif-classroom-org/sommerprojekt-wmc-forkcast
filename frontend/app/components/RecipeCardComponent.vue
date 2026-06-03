@@ -1,8 +1,13 @@
 <script setup lang="ts">
 import type {RecipePreview} from "~/assets/model/recipe-preview";
+import {useFavoritesStore} from "~/assets/store/favorites-store";
 
 const props = defineProps(["data"]);
 const data = computed(() => props.data as RecipePreview);
+
+const favStore = useFavoritesStore();
+onMounted(() => favStore.load());
+const isFav = computed(() => data.value ? favStore.has(data.value.id) : false);
 
 const effortColors = {
   low: "bg-success border-success",
@@ -23,40 +28,34 @@ const effortLegend = {
 }
 
 const color = computed(() => {
-  if (data.value.effort <= 30) {
-    return effortColors.low;
-  } else if (data.value.effort <= 60) {
-    return effortColors.medium;
-  } else {
-    return effortColors.high;
-  }
+  const e = data.value?.effort ?? 100;
+  if (e <= 30) return effortColors.low;
+  if (e <= 60) return effortColors.medium;
+  return effortColors.high;
 });
 
 const tooltipColor = computed(() => {
-  if (data.value.effort <= 30) {
-    return effortTooltipColors.low;
-  } else if (data.value.effort <= 60) {
-    return effortTooltipColors.medium;
-  } else {
-    return effortTooltipColors.high;
-  }
+  const e = data.value?.effort ?? 100;
+  if (e <= 30) return effortTooltipColors.low;
+  if (e <= 60) return effortTooltipColors.medium;
+  return effortTooltipColors.high;
 });
 
 const legend = computed(() => {
-  if (data.value.effort <= 30) {
-    return effortLegend.low;
-  } else if (data.value.effort <= 60) {
-    return effortLegend.medium;
-  } else {
-    return effortLegend.high;
-  }
+  const e = data.value?.effort ?? 100;
+  if (e <= 30) return effortLegend.low;
+  if (e <= 60) return effortLegend.medium;
+  return effortLegend.high;
 });
 </script>
 
 <template>
-  <div class="card bg-base-100 w-96 max-h-full shadow-sm">
-    <figure>
+  <div v-if="data" class="card bg-base-100 w-96 max-h-full shadow-sm">
+    <figure class="relative">
       <img :src="data.image" :alt="`Image for: ${data.title}`" class="object-cover h-60 w-full" loading="lazy"/>
+      <button @click="favStore.toggle(data.id)" class="btn btn-circle btn-sm absolute top-2 right-2 bg-base-100/70 hover:bg-base-100 border-0 backdrop-blur-sm">
+        <i :class="['fa-heart text-lg', isFav ? 'fa-solid text-error' : 'fa-regular text-base-content/50']" />
+      </button>
     </figure>
     <div class="card-body text-left">
       <div class="inline-flex">
@@ -103,9 +102,9 @@ const legend = computed(() => {
         </li>
       </ul>
 
-      <div class="mt-auto">
-        <!--nuxt-link-locale :to="`/cook/${id}`" class="btn btn-primary btn-block mt-3"-->
-        <nuxt-link-locale :to="`/`" class="btn btn-primary btn-block mt-3">
+      <div class="mt-auto flex gap-2">
+        <!--nuxt-link-locale :to="`/cook/${id}`" class="btn btn-primary flex-1 mt-3"-->
+        <nuxt-link-locale :to="`/`" class="btn btn-primary flex-1 mt-3">
           <i class="fa-solid fa-utensils"/>
           <span>{{$t("component.recipe.card.open")}}</span>
         </nuxt-link-locale>
