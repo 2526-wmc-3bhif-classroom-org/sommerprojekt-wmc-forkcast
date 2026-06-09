@@ -142,3 +142,22 @@ export interface FavoriteFood {
 export interface CalendarEntryWithRecipe extends CalendarEntry {
     recipe: RecipePreviewResponse | null;
 }
+
+export interface RecipeInstruction {
+    sectionName: string;
+    stepNumber: number;
+    stepText: string;
+    lengthMinutes: number | null;
+}
+
+export interface RecipeInstructionsResponse {
+    recipeId: number;
+    sections: Array<{
+        name: string;
+        steps: Array<{
+            number: number;
+            step: string;
+            lengthMinutes: number | null;
+        }>;
+    }>;
+}

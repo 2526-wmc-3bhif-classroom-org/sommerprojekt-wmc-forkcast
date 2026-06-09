@@ -215,6 +215,16 @@ class DB {
                 FOREIGN KEY (recipeId) REFERENCES Recipe(id) ON DELETE CASCADE
             );
 
+            CREATE TABLE IF NOT EXISTS RecipeInstruction (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                recipeId INTEGER NOT NULL,
+                sectionName TEXT NOT NULL DEFAULT '',
+                stepNumber INTEGER NOT NULL,
+                stepText TEXT NOT NULL,
+                lengthMinutes INTEGER,
+                FOREIGN KEY (recipeId) REFERENCES Recipe(id) ON DELETE CASCADE
+            );
+
             CREATE TABLE IF NOT EXISTS FilterGroup (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name TEXT NOT NULL UNIQUE,

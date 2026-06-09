@@ -1,4 +1,4 @@
-import { Recipe, RecipeDetails, RecipeWithDetails, Ingredient } from '../types';
+import { Recipe, RecipeDetails, RecipeWithDetails, Ingredient, RecipeInstruction } from '../types';
 import { Unit } from "../db/unit";
 import { CACHE_TTL_MS } from "../app";
 
@@ -215,6 +215,29 @@ export class LocalRecipeRepository {
         const unit = new Unit(false);
         const cutoff = new Date(Date.now() - CACHE_TTL_MS).toISOString();
         unit.prepare<void>("DELETE FROM Recipe WHERE updatedAt <= :cutoff", { cutoff }).run();
+        unit.complete(true);
+    }
+
+    async findInstructionsByRecipeId(id: number): Promise<RecipeInstruction[]> {
+        const unit = new Unit(true);
+        const rows = unit.prepare<RecipeInstruction>(
+            `SELECT sectionName, stepNumber, stepText, lengthMinutes FROM RecipeInstruction WHERE recipeId = :id ORDER BY sectionName, stepNumber`,
+            { id }
+        ).all();
+        unit.complete();
+        return rows;
+    }
+
+    async saveInstructions(recipeId: number, instructions: RecipeInstruction[]): Promise<void> {
+        if (instructions.length === 0) return;
+        const unit = new Unit(false);
+        unit.prepare<void>('DELETE FROM RecipeInstruction WHERE recipeId = :recipeId', { recipeId }).run();
+        for (const instr of instructions) {
+            unit.prepare<void>(
+                `INSERT INTO RecipeInstruction (recipeId, sectionName, stepNumber, stepText, lengthMinutes) VALUES (:recipeId, :sectionName, :stepNumber, :stepText, :lengthMinutes)`,
+                { recipeId, sectionName: instr.sectionName, stepNumber: instr.stepNumber, stepText: instr.stepText, lengthMinutes: instr.lengthMinutes }
+            ).run();
+        }
         unit.complete(true);
     }
 }

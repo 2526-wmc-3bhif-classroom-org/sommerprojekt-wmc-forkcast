@@ -1,8 +1,8 @@
-import { Recipe, RecipeDetails, Ingredient } from '../types';
+import { Recipe, RecipeDetails, Ingredient, RecipeInstruction } from '../types';
 import { updateQuota } from "../middleware/apiQuotaLimiter";
 import { calculateEffortScore } from "../utils/effortScore";
 
-type RecipeWithRawDetails = { recipe: Recipe; details: Omit<RecipeDetails, 'recipeId'>; ingredients: Ingredient[] };
+type RecipeWithRawDetails = { recipe: Recipe; details: Omit<RecipeDetails, 'recipeId'>; ingredients: Ingredient[]; instructions: RecipeInstruction[] };
 
 const SPOONACULAR_NUTRIENT_MAP: Record<string, keyof Omit<RecipeDetails, 'recipeId' | 'readyInMinutes' | 'servings' | 'stepCount' | 'ingredientCount' | 'pricePerServing' | 'effortScore' | 'rating' | 'aggregateLikes' | 'vegetarian' | 'vegan' | 'glutenFree' | 'dairyFree'>> = {
     'Calories': 'calories',
@@ -78,6 +78,7 @@ export class RemoteRecipeRepository {
             recipe: { id: r.id, name: r.title, image: r.image, sourceName: r.sourceName ?? null, sourceUrl: r.sourceUrl ?? null },
             details: this.extractDetails(r),
             ingredients: this.extractIngredients(r),
+            instructions: this.extractInstructions(r),
         }));
     }
 
@@ -100,6 +101,7 @@ export class RemoteRecipeRepository {
             recipe: { id: r.id, name: r.title, image: r.image, sourceName: r.sourceName ?? null, sourceUrl: r.sourceUrl ?? null },
             details: this.extractDetails(r),
             ingredients: this.extractIngredients(r),
+            instructions: this.extractInstructions(r),
         }));
     }
 
@@ -125,6 +127,7 @@ export class RemoteRecipeRepository {
             recipe: { id: r.id, name: r.title, image: r.image, sourceName: r.sourceName ?? null, sourceUrl: r.sourceUrl ?? null },
             details: this.extractDetails(r),
             ingredients: this.extractIngredients(r),
+            instructions: this.extractInstructions(r),
         };
     }
 
@@ -144,6 +147,25 @@ export class RemoteRecipeRepository {
                 } : undefined,
             },
         }));
+    }
+
+    private extractInstructions(r: any): RecipeInstruction[] {
+        const result: RecipeInstruction[] = [];
+        for (const section of r.analyzedInstructions ?? []) {
+            const sectionName = section.name ?? '';
+            for (const step of section.steps ?? []) {
+                const lengthNum: number | null = step.length?.number ?? null;
+                const lengthUnit: string = step.length?.unit ?? '';
+                let lengthMinutes: number | null = null;
+                if (lengthNum !== null) {
+                    if (lengthUnit === 'minutes') lengthMinutes = lengthNum;
+                    else if (lengthUnit === 'hours') lengthMinutes = lengthNum * 60;
+                    else if (lengthUnit === 'seconds') lengthMinutes = Math.max(1, Math.ceil(lengthNum / 60));
+                }
+                result.push({ sectionName, stepNumber: step.number ?? result.length + 1, stepText: step.step ?? '', lengthMinutes });
+            }
+        }
+        return result;
     }
 
     private extractNutrients(r: any): Record<string, number> {
