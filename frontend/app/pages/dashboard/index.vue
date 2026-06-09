@@ -54,12 +54,26 @@ const error = ref(false);
 
 const authenticated = computed(() => !useAuthStore().loading && useAuthStore().jwt !== undefined);
 
+function getWeekStart(date: Date): Date {
+  const d = new Date(date);
+  const day = d.getDay();
+  d.setDate(d.getDate() - (day === 0 ? 6 : day - 1));
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
 async function fetchEntries() {
   if (!authenticated.value) return;
-  const alreadyCached = calendarStore.fetchedWeeks.has(selectedDate.value);
+  const weekStart = getWeekStart(parsedDate.value);
+  const weekStartKey = toLocalDateStr(weekStart);
+  const weekEnd = new Date(weekStart);
+  weekEnd.setDate(weekEnd.getDate() + 6);
+  const weekEndKey = toLocalDateStr(weekEnd);
+
+  const alreadyCached = calendarStore.fetchedWeeks.has(weekStartKey);
   if (!alreadyCached) loading.value = true;
   error.value = false;
-  const result = await calendarStore.getEntries(selectedDate.value, selectedDate.value);
+  const result = await calendarStore.getEntries(weekStartKey, weekEndKey);
   loading.value = false;
   if (!result.ok && !result.needsAuth) error.value = true;
 }
