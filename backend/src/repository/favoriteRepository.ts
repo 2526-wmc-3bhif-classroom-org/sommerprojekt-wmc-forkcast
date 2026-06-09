@@ -25,6 +25,14 @@ export class FavoriteRepository {
         return stmt.all();
     }
 
+    public getTotalCount(userId: number): number {
+        const stmt = this.unit.prepare<number>(
+            "SELECT count(*) FROM FavoriteFood WHERE userId = :userId",
+            { userId }
+        )
+        return stmt.get() || 0;
+    }
+
     public create(userId: number, recipeId: number): FavoriteFood {
         const stmt = this.unit.prepare(
             "INSERT INTO FavoriteFood (userId, recipeId) VALUES (:userId, :recipeId) ON CONFLICT DO NOTHING",
