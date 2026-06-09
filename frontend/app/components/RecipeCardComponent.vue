@@ -108,8 +108,7 @@ const legend = computed(() => {
       </ul>
 
       <div class="mt-auto flex gap-2">
-        <!--nuxt-link-locale :to="`/cook/${id}`" class="btn btn-primary flex-1 mt-3"-->
-        <nuxt-link-locale :to="`/`" class="btn btn-primary flex-1 mt-3">
+        <nuxt-link-locale :to="`/dashboard/cook/${data.id}`" class="btn btn-primary flex-1 mt-3">
           <i class="fa-solid fa-utensils"/>
           <span>{{$t("component.recipe.card.open")}}</span>
         </nuxt-link-locale>
