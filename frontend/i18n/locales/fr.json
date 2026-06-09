@@ -186,5 +186,6 @@
   "page.cook.timer_done": "Temps écoulé !",
   "page.cook.metric": "Métrique",
   "page.cook.us": "US",
-  "route./dashboard/cook": "Mode cuisine"
+  "route./dashboard/cook": "Mode cuisine",
+  "page.cook.equipment": "Équipement"
 }

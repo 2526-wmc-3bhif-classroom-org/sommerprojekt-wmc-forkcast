@@ -186,5 +186,6 @@
   "page.cook.timer_done": "انتهى الوقت!",
   "page.cook.metric": "متري",
   "page.cook.us": "أمريكي",
-  "route./dashboard/cook": "وضع الطهي"
+  "route./dashboard/cook": "وضع الطهي",
+  "page.cook.equipment": "المعدات"
 }

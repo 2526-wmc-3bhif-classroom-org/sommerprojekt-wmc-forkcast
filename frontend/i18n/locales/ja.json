@@ -186,5 +186,6 @@
   "page.cook.timer_done": "時間切れ！",
   "page.cook.metric": "メトリック",
   "page.cook.us": "米国",
-  "route./dashboard/cook": "料理モード"
+  "route./dashboard/cook": "料理モード",
+  "page.cook.equipment": "調理器具"
 }

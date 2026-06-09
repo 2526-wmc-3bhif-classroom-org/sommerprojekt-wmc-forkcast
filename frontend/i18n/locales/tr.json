@@ -186,5 +186,6 @@
   "page.cook.timer_done": "Süre doldu!",
   "page.cook.metric": "Metrik",
   "page.cook.us": "ABD",
-  "route./dashboard/cook": "Pişirme Modu"
+  "route./dashboard/cook": "Pişirme Modu",
+  "page.cook.equipment": "Ekipman"
 }

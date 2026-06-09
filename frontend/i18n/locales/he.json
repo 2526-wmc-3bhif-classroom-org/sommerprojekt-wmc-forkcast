@@ -186,5 +186,6 @@
   "page.cook.timer_done": "הזמן נגמר!",
   "page.cook.metric": "מטרי",
   "page.cook.us": "US",
-  "route./dashboard/cook": "מצב בישול"
+  "route./dashboard/cook": "מצב בישול",
+  "page.cook.equipment": "ציוד"
 }

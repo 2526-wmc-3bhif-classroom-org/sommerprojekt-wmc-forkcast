@@ -186,5 +186,6 @@
   "page.cook.timer_done": "时间到！",
   "page.cook.metric": "公制",
   "page.cook.us": "美制",
-  "route./dashboard/cook": "烹饪模式"
+  "route./dashboard/cook": "烹饪模式",
+  "page.cook.equipment": "厨具"
 }
