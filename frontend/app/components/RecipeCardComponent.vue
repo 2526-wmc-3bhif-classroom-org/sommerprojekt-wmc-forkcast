@@ -67,7 +67,7 @@ const legend = computed(() => {
         <div class="flex-1 min-w-0">
           <div class="flex flex-wrap gap-1 mb-1">
             <!-- We cannot use concatenation here, because tailwind does not detect it and does not generate the required classes -->
-            <span v-for="tag in data.tags" :class="`badge badge-xs ${tag.color == 'primary' ? 'badge-primary' : tag.color == 'error' ? 'badge-error' : tag.color == 'success' ? 'badge-success' : tag.color == 'warning' ? 'badge-warning' : 'badge-neutral'}`" class="inline-flex items-center gap-1">
+          <span v-for="tag in data.tags || []" :class="`badge badge-xs ${tag.color == 'primary' ? 'badge-primary' : tag.color == 'error' ? 'badge-error' : tag.color == 'success' ? 'badge-success' : tag.color == 'warning' ? 'badge-warning' : 'badge-neutral'}`" class="inline-flex items-center gap-1">
               <i :class="`fa-solid fa-${tag.icon}`"/>
               <span>{{tag.text}}</span>
             </span>
@@ -87,7 +87,7 @@ const legend = computed(() => {
         </div>
       </div>
 
-      <div class="inline-flex gap-2">
+      <div v-if="data.rating" class="inline-flex gap-2">
         <div class="rating rating-sm">
           <div type="radio" class="mask mask-star-2 bg-orange-400" aria-label="1 star" :aria-current="data.rating.rating == 1" />
           <div type="radio" class="mask mask-star-2 bg-orange-400" aria-label="2 star" :aria-current="data.rating.rating == 2" />
@@ -101,7 +101,7 @@ const legend = computed(() => {
       </div>
 
       <ul class="mt-2 grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
-        <li v-for="attribute in data.attributes" :key="attribute.icon" class="inline-flex items-center gap-1">
+        <li v-for="attribute in data.attributes || []" :key="attribute.icon" class="inline-flex items-center gap-1">
           <i :class="`fa-solid fa-${attribute.icon} mr-1`"/>
           <span>{{attribute.text}}</span>
         </li>

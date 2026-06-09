@@ -2,7 +2,7 @@
   <company-pages-component>
 
     <!-- Header -->
-    <div class="card bg-base-100 shadow-xl">
+    <div class="card shadow-xl">
       <div class="card-body">
         <div class="flex items-center gap-4 mb-2">
           <i class="fa-solid fa-file-lines text-primary text-3xl" />
@@ -15,7 +15,7 @@
     </div>
 
     <!-- Dashboard -->
-    <div class="card bg-base-100 shadow-xl">
+    <div class="card shadow-xl">
       <div class="card-body">
         <h2 class="card-title text-xl font-bold text-base-content mb-4">
           <i class="fa-solid fa-house text-primary mr-2" />
@@ -26,19 +26,19 @@
           decide what to cook. Each recipe card displays:
         </p>
         <ul class="flex flex-col gap-2">
-          <li class="flex items-center gap-3 bg-base-200 rounded-box px-4 py-2">
+          <li class="flex items-center gap-3 rounded-box px-4 py-2">
             <i class="fa-solid fa-fire text-primary shrink-0" />
             <span class="text-base-content opacity-80">Calorie count and nutritional context</span>
           </li>
-          <li class="flex items-center gap-3 bg-base-200 rounded-box px-4 py-2">
+          <li class="flex items-center gap-3 rounded-box px-4 py-2">
             <i class="fa-solid fa-clock text-primary shrink-0" />
             <span class="text-base-content opacity-80">Preparation time and effort rating</span>
           </li>
-          <li class="flex items-center gap-3 bg-base-200 rounded-box px-4 py-2">
+          <li class="flex items-center gap-3 rounded-box px-4 py-2">
             <i class="fa-solid fa-utensils text-primary shrink-0" />
             <span class="text-base-content opacity-80">Ingredient count and serving size</span>
           </li>
-          <li class="flex items-center gap-3 bg-base-200 rounded-box px-4 py-2">
+          <li class="flex items-center gap-3 rounded-box px-4 py-2">
             <i class="fa-solid fa-tags text-primary shrink-0" />
             <span class="text-base-content opacity-80">Dietary tags (Vegetarian, Vegan, Gluten Free, Spicy, …)</span>
           </li>
@@ -47,7 +47,7 @@
     </div>
 
     <!-- Meal Planner -->
-    <div class="card bg-base-100 shadow-xl">
+    <div class="card shadow-xl">
       <div class="card-body">
         <h2 class="card-title text-xl font-bold text-base-content mb-4">
           <i class="fa-solid fa-calendar-days text-primary mr-2" />
@@ -58,14 +58,14 @@
           available recipes; the right panel is your personal meal plan where you drop recipes to assign them to a slot.
         </p>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div class="bg-base-200 rounded-box p-3 flex items-start gap-3">
+          <div class="rounded-box p-3 flex items-start gap-3">
             <i class="fa-solid fa-hand-pointer text-primary mt-0.5 shrink-0" />
             <div>
               <p class="text-base-content font-medium">Drag &amp; Drop</p>
               <p class="text-base-content opacity-50 text-sm">Drag any recipe from the list into your schedule</p>
             </div>
           </div>
-          <div class="bg-base-200 rounded-box p-3 flex items-start gap-3">
+          <div class="rounded-box p-3 flex items-start gap-3">
             <i class="fa-solid fa-calendar text-primary mt-0.5 shrink-0" />
             <div>
               <p class="text-base-content font-medium">Calendar Navigation</p>
@@ -77,7 +77,7 @@
     </div>
 
     <!-- Favorites -->
-    <div class="card bg-base-100 shadow-xl">
+    <div class="card shadow-xl">
       <div class="card-body">
         <h2 class="card-title text-xl font-bold text-base-content mb-4">
           <i class="fa-solid fa-heart text-primary mr-2" />
@@ -91,7 +91,7 @@
     </div>
 
     <!-- Friends -->
-    <div class="card bg-base-100 shadow-xl">
+    <div class="card shadow-xl">
       <div class="card-body">
         <h2 class="card-title text-xl font-bold text-base-content mb-4">
           <i class="fa-solid fa-user-group text-primary mr-2" />
@@ -106,7 +106,7 @@
     </div>
 
     <!-- Account & Profile -->
-    <div class="card bg-base-100 shadow-xl">
+    <div class="card shadow-xl">
       <div class="card-body">
         <h2 class="card-title text-xl font-bold text-base-content mb-4">
           <i class="fa-solid fa-user text-primary mr-2" />
@@ -117,11 +117,11 @@
           navigate to <strong>Manage Profile</strong> to:
         </p>
         <ul class="flex flex-col gap-2">
-          <li class="flex items-center gap-3 bg-base-200 rounded-box px-4 py-2">
+          <li class="flex items-center gap-3 rounded-box px-4 py-2">
             <i class="fa-solid fa-signature text-primary shrink-0" />
             <span class="text-base-content opacity-80">Change your username</span>
           </li>
-          <li class="flex items-center gap-3 bg-base-200 rounded-box px-4 py-2">
+          <li class="flex items-center gap-3 rounded-box px-4 py-2">
             <i class="fa-solid fa-lock text-primary shrink-0" />
             <span class="text-base-content opacity-80">Update your password</span>
           </li>
@@ -130,24 +130,24 @@
     </div>
 
     <!-- Auth -->
-    <div class="card bg-base-100 shadow-xl">
+    <div class="card shadow-xl">
       <div class="card-body">
         <h2 class="card-title text-xl font-bold text-base-content mb-4">
           <i class="fa-solid fa-key text-primary mr-2" />
           Authentication
         </h2>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div class="bg-base-200 rounded-box p-3 text-center">
+          <div class="rounded-box p-3 text-center">
             <i class="fa-solid fa-user-plus text-primary text-2xl mb-2" />
             <p class="text-base-content font-medium">Sign Up</p>
             <p class="text-base-content opacity-50 text-sm">Register with email and password</p>
           </div>
-          <div class="bg-base-200 rounded-box p-3 text-center">
+          <div class="rounded-box p-3 text-center">
             <i class="fa-solid fa-right-to-bracket text-primary text-2xl mb-2" />
             <p class="text-base-content font-medium">Login</p>
             <p class="text-base-content opacity-50 text-sm">Access your existing account</p>
           </div>
-          <div class="bg-base-200 rounded-box p-3 text-center">
+          <div class="rounded-box p-3 text-center">
             <i class="fa-solid fa-envelope-circle-check text-primary text-2xl mb-2" />
             <p class="text-base-content font-medium">Forgot Password</p>
             <p class="text-base-content opacity-50 text-sm">Reset via email verification</p>

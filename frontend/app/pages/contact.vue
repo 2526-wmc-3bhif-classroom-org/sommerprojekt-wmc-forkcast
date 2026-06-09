@@ -14,7 +14,7 @@ function submitForm() {
   <company-pages-component>
 
     <!-- Header -->
-    <div class="card bg-base-100 shadow-xl">
+    <div class="card shadow-xl">
       <div class="card-body">
         <div class="flex items-center gap-4 mb-2">
           <i class="fa-solid fa-envelope text-primary text-3xl" />
@@ -37,6 +37,7 @@ function submitForm() {
         <form @submit.prevent="submitForm" class="flex flex-col gap-4">
           <div class="form-control">
             <label class="label">
+              <i class="fa-solid fa-user" />
               <span class="label-text text-base-content">Your Name</span>
             </label>
             <input
@@ -49,6 +50,7 @@ function submitForm() {
           </div>
           <div class="form-control">
             <label class="label">
+              <i class="fa-solid fa-at" />
               <span class="label-text text-base-content">Your Email</span>
             </label>
             <input
@@ -61,6 +63,7 @@ function submitForm() {
           </div>
           <div class="form-control">
             <label class="label">
+              <i class="fa-solid fa-pen" />
               <span class="label-text text-base-content">Message</span>
             </label>
             <textarea
@@ -81,7 +84,7 @@ function submitForm() {
     </div>
 
     <!-- Direct contact -->
-    <div class="card bg-base-100 shadow-xl">
+    <div class="card shadow-xl">
       <div class="card-body">
         <h2 class="card-title text-xl font-bold text-base-content mb-2">
           <i class="fa-solid fa-at text-primary mr-2" />
