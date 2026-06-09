@@ -37,7 +37,7 @@ router.get('/',
             result.foods = await favoriteService.populateWithRecipes(favorites, req.ip);
         }
         
-        res.status(StatusCodes.OK).json(favorites);
+        res.status(StatusCodes.OK).json(result);
     } catch (error) {
         console.error("Get favorites error:", error);
         ErrorResponse.internalServerError(res);
