@@ -143,11 +143,26 @@ export interface CalendarEntryWithRecipe extends CalendarEntry {
     recipe: RecipePreviewResponse | null;
 }
 
+export interface RecipeStepIngredient {
+    id: number;
+    image: string;
+    name: string;
+}
+
+export interface RecipeStepEquipment {
+    id: number;
+    image: string;
+    name: string;
+    temperature?: { number: number; unit: string };
+}
+
 export interface RecipeInstruction {
     sectionName: string;
     stepNumber: number;
     stepText: string;
     lengthMinutes: number | null;
+    ingredients: RecipeStepIngredient[];
+    equipment: RecipeStepEquipment[];
 }
 
 export interface RecipeInstructionsResponse {
@@ -158,6 +173,8 @@ export interface RecipeInstructionsResponse {
             number: number;
             step: string;
             lengthMinutes: number | null;
+            ingredients: RecipeStepIngredient[];
+            equipment: RecipeStepEquipment[];
         }>;
     }>;
 }

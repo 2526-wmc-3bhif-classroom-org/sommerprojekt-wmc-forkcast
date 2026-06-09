@@ -102,25 +102,37 @@ export class RecipeService {
             return buildInstructionsResponse(id, local);
         }
 
-        const remote = await this.remoteRepo.getRecipeById(id, userIp);
-        if (!remote) return undefined;
+        const instructions = await this.remoteRepo.getInstructions(id, userIp);
 
-        await this.localRepo.saveRecipeWithDetails(remote.recipe, remote.details, remote.ingredients);
-        if (remote.instructions.length > 0) {
-            await this.localRepo.saveInstructions(id, remote.instructions);
+        // Ensure recipe itself is cached (fetch if needed)
+        const localRecipe = await this.localRepo.findRecipeById(id);
+        if (!localRecipe) {
+            const remote = await this.remoteRepo.getRecipeById(id, userIp);
+            if (!remote) return undefined;
+            await this.localRepo.saveRecipeWithDetails(remote.recipe, remote.details, remote.ingredients);
         }
 
-        return buildInstructionsResponse(id, remote.instructions);
+        if (instructions.length > 0) {
+            await this.localRepo.saveInstructions(id, instructions);
+        }
+
+        return buildInstructionsResponse(id, instructions);
     }
 }
 
 function buildInstructionsResponse(recipeId: number, instructions: RecipeInstruction[]): RecipeInstructionsResponse {
-    const sectionsMap = new Map<string, { name: string; steps: Array<{ number: number; step: string; lengthMinutes: number | null }> }>();
+    const sectionsMap = new Map<string, RecipeInstructionsResponse['sections'][number]>();
     for (const instr of instructions) {
         if (!sectionsMap.has(instr.sectionName)) {
             sectionsMap.set(instr.sectionName, { name: instr.sectionName, steps: [] });
         }
-        sectionsMap.get(instr.sectionName)!.steps.push({ number: instr.stepNumber, step: instr.stepText, lengthMinutes: instr.lengthMinutes });
+        sectionsMap.get(instr.sectionName)!.steps.push({
+            number: instr.stepNumber,
+            step: instr.stepText,
+            lengthMinutes: instr.lengthMinutes,
+            ingredients: instr.ingredients,
+            equipment: instr.equipment,
+        });
     }
     return { recipeId, sections: Array.from(sectionsMap.values()) };
 }

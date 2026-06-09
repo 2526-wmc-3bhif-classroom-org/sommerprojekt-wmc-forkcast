@@ -291,6 +291,8 @@ class DB {
             "ALTER TABLE RecipeDetails ADD COLUMN choline REAL NOT NULL DEFAULT 0",
             "ALTER TABLE RecipeDetails ADD COLUMN folate REAL NOT NULL DEFAULT 0",
             "ALTER TABLE RecipeDetails ADD COLUMN folicAcid REAL NOT NULL DEFAULT 0",
+            "ALTER TABLE RecipeInstruction ADD COLUMN ingredients TEXT NOT NULL DEFAULT '[]'",
+            "ALTER TABLE RecipeInstruction ADD COLUMN equipment TEXT NOT NULL DEFAULT '[]'",
         ];
         for (const migration of migrations) {
             try {
