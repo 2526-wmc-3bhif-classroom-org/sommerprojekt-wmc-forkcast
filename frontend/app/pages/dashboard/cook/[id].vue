@@ -5,7 +5,9 @@ import { useAuthStore } from '~/assets/store/auth-store';
 
 definePageMeta({ showFooter: false });
 
-type CookingStep = { number: number; step: string; lengthMinutes: number | null };
+type StepIngredient = { id: number; image: string; name: string };
+type StepEquipment = { id: number; image: string; name: string; temperature?: { number: number; unit: string } };
+type CookingStep = { number: number; step: string; lengthMinutes: number | null; ingredients: StepIngredient[]; equipment: StepEquipment[] };
 type CookingSection = { name: string; steps: CookingStep[] };
 type InstructionsResponse = { recipeId: number; sections: CookingSection[] };
 
@@ -301,12 +303,67 @@ onUnmounted(() => { if (timerInterval !== null) clearInterval(timerInterval); })
         <!-- Step Card with transition -->
         <Transition :name="stepDirection === 'forward' ? 'step-forward' : 'step-backward'" mode="out-in">
           <div :key="currentStepIndex" class="card bg-base-200 shadow-md border border-base-content/5 min-h-36">
-            <div class="card-body p-5">
+            <div class="card-body p-5 gap-4">
+              <!-- Step text -->
               <div class="flex items-start gap-3">
                 <span class="shrink-0 w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-sm font-bold text-primary mt-0.5">
                   {{ currentStep?.number ?? currentStepIndex + 1 }}
                 </span>
                 <p class="text-base leading-relaxed text-base-content/90 flex-1">{{ currentStep?.step }}</p>
+              </div>
+
+              <!-- Equipment with temperature -->
+              <div v-if="currentStep?.equipment?.some(e => e.temperature)" class="flex flex-wrap gap-1.5 pl-11">
+                <span
+                  v-for="eq in currentStep.equipment.filter(e => e.temperature)"
+                  :key="eq.id"
+                  class="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full bg-warning/15 text-warning border border-warning/20"
+                >
+                  <i class="fa-solid fa-temperature-half text-xs" />
+                  {{ eq.name }}: {{ eq.temperature!.number }}° {{ eq.temperature!.unit }}
+                </span>
+              </div>
+
+              <!-- Step ingredients -->
+              <div v-if="currentStep?.ingredients?.length" class="pl-11">
+                <p class="text-xs text-base-content/40 uppercase tracking-wider font-semibold mb-2">{{ $t('page.cook.ingredients') }}</p>
+                <div class="flex flex-wrap gap-1.5">
+                  <span
+                    v-for="ing in currentStep.ingredients"
+                    :key="ing.id"
+                    class="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full bg-primary/10 text-primary/80 border border-primary/15"
+                  >
+                    <img
+                      :src="`https://img.spoonacular.com/ingredients_24x24/${ing.image}`"
+                      :alt="ing.name"
+                      class="w-4 h-4 rounded-full object-cover"
+                      loading="lazy"
+                      @error="($event.target as HTMLImageElement).style.display='none'"
+                    />
+                    {{ ing.name }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Equipment (without temperature) -->
+              <div v-if="currentStep?.equipment?.some(e => !e.temperature)" class="pl-11">
+                <p class="text-xs text-base-content/40 uppercase tracking-wider font-semibold mb-2">{{ $t('page.cook.equipment') }}</p>
+                <div class="flex flex-wrap gap-1.5">
+                  <span
+                    v-for="eq in currentStep.equipment.filter(e => !e.temperature)"
+                    :key="eq.id"
+                    class="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full bg-base-300 text-base-content/60 border border-base-content/10"
+                  >
+                    <img
+                      :src="`https://img.spoonacular.com/equipment_24x24/${eq.image}`"
+                      :alt="eq.name"
+                      class="w-4 h-4 object-contain"
+                      loading="lazy"
+                      @error="($event.target as HTMLImageElement).style.display='none'"
+                    />
+                    {{ eq.name }}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
