@@ -42,3 +42,13 @@
 .animate-zoom-in {
     animation: zoom-in 0.7s forwards;
 }
+
+.scroll-reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.6s ease calc(var(--reveal-delay, 0ms)), transform 0.6s ease calc(var(--reveal-delay, 0ms));
+}
+.scroll-reveal.reveal-visible {
+    opacity: 1;
+    transform: translateY(0);
+}

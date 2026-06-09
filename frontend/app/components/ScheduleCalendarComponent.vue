@@ -74,9 +74,8 @@ async function loadWeek(weekStart: Date) {
     for (const [dayKey, entries] of Object.entries(calendarStore.entriesByDate)) {
       if (dayKey < from || dayKey > to) continue;
       for (const entry of entries) {
-        if (!entry.recipe) continue;
         getDayRecipes(dayKey).push({
-          ...entry.recipe,
+          ...(entry.recipe || { id: entry.recipeId, title: 'Loading…', image: '', effort: 100, tags: [], rating: { rating: 0, count: 0 }, attributes: [] }),
           __dropItemId: `day-recipe-${dropItemCounter++}`,
           __calendarEntryId: entry.id,
         });
@@ -98,7 +97,7 @@ async function loadWeek(weekStart: Date) {
 
   for (const entry of result.value) {
     if (!entry.recipe) continue;
-    const dayKey = entry.date.slice(0, 10);
+    const dayKey = toDateKey(new Date(entry.date));
     getDayRecipes(dayKey).push({
       ...entry.recipe,
       __dropItemId: `day-recipe-${dropItemCounter++}`,
@@ -201,9 +200,17 @@ async function onDayListDragEnd(_dayKey: string, event: {
       await calendarStore.deleteEntry(sourceItem.__calendarEntryId as number);
     }
   } else if (!didReturnToSameList && !droppedOutside) {
-    // Moved to a different calendar day — old entry deleted, new one created via onDayListAdd.
-    if (sourceItem?.__calendarEntryId) {
-      await calendarStore.deleteEntry(sourceItem.__calendarEntryId as number);
+    // Moved to a different calendar day — find and delete the old entry by recipe ID from source day
+    if (sourceDayKey && sourceItem) {
+      const recipeId = sourceItem.id as number;
+      const storeEntries = calendarStore.entriesByDate[sourceDayKey];
+      if (storeEntries) {
+        const idx = storeEntries.findIndex(e => e.recipeId === recipeId);
+        if (idx !== -1) {
+          const entryId = storeEntries[idx].id;
+          await calendarStore.deleteEntry(entryId);
+        }
+      }
     }
   }
 

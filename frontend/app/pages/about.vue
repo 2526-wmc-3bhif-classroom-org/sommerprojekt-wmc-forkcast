@@ -2,7 +2,7 @@
   <company-pages-component>
 
     <!-- Header -->
-    <div class="card bg-base-100 shadow-xl">
+    <div class="card shadow-xl">
       <div class="card-body">
         <h1 class="text-4xl font-bold text-base-content mb-2">About Forkcast</h1>
         <p class="text-base-content opacity-80 text-lg leading-relaxed">
@@ -18,7 +18,7 @@
     </div>
 
     <!-- Team -->
-    <div class="card bg-base-100 shadow-xl">
+    <div class="card shadow-xl">
       <div class="card-body">
         <h2 class="card-title text-2xl font-bold text-base-content mb-6">
           <i class="fa-solid fa-users text-primary mr-2" />
@@ -26,7 +26,7 @@
         </h2>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
-          <div class="flex items-center gap-4 bg-base-200 rounded-box p-4">
+          <div class="flex items-center gap-4 rounded-box p-4">
             <div class="w-14 h-14 rounded-full border-2 border-accent shrink-0 bg-accent flex items-center justify-center">
               <span class="text-accent-content text-xl font-bold select-none">N</span>
             </div>
@@ -38,7 +38,7 @@
             </div>
           </div>
 
-          <div class="flex items-center gap-4 bg-base-200 rounded-box p-4">
+          <div class="flex items-center gap-4 rounded-box p-4">
             <div class="w-14 h-14 rounded-full border-2 border-accent shrink-0 bg-accent flex items-center justify-center">
               <span class="text-accent-content text-xl font-bold select-none">E</span>
             </div>
@@ -50,7 +50,7 @@
             </div>
           </div>
 
-          <div class="flex items-center gap-4 bg-base-200 rounded-box p-4">
+          <div class="flex items-center gap-4 rounded-box p-4">
             <div class="w-14 h-14 rounded-full border-2 border-accent shrink-0 bg-accent flex items-center justify-center">
               <span class="text-accent-content text-xl font-bold select-none">K</span>
             </div>
@@ -62,7 +62,7 @@
             </div>
           </div>
 
-          <div class="flex items-center gap-4 bg-base-200 rounded-box p-4">
+          <div class="flex items-center gap-4 rounded-box p-4">
             <div class="w-14 h-14 rounded-full border-2 border-accent shrink-0 bg-accent flex items-center justify-center">
               <span class="text-accent-content text-xl font-bold select-none">L</span>
             </div>
@@ -79,7 +79,7 @@
     </div>
 
     <!-- School context -->
-    <div class="card bg-base-100 shadow-xl">
+    <div class="card shadow-xl">
       <div class="card-body">
         <h2 class="card-title text-xl font-bold text-base-content mb-2">
           <i class="fa-solid fa-graduation-cap text-primary mr-2" />
