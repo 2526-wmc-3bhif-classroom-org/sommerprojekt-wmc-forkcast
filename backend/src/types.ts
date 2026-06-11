@@ -112,6 +112,7 @@ export interface RecipePreviewResponse {
     ingredients?: Ingredient[];
     sourceName?: string | null;
     sourceUrl?: string | null;
+    isFavorited?: boolean;
 }
 
 export interface Notification {

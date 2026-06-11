@@ -18,10 +18,10 @@ export class CalendarService {
         return this.calendarRepository.findByUserIdAndDateRange(userId, fromDate, toDate);
     }
 
-    public async populateWithRecipes(entries: CalendarEntry[], userIp?: string): Promise<CalendarEntryWithRecipe[]> {
+    public async populateWithRecipes(entries: CalendarEntry[], userIp?: string, userId?: number): Promise<CalendarEntryWithRecipe[]> {
         const recipeIds = [...new Set(entries.map(e => e.recipeId))];
         const recipeService = new RecipeService();
-        const recipeMap = await recipeService.getRecipesByIds(recipeIds, userIp);
+        const recipeMap = await recipeService.getRecipesByIds(recipeIds, userIp, userId);
         return entries.map(entry => ({
             ...entry,
             recipe: recipeMap.get(entry.recipeId) ?? null,

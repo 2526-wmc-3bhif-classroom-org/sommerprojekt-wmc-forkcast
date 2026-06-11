@@ -29,7 +29,7 @@ router.get('/',
         const favorites = favoriteService.getFavorites(userId, offset, limit);
         
         if (populate) {
-            const populated = await favoriteService.populateWithRecipes(favorites, req.ip);
+            const populated = await favoriteService.populateWithRecipes(favorites, req.ip, userId);
             return res.status(StatusCodes.OK).json(populated);
         }
         
