@@ -85,9 +85,9 @@ async function savePassword() {
 const FAV_PAGE_SIZE = 20;
 const favorites = ref<RecipePreview[]>([]);
 const favOffset = ref(0);
-const favHasMore = ref(true);
+const favHasMore = ref(false);
 const favLoading = ref(false);
-const favCount = computed(() => favorites.value.filter(f => favStore.has(f.id)).length);
+const favCount = ref(0);
 const friends = ref<PublicUser[]>([]);
 const friendToRemove = ref<PublicUser | null>(null);
 const favoriteToRemove = ref<RecipePreview | null>(null);
@@ -99,9 +99,10 @@ async function loadMoreFavorites() {
   const result = await favStore.getPopulated(favOffset.value, FAV_PAGE_SIZE);
   favLoading.value = false;
   if (result.ok && result.value) {
-    favorites.value.push(...result.value);
-    favOffset.value += result.value.length;
-    favHasMore.value = result.value.length >= FAV_PAGE_SIZE;
+    favorites.value.push(...result.value.recipes);
+    favCount.value = result.value.count;
+    favOffset.value += result.value.recipes.length;
+    favHasMore.value = result.value.recipes.length >= FAV_PAGE_SIZE;
   } else {
     favHasMore.value = false;
   }
@@ -109,27 +110,32 @@ async function loadMoreFavorites() {
 
 async function loadData() {
   const jwt = authStore.jwt;
-
-  const profileResult = await apiRequest<User>('/users/me', 'GET', jwt);
-  if (profileResult.ok && profileResult.value) {
-    user.value = profileResult.value;
-  }
+  // user is already loaded into the auth store at app boot; reuse it instead of refetching /me
+  user.value = authStore.user ?? null;
 
   const friendsResult = await apiRequest<PublicUser[]>('/users/me/friends', 'GET', jwt);
-  if (friendsResult.ok && friendsResult.value) {
-    friends.value = friendsResult.value;
+  if (friendsResult.ok && friendsResult.value) friends.value = friendsResult.value;
+}
+
+async function initialLoadFavorites() {
+  favLoading.value = true;
+  const result = await favStore.getPopulated(0, FAV_PAGE_SIZE);
+  favLoading.value = false;
+  if (result.ok && result.value) {
+    favorites.value = result.value.recipes;
+    favCount.value = result.value.count;
+    favOffset.value = result.value.recipes.length;
+    favHasMore.value = result.value.recipes.length >= FAV_PAGE_SIZE;
   }
 }
 
 onMounted(() => {
   loadData();
-  favStore.load();
-  loadMoreFavorites();
+  initialLoadFavorites();
 
-  const observer = new IntersectionObserver(
-    (entries) => { if (entries[0]?.isIntersecting) loadMoreFavorites(); },
-    { threshold: 0 }
-  );
+  const observer = new IntersectionObserver((entries) => {
+    if (entries[0]?.isIntersecting) loadMoreFavorites();
+  }, { threshold: 0 });
   watch(favSentinelRef, (el) => { if (el) observer.observe(el); }, { immediate: true });
   onUnmounted(() => observer.disconnect());
 });
@@ -268,13 +274,13 @@ async function removeFriend() {
         <i class="fa-solid fa-heart text-primary" />
         <span class="font-semibold text-base-content">{{ $t('page.account.favorite_foods') }}</span>
       </div>
-      <div v-if="favorites.length === 0" class="flex-1 flex items-center justify-center text-base-content/30 select-none flex-col gap-3">
+      <div v-if="!favLoading && favorites.length === 0" class="flex-1 flex items-center justify-center text-base-content/30 select-none flex-col gap-3">
         <i class="fa-solid fa-heart text-4xl" />
         <span class="text-sm font-medium">{{ $t('page.account.no_favorites') }}</span>
       </div>
       <ul v-else class="list flex-1 overflow-y-auto md:overflow-y-auto overflow-visible">
         <recipe-list-component v-for="fav in favorites" :key="fav.id" :data="fav" />
-        <li v-if="favHasMore" ref="favSentinelRef" class="flex justify-center py-3">
+        <li v-if="favHasMore || favLoading" ref="favSentinelRef" class="flex justify-center py-3">
           <span class="loading loading-spinner loading-sm text-base-content/30"/>
         </li>
       </ul>

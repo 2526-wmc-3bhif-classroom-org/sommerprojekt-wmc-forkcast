@@ -17,6 +17,7 @@ const descriptionTranslation = computed(() => $t("route." + basePath.value + ".d
 const title = computed(() => titleTranslation.value ? "Forkcast - " + titleTranslation.value : "Forkcast");
 const description = computed(() => descriptionTranslation.value ? descriptionTranslation.value as string : "");
 const layoutName = computed(() => authService.authenticated.value ? 'authenticated' : 'unauthenticated');
+const initializing = computed(() => authService.loading.value);
 
 useSeoMeta({
   title: title,
@@ -68,6 +69,9 @@ onMounted(async () => {
 
   <NuxtRouteAnnouncer/>
   <NuxtLayout :name="layoutName">
-    <NuxtPage/>
+    <NuxtPage v-if="!initializing"/>
+    <div v-else class="flex min-h-screen items-center justify-center">
+      <span class="loading loading-spinner loading-lg text-primary"/>
+    </div>
   </NuxtLayout>
 </template>

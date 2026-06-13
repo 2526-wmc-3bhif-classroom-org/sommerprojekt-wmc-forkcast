@@ -18,9 +18,13 @@ export class FavoriteService {
         return this.favoriteRepository.findByUserId(userId, offset, limit);
     }
 
-    public async populateWithRecipes(favorites: FavoriteFood[], userIp?: string, userId?: number): Promise<FavoriteFoodWithRecipe[]> {
+    public getTotalCount(userId: number): number {
+        return this.favoriteRepository.getTotalCount(userId);
+    }
+
+    public async populateWithRecipes(favorites: FavoriteFood[], userId: number, userIp?: string): Promise<FavoriteFoodWithRecipe[]> {
         const recipeIds = [...new Set(favorites.map(f => f.recipeId))];
-        
+
         const recipeService = new RecipeService();
         const recipeMap = await recipeService.getRecipesByIds(recipeIds, userIp, userId);
         

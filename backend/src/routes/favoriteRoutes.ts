@@ -1,13 +1,13 @@
-import { ErrorResponse } from "../utils/errorResponse";
+import {ErrorResponse} from "../utils/errorResponse";
 import {authenticateToken, AuthRequest} from "../middleware/authMiddleware";
 import {StatusCodes} from "http-status-codes";
-import { body, param, query } from 'express-validator';
+import {body, param, query} from 'express-validator';
 import {Router} from "express";
 import {validateRequest} from "../middleware/validationMiddleware";
-import { Unit } from "../db/unit";
-import { FavoriteService } from "../services/favoriteService";
+import {Unit} from "../db/unit";
+import {FavoriteService} from "../services/favoriteService";
 
-import { RecipeService } from "../services/recipeService";
+import {RecipeService} from "../services/recipeService";
 
 const router = Router();
 
@@ -27,13 +27,17 @@ router.get('/',
         const favoriteService = new FavoriteService(unit);
         const userId = parseInt(req.user!.userId as unknown as string, 10);
         const favorites = favoriteService.getFavorites(userId, offset, limit);
-        
+        const result = {
+            count: favoriteService.getTotalCount(userId),
+            populated: populate,
+            foods: favorites,
+        }
+
         if (populate) {
-            const populated = await favoriteService.populateWithRecipes(favorites, req.ip, userId);
-            return res.status(StatusCodes.OK).json(populated);
+            result.foods = await favoriteService.populateWithRecipes(favorites, userId, req.ip);
         }
         
-        res.status(StatusCodes.OK).json(favorites);
+        res.status(StatusCodes.OK).json(result);
     } catch (error) {
         console.error("Get favorites error:", error);
         ErrorResponse.internalServerError(res);
