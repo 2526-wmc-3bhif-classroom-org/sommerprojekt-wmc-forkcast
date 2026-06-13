@@ -42,4 +42,16 @@ export class FavoriteRepository {
         const result = stmt.run();
         return result.changes > 0;
     }
+
+    public findFavoritedRecipeIds(userId: number, recipeIds: number[]): Set<number> {
+        if (recipeIds.length === 0) return new Set();
+        const placeholders = recipeIds.map((_, i) => `:id${i}`).join(', ');
+        const params: Record<string, any> = { userId };
+        recipeIds.forEach((id, i) => { params[`id${i}`] = id; });
+        const rows = this.unit.prepare<{ recipeId: number }>(
+            `SELECT recipeId FROM FavoriteFood WHERE userId = :userId AND recipeId IN (${placeholders})`,
+            params
+        ).all();
+        return new Set(rows.map(r => r.recipeId));
+    }
 }

@@ -43,8 +43,9 @@ router.get("/",
         const filters = filterValidator.validateAndBuild(req.query as Record<string, any>);
         const number = (typeof req.query.number === 'string' ? parseInt(req.query.number) : undefined) ?? 10;
         const offset = (typeof req.query.offset === 'string' ? parseInt(req.query.offset) : undefined) ?? 0;
+        const userId = req.user ? parseInt(req.user.userId as unknown as string, 10) : undefined;
         
-        const recipes = await recipeService.searchRecipes(search, req.ip, { ...filters, offset }, number);
+        const recipes = await recipeService.searchRecipes(search, req.ip, { ...filters, offset }, number, userId);
         res.json(recipes);
     } catch (e) {
         console.error(e);
@@ -75,7 +76,8 @@ router.get("/:id",
     async (req: AuthRequest, res: Response) => {
     try {
         const { id } = req.params;
-        const recipe = await recipeService.getRecipeById(Number(id), req.ip);
+        const userId = req.user ? parseInt(req.user.userId as unknown as string, 10) : undefined;
+        const recipe = await recipeService.getRecipeById(Number(id), req.ip, userId);
         if (!recipe) {
             return ErrorResponse.notFound(res, "Recipe not found");
         }
