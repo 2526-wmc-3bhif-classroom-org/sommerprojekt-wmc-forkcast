@@ -26,7 +26,7 @@ export class FavoriteService {
         const recipeIds = [...new Set(favorites.map(f => f.recipeId))];
         
         const recipeService = new RecipeService();
-        const recipeMap = await recipeService.getRecipesByIds(recipeIds, userIp);
+        const recipeMap = await recipeService.getRecipesByIds(recipeIds, userIp, userId);
         
         return favorites.map(favorite => ({
             ...favorite,

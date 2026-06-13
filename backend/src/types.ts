@@ -112,6 +112,7 @@ export interface RecipePreviewResponse {
     ingredients?: Ingredient[];
     sourceName?: string | null;
     sourceUrl?: string | null;
+    isFavorited?: boolean;
 }
 
 export interface Notification {
@@ -141,4 +142,40 @@ export interface FavoriteFood {
 
 export interface CalendarEntryWithRecipe extends CalendarEntry {
     recipe: RecipePreviewResponse | null;
+}
+
+export interface RecipeStepIngredient {
+    id: number;
+    image: string;
+    name: string;
+}
+
+export interface RecipeStepEquipment {
+    id: number;
+    image: string;
+    name: string;
+    temperature?: { number: number; unit: string };
+}
+
+export interface RecipeInstruction {
+    sectionName: string;
+    stepNumber: number;
+    stepText: string;
+    lengthMinutes: number | null;
+    ingredients: RecipeStepIngredient[];
+    equipment: RecipeStepEquipment[];
+}
+
+export interface RecipeInstructionsResponse {
+    recipeId: number;
+    sections: Array<{
+        name: string;
+        steps: Array<{
+            number: number;
+            step: string;
+            lengthMinutes: number | null;
+            ingredients: RecipeStepIngredient[];
+            equipment: RecipeStepEquipment[];
+        }>;
+    }>;
 }

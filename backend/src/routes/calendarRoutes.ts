@@ -34,7 +34,8 @@ router.get('/',
         }
 
         if (populate) {
-            const populated = await calendarService.populateWithRecipes(entries, req.ip);
+            const userId = req.user ? parseInt(req.user.userId as unknown as string, 10) : undefined;
+            const populated = await calendarService.populateWithRecipes(entries, req.ip, userId);
             return res.json(populated);
         }
 

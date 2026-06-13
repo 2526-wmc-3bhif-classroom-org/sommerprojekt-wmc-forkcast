@@ -32,7 +32,7 @@ router.get('/',
             populated: populate,
             foods: favorites,
         }
-        
+
         if (populate) {
             result.foods = await favoriteService.populateWithRecipes(favorites, req.ip);
         }

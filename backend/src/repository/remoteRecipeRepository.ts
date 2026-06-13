@@ -1,8 +1,8 @@
-import { Recipe, RecipeDetails, Ingredient } from '../types';
+import { Recipe, RecipeDetails, Ingredient, RecipeInstruction, RecipeStepIngredient, RecipeStepEquipment } from '../types';
 import { updateQuota } from "../middleware/apiQuotaLimiter";
 import { calculateEffortScore } from "../utils/effortScore";
 
-type RecipeWithRawDetails = { recipe: Recipe; details: Omit<RecipeDetails, 'recipeId'>; ingredients: Ingredient[] };
+type RecipeWithRawDetails = { recipe: Recipe; details: Omit<RecipeDetails, 'recipeId'>; ingredients: Ingredient[]; instructions: RecipeInstruction[] };
 
 const SPOONACULAR_NUTRIENT_MAP: Record<string, keyof Omit<RecipeDetails, 'recipeId' | 'readyInMinutes' | 'servings' | 'stepCount' | 'ingredientCount' | 'pricePerServing' | 'effortScore' | 'rating' | 'aggregateLikes' | 'vegetarian' | 'vegan' | 'glutenFree' | 'dairyFree'>> = {
     'Calories': 'calories',
@@ -78,6 +78,7 @@ export class RemoteRecipeRepository {
             recipe: { id: r.id, name: r.title, image: r.image, sourceName: r.sourceName ?? null, sourceUrl: r.sourceUrl ?? null },
             details: this.extractDetails(r),
             ingredients: this.extractIngredients(r),
+            instructions: this.extractInstructions(r.analyzedInstructions ?? []),
         }));
     }
 
@@ -100,6 +101,7 @@ export class RemoteRecipeRepository {
             recipe: { id: r.id, name: r.title, image: r.image, sourceName: r.sourceName ?? null, sourceUrl: r.sourceUrl ?? null },
             details: this.extractDetails(r),
             ingredients: this.extractIngredients(r),
+            instructions: this.extractInstructions(r.analyzedInstructions ?? []),
         }));
     }
 
@@ -125,6 +127,7 @@ export class RemoteRecipeRepository {
             recipe: { id: r.id, name: r.title, image: r.image, sourceName: r.sourceName ?? null, sourceUrl: r.sourceUrl ?? null },
             details: this.extractDetails(r),
             ingredients: this.extractIngredients(r),
+            instructions: this.extractInstructions(r.analyzedInstructions ?? []),
         };
     }
 
@@ -144,6 +147,51 @@ export class RemoteRecipeRepository {
                 } : undefined,
             },
         }));
+    }
+
+    async getInstructions(id: number, userIp?: string): Promise<RecipeInstruction[]> {
+        const url = `${this.API_URL}/${id}/analyzedInstructions?apiKey=${this.API_KEY}`;
+        const response = await fetch(url);
+        if (userIp) {
+            const pointsUsed = parseInt(response.headers.get("X-API-Quota-Request") || "0", 10);
+            updateQuota(userIp, pointsUsed);
+        }
+        if (!response.ok) {
+            if (response.status === 404) return [];
+            throw new Error(`Error fetching instructions: ${response.statusText}`);
+        }
+        const sections: any[] = await response.json();
+        return this.extractInstructions(sections);
+    }
+
+    private extractInstructions(sections: any[]): RecipeInstruction[] {
+        const result: RecipeInstruction[] = [];
+        for (const section of sections ?? []) {
+            const sectionName = section.name ?? '';
+            for (const step of section.steps ?? []) {
+                const lengthNum: number | null = step.length?.number ?? null;
+                const lengthUnit: string = step.length?.unit ?? '';
+                let lengthMinutes: number | null = null;
+                if (lengthNum !== null) {
+                    if (lengthUnit === 'minutes') lengthMinutes = lengthNum;
+                    else if (lengthUnit === 'hours') lengthMinutes = lengthNum * 60;
+                    else if (lengthUnit === 'seconds') lengthMinutes = Math.max(1, Math.ceil(lengthNum / 60));
+                }
+                const ingredients: RecipeStepIngredient[] = (step.ingredients ?? []).map((ing: any) => ({
+                    id: ing.id ?? 0,
+                    image: ing.image ?? '',
+                    name: ing.name ?? '',
+                }));
+                const equipment: RecipeStepEquipment[] = (step.equipment ?? []).map((eq: any) => ({
+                    id: eq.id ?? 0,
+                    image: eq.image ?? '',
+                    name: eq.name ?? '',
+                    temperature: eq.temperature ? { number: eq.temperature.number, unit: eq.temperature.unit } : undefined,
+                }));
+                result.push({ sectionName, stepNumber: step.number ?? result.length + 1, stepText: step.step ?? '', lengthMinutes, ingredients, equipment });
+            }
+        }
+        return result;
     }
 
     private extractNutrients(r: any): Record<string, number> {

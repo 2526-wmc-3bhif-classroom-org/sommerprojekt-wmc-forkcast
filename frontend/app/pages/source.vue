@@ -2,7 +2,7 @@
   <company-pages-component>
 
     <!-- Header -->
-    <div class="card bg-base-100 shadow-xl">
+    <div class="card shadow-xl">
       <div class="card-body">
         <div class="flex items-center gap-4 mb-2">
           <i class="fa-brands fa-github text-primary text-3xl" />
@@ -15,7 +15,7 @@
     </div>
 
     <!-- GitHub link -->
-    <div class="card bg-base-100 shadow-xl">
+    <div class="card shadow-xl">
       <div class="card-body">
         <h2 class="card-title text-xl font-bold text-base-content mb-4">
           <i class="fa-solid fa-code-branch text-primary mr-2" />
@@ -41,7 +41,7 @@
     </div>
 
     <!-- Tech stack -->
-    <div class="card bg-base-100 shadow-xl">
+    <div class="card shadow-xl">
       <div class="card-body">
         <h2 class="card-title text-xl font-bold text-base-content mb-4">
           <i class="fa-solid fa-layer-group text-primary mr-2" />
@@ -68,7 +68,7 @@
           <div class="flex items-center gap-3 bg-base-200 rounded-box p-3">
             <i class="fa-solid fa-database text-primary text-2xl shrink-0" />
             <div>
-              <p class="text-base-content font-medium">PostgreSQL</p>
+              <p class="text-base-content font-medium">SQLite</p>
               <p class="text-base-content opacity-50 text-sm">Database</p>
             </div>
           </div>
@@ -86,7 +86,7 @@
     </div>
 
     <!-- License -->
-    <div class="card bg-base-100 shadow-xl">
+    <div class="card shadow-xl">
       <div class="card-body">
         <h2 class="card-title text-xl font-bold text-base-content mb-2">
           <i class="fa-solid fa-scale-balanced text-primary mr-2" />
