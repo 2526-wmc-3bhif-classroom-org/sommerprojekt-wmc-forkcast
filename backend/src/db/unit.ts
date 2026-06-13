@@ -215,6 +215,16 @@ class DB {
                 FOREIGN KEY (recipeId) REFERENCES Recipe(id) ON DELETE CASCADE
             );
 
+            CREATE TABLE IF NOT EXISTS RecipeInstruction (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                recipeId INTEGER NOT NULL,
+                sectionName TEXT NOT NULL DEFAULT '',
+                stepNumber INTEGER NOT NULL,
+                stepText TEXT NOT NULL,
+                lengthMinutes INTEGER,
+                FOREIGN KEY (recipeId) REFERENCES Recipe(id) ON DELETE CASCADE
+            );
+
             CREATE TABLE IF NOT EXISTS FilterGroup (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name TEXT NOT NULL UNIQUE,
@@ -281,6 +291,8 @@ class DB {
             "ALTER TABLE RecipeDetails ADD COLUMN choline REAL NOT NULL DEFAULT 0",
             "ALTER TABLE RecipeDetails ADD COLUMN folate REAL NOT NULL DEFAULT 0",
             "ALTER TABLE RecipeDetails ADD COLUMN folicAcid REAL NOT NULL DEFAULT 0",
+            "ALTER TABLE RecipeInstruction ADD COLUMN ingredients TEXT NOT NULL DEFAULT '[]'",
+            "ALTER TABLE RecipeInstruction ADD COLUMN equipment TEXT NOT NULL DEFAULT '[]'",
         ];
         for (const migration of migrations) {
             try {

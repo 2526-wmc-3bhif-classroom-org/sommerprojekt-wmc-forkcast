@@ -118,7 +118,7 @@ defineExpose({ loadMore });
             <div
                 v-for="(group, groupKey) in filterGroups"
                 :key="groupKey"
-                class="rounded-xl border border-base-200 bg-base-200/40 p-3"
+                class="rounded-xl p-2"
             >
               <!-- Group header -->
               <p class="text-xs font-bold uppercase tracking-widest text-base-content/50 mb-3">
