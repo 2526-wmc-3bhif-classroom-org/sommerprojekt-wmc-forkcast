@@ -113,6 +113,7 @@ export interface RecipePreviewResponse {
     sourceName?: string | null;
     sourceUrl?: string | null;
     isFavorited?: boolean;
+    userRating?: number;
 }
 
 export interface Notification {
@@ -138,6 +139,13 @@ export interface CalendarEntry {
 export interface FavoriteFood {
     userId: number;
     recipeId: number;
+}
+
+export interface RecipeRating {
+    userId: number;
+    recipeId: number;
+    rating: number;
+    createdAt: string;
 }
 
 export interface CalendarEntryWithRecipe extends CalendarEntry {
