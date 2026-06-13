@@ -187,8 +187,7 @@
   "page.cook.metric": "Métrique",
   "page.cook.us": "US",
   "route./dashboard/cook": "Mode cuisine",
-  "page.cook.equipment": "Équipement"
-}
+  "page.cook.equipment": "Équipement",
   "index.features.title": "Tout ce dont vous avez besoin",
   "index.features.subtitle": "Planifiez vos repas, découvrez des recettes et faites vos courses intelligemment — tout en un seul endroit.",
   "index.features.1.title": "Planification des repas",

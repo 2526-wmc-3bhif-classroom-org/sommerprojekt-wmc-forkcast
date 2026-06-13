@@ -187,8 +187,7 @@
   "page.cook.metric": "متري",
   "page.cook.us": "أمريكي",
   "route./dashboard/cook": "وضع الطهي",
-  "page.cook.equipment": "المعدات"
-}
+  "page.cook.equipment": "المعدات",
   "index.features.title": "كل ما تحتاجه",
   "index.features.subtitle": "خطط وجباتك، واكتشف الوصفات، وتسوق بذكاء — كل ذلك في مكان واحد.",
   "index.features.1.title": "تخطيط الوجبات",
