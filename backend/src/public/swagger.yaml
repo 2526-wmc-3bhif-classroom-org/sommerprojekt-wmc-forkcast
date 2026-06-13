@@ -298,13 +298,16 @@ components:
       required: [rating, count]
       properties:
         rating:
-          type: integer
+          type: number
           minimum: 1
           maximum: 5
-          description: Star rating mapped from Spoonacular score
+          description: >-
+            Average rating. Reflects the live user-rating average (1 decimal) when at least
+            one user has rated the recipe; otherwise falls back to the Spoonacular score.
         count:
           type: integer
-          description: Number of aggregate likes
+          description: >-
+            Number of user ratings when any exist; otherwise the Spoonacular aggregate-likes count.
     RecipePreviewAttribute:
       type: object
       required: [icon, text]
@@ -357,6 +360,22 @@ components:
         isFavorited:
           type: boolean
           description: Whether the authenticated user has favorited this recipe. Absent when the caller is unauthenticated.
+        userRating:
+          type: integer
+          minimum: 1
+          maximum: 5
+          description: The authenticated user's own rating for this recipe. Absent when the caller is unauthenticated or has not rated it.
+    RatingResponse:
+      type: object
+      required: [rating, userRating]
+      properties:
+        rating:
+          $ref: '#/components/schemas/RecipePreviewRating'
+        userRating:
+          type: integer
+          minimum: 1
+          maximum: 5
+          description: The rating the user just submitted
     FilterOption:
       type: object
       required: [name, pretty_name, type]
@@ -649,6 +668,51 @@ paths:
              application/json:
                schema:
                  $ref: '#/components/schemas/QuotaExceededResponse'
+        '404':
+          description: Recipe not found
+        '500':
+          description: Internal server error
+  /recipes/{id}/rating:
+    post:
+      summary: Submit or update the authenticated user's rating for a recipe
+      description: >-
+        Upserts the user's 1–5 star rating (re-submitting overwrites the previous value).
+        The recipe is cached locally if not already present. Returns the recalculated
+        aggregate plus the user's own rating.
+      tags: [Recipes]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [rating]
+              properties:
+                rating:
+                  type: integer
+                  minimum: 1
+                  maximum: 5
+      responses:
+        '200':
+          description: Rating saved; returns the updated aggregate and the user's rating
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RatingResponse'
+        '400':
+          description: Invalid recipe ID or rating value
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+        '401':
+          description: Missing or invalid authentication
         '404':
           description: Recipe not found
         '500':

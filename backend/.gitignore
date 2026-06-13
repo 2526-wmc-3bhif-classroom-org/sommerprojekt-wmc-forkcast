@@ -28,3 +28,6 @@ logs
 
 **.db
 **.http
+
+# TypeScript incremental build info
+tsconfig.tsbuildinfo

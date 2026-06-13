@@ -2,6 +2,7 @@ import { RecipeWithDetails, RecipePreviewResponse, Ingredient, RecipeInstruction
 import { LocalRecipeRepository } from '../repository/localRecipeRepository';
 import { RemoteRecipeRepository } from '../repository/remoteRecipeRepository';
 import { FavoriteRepository } from '../repository/favoriteRepository';
+import { RatingRepository } from '../repository/ratingRepository';
 import { Unit } from '../db/unit';
 import { calculateEffortScore } from '../utils/effortScore';
 
@@ -21,7 +22,7 @@ export class RecipeService {
             const ids = localRecipes.slice(0, numResults).map(r => r.id);
             const ingredientMap = await this.localRepo.findIngredientsByRecipeIds(ids);
             const previews = localRecipes.slice(0, numResults).map(r => toRecipePreview(r, ingredientMap.get(r.id)));
-            return this.annotateFavorites(previews, userId);
+            return this.annotate(previews, userId);
         }
 
         let remoteResults: Awaited<ReturnType<typeof this.remoteRepo.searchRecipes>> = [];
@@ -32,7 +33,7 @@ export class RecipeService {
             const ids = localRecipes.map(r => r.id);
             const ingredientMap = await this.localRepo.findIngredientsByRecipeIds(ids);
             const previews = localRecipes.map(r => toRecipePreview(r, ingredientMap.get(r.id)));
-            return this.annotateFavorites(previews, userId);
+            return this.annotate(previews, userId);
         }
 
         this.localRepo.saveRecipesWithDetails(remoteResults).catch(console.error);
@@ -51,7 +52,7 @@ export class RecipeService {
         const previews = combined.slice(0, numResults).map(({ details, ingredients }) =>
             toRecipePreview(details, ingredients ?? cachedIngredientMap.get(details.id))
         );
-        return this.annotateFavorites(previews, userId);
+        return this.annotate(previews, userId);
     }
 
     async getRecipeById(id: number, userIp?: string, userId?: number): Promise<RecipePreviewResponse | undefined> {
@@ -59,7 +60,7 @@ export class RecipeService {
         if (localRecipe) {
             const ingredientMap = await this.localRepo.findIngredientsByRecipeIds([id]);
             const preview = toRecipePreview(localRecipe, ingredientMap.get(id));
-            return (await this.annotateFavorites([preview], userId))[0];
+            return (await this.annotate([preview], userId))[0];
         }
 
         const remote = await this.remoteRepo.getRecipeById(id, userIp);
@@ -71,7 +72,7 @@ export class RecipeService {
             { id: remote.recipe.id, name: remote.recipe.name, image: remote.recipe.image, ...remote.details },
             remote.ingredients
         );
-        return (await this.annotateFavorites([preview], userId))[0];
+        return (await this.annotate([preview], userId))[0];
     }
 
     async getRecipesByIds(ids: number[], userIp?: string, userId?: number): Promise<Map<number, RecipePreviewResponse>> {
@@ -96,18 +97,10 @@ export class RecipeService {
             }
         }
 
-        if (userId !== undefined) {
-            const allIds = [...result.keys()];
-            const unit = new Unit(true);
-            try {
-                const favoriteRepo = new FavoriteRepository(unit);
-                const favoritedIds = favoriteRepo.findFavoritedRecipeIds(userId, allIds);
-                for (const [id, preview] of result) {
-                    result.set(id, { ...preview, isFavorited: favoritedIds.has(id) });
-                }
-            } finally {
-                unit.complete();
-            }
+        const annotated = await this.annotate([...result.values()], userId);
+        result.clear();
+        for (const preview of annotated) {
+            result.set(preview.id, preview);
         }
 
         return result;
@@ -115,6 +108,10 @@ export class RecipeService {
 
     async removeExpiredRecipes(): Promise<void> {
         await this.localRepo.removeExpiredRecipes();
+    }
+
+    private async annotate(previews: RecipePreviewResponse[], userId?: number): Promise<RecipePreviewResponse[]> {
+        return this.annotateRatings(await this.annotateFavorites(previews, userId), userId);
     }
 
     private async annotateFavorites(previews: RecipePreviewResponse[], userId?: number): Promise<RecipePreviewResponse[]> {
@@ -125,6 +122,29 @@ export class RecipeService {
             const favoriteRepo = new FavoriteRepository(unit);
             const favoritedIds = favoriteRepo.findFavoritedRecipeIds(userId, ids);
             return previews.map(p => ({ ...p, isFavorited: favoritedIds.has(p.id) }));
+        } finally {
+            unit.complete();
+        }
+    }
+
+    // Replaces the imported Spoonacular rating with the live user-rating aggregate
+    // whenever at least one user has rated the recipe; otherwise keeps the original.
+    private async annotateRatings(previews: RecipePreviewResponse[], userId?: number): Promise<RecipePreviewResponse[]> {
+        if (previews.length === 0) return previews;
+        const ids = previews.map(p => p.id);
+        const unit = new Unit(true);
+        try {
+            const ratingRepo = new RatingRepository(unit);
+            const aggregates = ratingRepo.getAggregatesForIds(ids);
+            const userRatings = userId !== undefined ? ratingRepo.getUserRatingsForIds(userId, ids) : new Map<number, number>();
+            return previews.map(p => {
+                const agg = aggregates.get(p.id);
+                const rating = agg && agg.count > 0
+                    ? { rating: Math.round(agg.average * 10) / 10, count: agg.count }
+                    : p.rating;
+                const userRating = userRatings.get(p.id);
+                return userRating !== undefined ? { ...p, rating, userRating } : { ...p, rating };
+            });
         } finally {
             unit.complete();
         }

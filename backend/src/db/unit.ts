@@ -202,6 +202,16 @@ class DB {
                 FOREIGN KEY (recipeId) REFERENCES Recipe(id)
             );
 
+            CREATE TABLE IF NOT EXISTS RecipeRating (
+                userId INTEGER NOT NULL,
+                recipeId INTEGER NOT NULL,
+                rating INTEGER NOT NULL CHECK (rating BETWEEN 1 AND 5),
+                createdAt DATETIME DEFAULT (datetime('now')),
+                PRIMARY KEY (userId, recipeId),
+                FOREIGN KEY (userId) REFERENCES User(id),
+                FOREIGN KEY (recipeId) REFERENCES Recipe(id)
+            );
+
             CREATE TABLE IF NOT EXISTS RecipeIngredient (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 recipeId INTEGER NOT NULL,
