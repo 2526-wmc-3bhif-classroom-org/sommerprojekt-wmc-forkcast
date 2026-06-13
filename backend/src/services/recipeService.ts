@@ -1,4 +1,4 @@
-import { RecipeWithDetails, RecipePreviewResponse, Ingredient } from '../types';
+import { RecipeWithDetails, RecipePreviewResponse, Ingredient, RecipeInstruction, RecipeInstructionsResponse } from '../types';
 import { LocalRecipeRepository } from '../repository/localRecipeRepository';
 import { RemoteRecipeRepository } from '../repository/remoteRecipeRepository';
 import { calculateEffortScore } from '../utils/effortScore';
@@ -95,6 +95,46 @@ export class RecipeService {
     async removeExpiredRecipes(): Promise<void> {
         await this.localRepo.removeExpiredRecipes();
     }
+
+    async getRecipeInstructions(id: number, userIp?: string): Promise<RecipeInstructionsResponse | undefined> {
+        const local = await this.localRepo.findInstructionsByRecipeId(id);
+        if (local.length > 0) {
+            return buildInstructionsResponse(id, local);
+        }
+
+        const instructions = await this.remoteRepo.getInstructions(id, userIp);
+
+        // Ensure recipe itself is cached (fetch if needed)
+        const localRecipe = await this.localRepo.findRecipeById(id);
+        if (!localRecipe) {
+            const remote = await this.remoteRepo.getRecipeById(id, userIp);
+            if (!remote) return undefined;
+            await this.localRepo.saveRecipeWithDetails(remote.recipe, remote.details, remote.ingredients);
+        }
+
+        if (instructions.length > 0) {
+            await this.localRepo.saveInstructions(id, instructions);
+        }
+
+        return buildInstructionsResponse(id, instructions);
+    }
+}
+
+function buildInstructionsResponse(recipeId: number, instructions: RecipeInstruction[]): RecipeInstructionsResponse {
+    const sectionsMap = new Map<string, RecipeInstructionsResponse['sections'][number]>();
+    for (const instr of instructions) {
+        if (!sectionsMap.has(instr.sectionName)) {
+            sectionsMap.set(instr.sectionName, { name: instr.sectionName, steps: [] });
+        }
+        sectionsMap.get(instr.sectionName)!.steps.push({
+            number: instr.stepNumber,
+            step: instr.stepText,
+            lengthMinutes: instr.lengthMinutes,
+            ingredients: instr.ingredients,
+            equipment: instr.equipment,
+        });
+    }
+    return { recipeId, sections: Array.from(sectionsMap.values()) };
 }
 
 function toRecipePreview(r: RecipeWithDetails, ingredients?: Ingredient[]): RecipePreviewResponse {

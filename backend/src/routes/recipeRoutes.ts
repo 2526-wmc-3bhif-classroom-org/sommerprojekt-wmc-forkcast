@@ -52,6 +52,23 @@ router.get("/",
     }
 });
 
+router.get("/:id/instructions",
+    param("id").isInt().withMessage("Recipe ID must be an integer").toInt(),
+    validateRequest,
+    async (req: AuthRequest, res: Response) => {
+    try {
+        const { id } = req.params;
+        const instructions = await recipeService.getRecipeInstructions(Number(id), req.ip);
+        if (!instructions) {
+            return ErrorResponse.notFound(res, "Recipe not found");
+        }
+        res.json(instructions);
+    } catch (e) {
+        console.error(e);
+        return ErrorResponse.internalServerError(res, "Failed to retrieve recipe instructions");
+    }
+});
+
 router.get("/:id",
     param("id").isInt().withMessage("Recipe ID must be an integer").toInt(),
     validateRequest,

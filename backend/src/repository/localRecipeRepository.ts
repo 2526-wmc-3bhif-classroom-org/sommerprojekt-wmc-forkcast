@@ -1,4 +1,4 @@
-import { Recipe, RecipeDetails, RecipeWithDetails, Ingredient } from '../types';
+import { Recipe, RecipeDetails, RecipeWithDetails, Ingredient, RecipeInstruction } from '../types';
 import { Unit } from "../db/unit";
 import { CACHE_TTL_MS } from "../app";
 
@@ -215,6 +215,45 @@ export class LocalRecipeRepository {
         const unit = new Unit(false);
         const cutoff = new Date(Date.now() - CACHE_TTL_MS).toISOString();
         unit.prepare<void>("DELETE FROM Recipe WHERE updatedAt <= :cutoff", { cutoff }).run();
+        unit.complete(true);
+    }
+
+    async findInstructionsByRecipeId(id: number): Promise<RecipeInstruction[]> {
+        const unit = new Unit(true);
+        type Row = { sectionName: string; stepNumber: number; stepText: string; lengthMinutes: number | null; ingredients: string; equipment: string };
+        const rows = unit.prepare<Row>(
+            `SELECT sectionName, stepNumber, stepText, lengthMinutes, ingredients, equipment FROM RecipeInstruction WHERE recipeId = :id ORDER BY sectionName, stepNumber`,
+            { id }
+        ).all();
+        unit.complete();
+        return rows.map(r => ({
+            sectionName: r.sectionName,
+            stepNumber: r.stepNumber,
+            stepText: r.stepText,
+            lengthMinutes: r.lengthMinutes,
+            ingredients: JSON.parse(r.ingredients ?? '[]'),
+            equipment: JSON.parse(r.equipment ?? '[]'),
+        }));
+    }
+
+    async saveInstructions(recipeId: number, instructions: RecipeInstruction[]): Promise<void> {
+        if (instructions.length === 0) return;
+        const unit = new Unit(false);
+        unit.prepare<void>('DELETE FROM RecipeInstruction WHERE recipeId = :recipeId', { recipeId }).run();
+        for (const instr of instructions) {
+            unit.prepare<void>(
+                `INSERT INTO RecipeInstruction (recipeId, sectionName, stepNumber, stepText, lengthMinutes, ingredients, equipment) VALUES (:recipeId, :sectionName, :stepNumber, :stepText, :lengthMinutes, :ingredients, :equipment)`,
+                {
+                    recipeId,
+                    sectionName: instr.sectionName,
+                    stepNumber: instr.stepNumber,
+                    stepText: instr.stepText,
+                    lengthMinutes: instr.lengthMinutes,
+                    ingredients: JSON.stringify(instr.ingredients ?? []),
+                    equipment: JSON.stringify(instr.equipment ?? []),
+                }
+            ).run();
+        }
         unit.complete(true);
     }
 }
