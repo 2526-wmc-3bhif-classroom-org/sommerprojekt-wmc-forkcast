@@ -34,7 +34,7 @@ router.get('/',
         }
 
         if (populate) {
-            result.foods = await favoriteService.populateWithRecipes(favorites, req.ip);
+            result.foods = await favoriteService.populateWithRecipes(favorites, userId, req.ip);
         }
         
         res.status(StatusCodes.OK).json(result);

@@ -26,11 +26,13 @@ export class FavoriteRepository {
     }
 
     public getTotalCount(userId: number): number {
-        const stmt = this.unit.prepare<number>(
-            "SELECT count(*) FROM FavoriteFood WHERE userId = :userId",
+        const stmt = this.unit.prepare<{ total: number }>(
+            "SELECT count(*) AS total FROM FavoriteFood WHERE userId = :userId",
             { userId }
-        )
-        return stmt.get() || 0;
+        );
+
+        const result = stmt.get();
+        return result ? result.total : 0;
     }
 
     public create(userId: number, recipeId: number): FavoriteFood {
