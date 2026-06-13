@@ -7,7 +7,10 @@ const data = computed(() => props.data as RecipePreview);
 
 const infoModal = ref();
 const favStore = useFavoritesStore();
-onMounted(() => favStore.load());
+onMounted(() => {
+  if (data.value?.isFavorited !== undefined) favStore.seedFromPayload(data.value.id, data.value.isFavorited);
+  else favStore.load();
+});
 const isFav = computed(() => data.value ? favStore.has(data.value.id) : false);
 
 const effortColors = {

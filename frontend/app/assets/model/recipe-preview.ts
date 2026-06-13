@@ -19,6 +19,7 @@ export type RecipePreview = {
     ingredients?: RecipeIngredient[];
     sourceName?: string | null;
     sourceUrl?: string | null;
+    isFavorited?: boolean;
 }
 
 export type RecipePreviewRating = {
