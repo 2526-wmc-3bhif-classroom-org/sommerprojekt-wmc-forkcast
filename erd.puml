@@ -2,25 +2,34 @@
 
 entity "User" {
   id : integer <<PK>>
-  name : string
-  email : string
+  --
+  name : string <<unique>>
+  email : string <<unique>>
   password : string
   profilePicture : string
+  isVerified : boolean
 }
 
 entity "Friend" {
+  userId : integer <<PK>> <<FK>>
+  friendId : integer <<PK>> <<FK>>
 }
 
-entity "Notification" {
-  type : string
-  content : string
-  isRead : boolean
+entity "FriendRequest" {
+  id : integer <<PK>>
+  --
+  fromUserId : integer <<FK>>
+  toUserId : integer <<FK>>
+  createdAt : string
 }
 
 entity "Recipe" {
   id : integer <<PK>>
+  --
   name : string
   image : string
+  sourceName : string
+  sourceUrl : string
   readyInMinutes : integer
   calories : integer
   servings : integer
@@ -31,12 +40,90 @@ entity "Recipe" {
   updatedAt : datetime
 }
 
+entity "RecipeDetails" {
+  recipeId : integer <<PK>> <<FK>>
+  --
+  readyInMinutes : integer
+  servings : integer
+  stepCount : integer
+  ingredientCount : integer
+  pricePerServing : real
+  effortScore : integer
+  rating : integer
+  aggregateLikes : integer
+  vegetarian / vegan / glutenFree / dairyFree : boolean
+  .. nutrition (calories, carbs, protein, fat, ..
+  .. vitamins, minerals — REAL columns) ..
+}
+
+entity "RecipeIngredient" {
+  id : integer <<PK>>
+  --
+  recipeId : integer <<FK>>
+  name : string
+  amount : real
+  unit : string
+  usAmount : real
+  usUnit : string
+  metricAmount : real
+  metricUnit : string
+}
+
+entity "RecipeInstruction" {
+  id : integer <<PK>>
+  --
+  recipeId : integer <<FK>>
+  sectionName : string
+  stepNumber : integer
+  stepText : string
+  lengthMinutes : integer
+  ingredients : json
+  equipment : json
+}
+
 entity "CalenderEntry" {
+  id : integer <<PK>>
+  --
   date : datetime
+  userId : integer <<FK>>
+  recipeId : integer <<FK>>
 }
 
 entity "FavoriteFood" {
+  userId : integer <<PK>> <<FK>>
+  recipeId : integer <<PK>> <<FK>>
 }
+
+entity "RecipeRating" {
+  userId : integer <<PK>> <<FK>>
+  recipeId : integer <<PK>> <<FK>>
+  --
+  rating : integer (1..5)
+  createdAt : datetime
+}
+
+entity "FilterGroup" {
+  id : integer <<PK>>
+  --
+  name : string <<unique>>
+  icon : string
+}
+
+entity "Filter" {
+  id : integer <<PK>>
+  --
+  groupId : integer <<FK>>
+  name : string <<unique>>
+  prettyName : string
+  type : string
+  min : real
+  max : real
+}
+
+User ||--o{ Friend : has friend
+User ||--o{ Friend : is friend
+User ||--o{ FriendRequest : sends
+User ||--o{ FriendRequest : receives
 
 User ||--o{ CalenderEntry
 Recipe ||--o{ CalenderEntry
@@ -44,9 +131,13 @@ Recipe ||--o{ CalenderEntry
 User ||--o{ FavoriteFood
 Recipe ||--o{ FavoriteFood
 
-User ||--o{ Notification
+User ||--o{ RecipeRating
+Recipe ||--o{ RecipeRating
 
-User ||--o{ Friend : has friend
-User ||--o{ Friend : is friend
+Recipe ||--|| RecipeDetails
+Recipe ||--o{ RecipeIngredient
+Recipe ||--o{ RecipeInstruction
+
+FilterGroup ||--o{ Filter
 
 @enduml
