@@ -1,21 +1,26 @@
 ﻿import {sendResetPasswordEmail, sendVerificationEmail} from "../utils/mailingUtils";
 import {generateCode} from "../utils";
+import {VERIFICATION_CODE_TTL_MS} from "../app";
 
-const verificationCodeMap: Map<string, number> = new Map();
-const passwordResetCodeMap: Map<string, number> = new Map();
+const verificationCodeMap: Map<string, { code: number, expiresAt: number }> = new Map();
+const passwordResetCodeMap: Map<string, { code: number, expiresAt: number }> = new Map();
 
 export function sendEmail(email: string, lang: string = 'en'): Promise<void> {
     const code = generateCode()
-    verificationCodeMap.set(email, code)
+    verificationCodeMap.set(email, { code, expiresAt: Date.now() + VERIFICATION_CODE_TTL_MS })
     return sendVerificationEmail(email, code.toString(), lang)
 }
 
 export function verifyCode(email: string, code: string): boolean {
-    const expectedCode = verificationCodeMap.get(email)
-    if (!expectedCode) {
+    const entry = verificationCodeMap.get(email)
+    if (!entry) {
         return false
     }
-    if (code !== expectedCode.toString()) {
+    if (Date.now() > entry.expiresAt) {
+        verificationCodeMap.delete(email)
+        return false
+    }
+    if (code !== entry.code.toString()) {
         return false
     }
     verificationCodeMap.delete(email)
@@ -24,16 +29,20 @@ export function verifyCode(email: string, code: string): boolean {
 
 export function sendPasswordResetEmail(email: string, lang: string = 'en'): Promise<void> {
     const code = generateCode()
-    passwordResetCodeMap.set(email, code)
+    passwordResetCodeMap.set(email, { code, expiresAt: Date.now() + VERIFICATION_CODE_TTL_MS })
     return sendResetPasswordEmail(email, code.toString(), lang)
 }
 
 export function verifyPasswordResetCode(email: string, code: string): boolean {
-    const expectedCode = passwordResetCodeMap.get(email)
-    if (!expectedCode) {
+    const entry = passwordResetCodeMap.get(email)
+    if (!entry) {
         return false
     }
-    if (code !== expectedCode.toString()) {
+    if (Date.now() > entry.expiresAt) {
+        passwordResetCodeMap.delete(email)
+        return false
+    }
+    if (code !== entry.code.toString()) {
         return false
     }
     passwordResetCodeMap.delete(email)
