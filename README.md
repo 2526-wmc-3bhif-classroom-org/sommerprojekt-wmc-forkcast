@@ -57,8 +57,7 @@ sommerprojekt-wmc-forkcast/
 ├── frontend/   # Nuxt 4 client
 ├── backend/    # Express REST API + SQLite
 ├── .github/    # CI: Pages deploy, backend Docker build
-├── erd.puml    # entity-relationship diagram source
-└── mockup.png
+└── erd.puml    # entity-relationship diagram source
 ```
 
 ## Quick Start
@@ -72,11 +71,14 @@ cp example.env .env        # then fill in JWT_SECRET, SPOONACULAR_API_KEY, ...
 npm install
 npm start
 
-# 2. Frontend (Nuxt dev server on :3000 by default — set a different port if needed)
+# 2. Frontend (Nuxt dev server on :8080 — matches the backend's default CORS_ORIGIN)
 cd frontend
 npm install
-API_BASE_URL=http://localhost:3000/api npm run dev
+npm run dev -- --port 8080
 ```
+
+The frontend reads the API base URL from `API_BASE_URL` (defaults to
+`http://localhost:3000/api`), so no override is needed with the backend on :3000.
 
 See [`backend/README.md`](backend/README.md) and [`frontend/README.md`](frontend/README.md) for details.
 
@@ -99,4 +101,4 @@ Core tables: `User`, `Friend`, `FriendRequest`, `CalenderEntry`, `Recipe`,
 `RecipeDetails`, `RecipeIngredient`, `RecipeInstruction`, `RecipeRating`,
 `FavoriteFood`, `FilterGroup`, `Filter`.
 
-![ERD](https://www.plantuml.com/plantuml/png/fLLHJzj037xFhpZn118jsiDU9eH0Z4ve3A6oxlr8tE0jkSjylewAJjgFs2_SBzbT0stSQyacNfhc-puxji_sdJhMnBwkiWmC8y_LtiG1xQd7J2air3k5Xg44KiV7DnzFJW8w68GVesi8f6D2KmRE6_pkOSb3hR7QmJNQkH-MYXKTCR9JhE06S_O4NGRT5o2S8aJzdRKLQ9FzN4Sw8WHJjB5w1tIPnXiUepRiwLAyMv8w7aC8st5lBQPawqdw-QVlijtDvGIQeJZZTTQTACQGOmF_TnHHMkjI0Cvwok4wo59qGbKN9D35_D9yGkCPtFgJCLPTMS8Dq07DWgK4P-79cb2RzR6ry0PILfx1Z0X0m8L6cYUeRufLhU8_nXhIQhq7rbYvjcYqX5xiYi4WoRe_GSVGd5jlMA11Hb0W64wvXZ276w3RrbtW27GL29XEBV5jRWc40MaEEW7fClWlDSCLVeET5J-AB_7PhUxHZfeEXyfu9cIqHkq_d_2XoZNTXKT3bW7DePfgFWpYrcA6h6iqWG-_GBfowi-ltsfySNQbSblvshY3e4lFvd9Le9wUbYSdXoRjTrt7SgzBwWrob_VkR5FX9XkQ6fWm5xeLAhLRiWgCpsC9NvMMWwMFP4mPccjVtm4bBVWP7aGI5PYIxqKN9wqPyQ_EcW26xOPD7R0dg9lQkGxE2g0BmpJlJIkEOtSgnJQMQUukWTY_UcO96KRM_kjwxvtrvE36on5xjNknIfAvLVjlXiEt1tBNRzrV8wmOw0DPtxpcziNScXML-kzrNSO0UWSlkTS9cEURlSlpHhpNQ3h3fH-UNqAKyOvKYyLWO1zLU_i6ybwxfsjxEuzRQN5vny-7D_UYWY07d86JOOWPoDgUsSu9isxlIYj92QDkHqeZINMvnKA9Eo-r4pitfUNooh9E1pwhMYZBJaEslgwolm00)
+![ERD](https://www.plantuml.com/plantuml/png/hLN1Jjmm4BtdAonE8B5RzT1BXH28iXKgHMZfzcwIsJ1jR8VnUCiAAlKZ-eNzaauIkXix2zkANfBulUV96tl6FlAiYOEfiWmi8o_Lpim3xQZxJ2air5k5bg44KWS7bnyE3mKTZUHXjG4XFHFQKhXWyJP0ouFHM3t1rThxRuwA5TrWvEPOmINc70Zw3FhFG3X7QFJNpbMWRVPzxNH22BRel0OFT3RqAwz9PtlUYf-H309FGMnxtheMSt9cbln-_LzsJtCvWMOeZdcTTS_557AiuT-sef4QNKQ0Tu5okD1c0pgZgW-6kbWPQhuO3GmjlGFMMFdE6RNGiqlVsYJGnVBCVaGR6FnQtLW1MiZ_4v2XFd71SeIAZA10i3paQi8SBe6kkd324UXA29ZF7V5LxWYY2QHPT16aIubVQePp_9guNCYRDQ6swbKpQDzb5HZiX01aK6YaPVkzBbUbncCbAHCoEgjsSrqvGl3xAjTqBIyfVmQq-sgkUL_4tOm5iZPeXPSdaAwy-lNZfvgU7f-ht5N1MBydkk7UdAqMQ4lXn3kNLcPQLDeqoxrUqc2HeyBnnwd2pnAD0VdAKrs7njeDMGaJycO9NvIMXpR6e1SOwejWhe469VW9xg8aAh0btyHLd9PcWt_npWe8jm5h8zWZr4_jH4km0kZKCYstfjMqOxyhaoClIdFp4gI7d5uuGeQ9StztXcxlzU76JTiM-p_XrpkSzAtQVJqUlzbB3jHDvzS4AmPwJoxKBxdYC7TsHGtZRmrTDWQsDrvwUH8mBzFQvMKTZGtQNdFfkyT1uxAvYDJ3msZaxbLtnGbve_tZtRYPnurqT4CslvUHVrP1a0CkmCSseXx8kfhPoCNJ-hKRpugeU5A_8fD94HLn3ogwyz9voPcRqkdXbMMz2loZwg0iEv9iWwcotm00)
