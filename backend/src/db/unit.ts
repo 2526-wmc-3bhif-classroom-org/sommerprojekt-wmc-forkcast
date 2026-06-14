@@ -168,21 +168,22 @@ class DB {
                 FOREIGN KEY (recipeId) REFERENCES Recipe(id) ON DELETE CASCADE
             );
 
-            CREATE TABLE IF NOT EXISTS Notification (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                type TEXT NOT NULL,
-                content TEXT NOT NULL,
-                isRead BOOLEAN NOT NULL DEFAULT 0,
-                userId INTEGER NOT NULL,
-                FOREIGN KEY (userId) REFERENCES User(id)
-            );
-
             CREATE TABLE IF NOT EXISTS Friend (
                 userId INTEGER NOT NULL,
                 friendId INTEGER NOT NULL,
                 PRIMARY KEY (userId, friendId),
                 FOREIGN KEY (userId) REFERENCES User(id),
                 FOREIGN KEY (friendId) REFERENCES User(id)
+            );
+
+            CREATE TABLE IF NOT EXISTS FriendRequest (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                fromUserId INTEGER NOT NULL,
+                toUserId INTEGER NOT NULL,
+                createdAt TEXT NOT NULL,
+                UNIQUE (fromUserId, toUserId),
+                FOREIGN KEY (fromUserId) REFERENCES User(id),
+                FOREIGN KEY (toUserId) REFERENCES User(id)
             );
 
             CREATE TABLE IF NOT EXISTS CalenderEntry (

@@ -186,13 +186,28 @@ components:
           format: password
           minLength: 8
           description: Must contain at least one uppercase letter, one lowercase letter, one number and one special character
-    AddFriendRequest:
+    SendFriendRequest:
       type: object
       required:
-        - friendId
+        - username
       properties:
-        friendId:
-          type: integer
+        username:
+          type: string
+    SendFriendRequestResult:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [pending, accepted]
+        user:
+          $ref: '#/components/schemas/PublicUser'
+    IncomingFriendRequest:
+      allOf:
+        - $ref: '#/components/schemas/PublicUser'
+        - type: object
+          properties:
+            requestId:
+              type: integer
     AddFavoriteRequest:
       type: object
       required:
@@ -251,13 +266,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ShoppingListIngredient'
-    UpdateNotificationRequest:
-      type: object
-      required:
-        - isRead
-      properties:
-        isRead:
-          type: boolean
     ValidationErrorItem:
       type: object
       properties:
@@ -830,28 +838,93 @@ paths:
           description: Missing or invalid authentication
         '500':
           description: Internal server error
+  /users/me/friends/requests:
+    get:
+      summary: Get incoming (non-expired) friend requests
+      tags: [Friends]
+      responses:
+        '200':
+          description: Incoming friend requests
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/IncomingFriendRequest'
+        '401':
+          description: Missing or invalid authentication
+        '500':
+          description: Internal server error
     post:
-      summary: Add a friend
+      summary: Send a friend request by username
       tags: [Friends]
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AddFriendRequest'
+              $ref: '#/components/schemas/SendFriendRequest'
       responses:
         '201':
-          description: Friend added successfully
+          description: Friend request sent (pending)
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Friend'
-        '400':
-          description: Invalid request body, user not found, or adding self
+                $ref: '#/components/schemas/SendFriendRequestResult'
+        '200':
+          description: Auto-accepted because the target had already requested you
           content:
-             application/json:
-               schema:
-                 $ref: '#/components/schemas/ValidationErrorResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SendFriendRequestResult'
+        '400':
+          description: Invalid request body or adding self
+        '404':
+          description: Username not found
+        '409':
+          description: Already friends or request already sent
+        '401':
+          description: Missing or invalid authentication
+        '500':
+          description: Internal server error
+  /users/me/friends/requests/{id}/accept:
+    post:
+      summary: Accept an incoming friend request
+      tags: [Friends]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Request accepted; returns the new friend's profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicUser'
+        '404':
+          description: Friend request not found
+        '401':
+          description: Missing or invalid authentication
+        '500':
+          description: Internal server error
+  /users/me/friends/requests/{id}/decline:
+    post:
+      summary: Decline an incoming friend request
+      tags: [Friends]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Request declined
+        '404':
+          description: Friend request not found
         '401':
           description: Missing or invalid authentication
         '500':
@@ -1140,32 +1213,3 @@ paths:
            description: Missing or invalid authentication
         '500':
            description: Internal server error
-  /users/me/notifications/{notificationId}:
-    put:
-      summary: Mark notification as read
-      tags: [Notifications]
-      parameters:
-        - in: path
-          name: notificationId
-          required: true
-          schema:
-            type: integer
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UpdateNotificationRequest'
-      responses:
-        '200':
-          description: Notification updated
-        '400':
-           description: Invalid request body
-           content:
-             application/json:
-               schema:
-                 $ref: '#/components/schemas/ValidationErrorResponse'
-        '401':
-          description: Missing or invalid authentication
-        '500':
-          description: Internal server error

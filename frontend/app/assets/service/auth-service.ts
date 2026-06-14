@@ -2,10 +2,16 @@ import type {User} from "~/assets/model/user";
 import useApiConnection from "~/assets/util/api-connector";
 import type {AuthResponse} from "~/assets/model/auth-response";
 import {useAuthStore} from "~/assets/store/auth-store";
+import {useCalendarStore} from "~/assets/store/calendar-store";
+import {useFavoritesStore} from "~/assets/store/favorites-store";
+import {useRecipeStore} from "~/assets/store/recipe-store";
 
 export default function useAuthService() {
     const connection = useApiConnection();
     const authStore = useAuthStore();
+    const calendarStore = useCalendarStore();
+    const favoritesStore = useFavoritesStore();
+    const recipeStore = useRecipeStore();
 
     const loading = computed(() => authStore.loading);
     const authenticated = computed(() => !authStore.loading && authStore.jwt !== undefined);
@@ -14,6 +20,9 @@ export default function useAuthService() {
     async function clearAuthState() {
         authStore.user = undefined;
         authStore.jwt = undefined;
+        calendarStore.clear();
+        favoritesStore.clear();
+        recipeStore.clear();
     }
 
     async function setAuthState(res: AuthResponse) {

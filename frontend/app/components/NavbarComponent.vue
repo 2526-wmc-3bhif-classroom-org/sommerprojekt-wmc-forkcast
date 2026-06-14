@@ -71,43 +71,6 @@ function onCalendarClick(event: Event) {
       </div>
       <div class="dropdown dropdown-end">
         <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar">
-          <i class="fa-solid fa-bell"/>
-        </div>
-        <div tabindex="0" class="card card-compact dropdown-content bg-base-100 z-1 mt-3 w-96 p-2 shadow">
-          <div class="flex flex-row justify-between">
-            <button class="btn btn-ghost btn-circle"><i class="fa-solid fa-bell-slash"/></button>
-            <button class="btn btn-ghost btn-circle"><i class="fa-solid fa-trash-can"/></button>
-          </div>
-          <ul>
-            <li>
-              <notification-component
-                  icon="fa-triangle-exclamation"
-                  title="Notification 1"
-                  description="This is a notification"
-                  goto="/"
-              />
-            </li>
-            <li>
-              <notification-component
-                  icon="fa-triangle-exclamation"
-                  title="Notification 2"
-                  description="This is a notification"
-                  goto="/"
-              />
-            </li>
-            <li>
-              <notification-component
-                  icon="fa-triangle-exclamation"
-                  title="Notification 3"
-                  description="This is a notification"
-                  goto="/"
-              />
-            </li>
-          </ul>
-        </div>
-      </div>
-      <div class="dropdown dropdown-end">
-        <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar">
           <i class="fa-solid fa-user"/>
         </div>
         <ul tabindex="-1" class="menu menu-md dropdown-content bg-base-100 rounded-box z-1 mt-3 p-2 shadow min-w-max w-40">

@@ -32,6 +32,14 @@ export const useRecipeStore = defineStore('recipeStore', () => {
     authStore.jwt = undefined;
   }
 
+  // Drop cached recipes/searches; previews carry per-user isFavorited/userRating fields.
+  function clear() {
+    for (const key of Object.keys(byId)) delete byId[key as any];
+    for (const key of Object.keys(bySearch)) delete bySearch[key];
+    inflightById.clear();
+    inflightSearch.clear();
+  }
+
   async function getRecipe(id: number): Promise<ApiResponse<RecipePreview>> {
     if (!authenticated.value) return NOT_AUTH;
     if (byId[id]) return { ok: true, needsAuth: false, rateLimited: false, value: byId[id] };
@@ -75,5 +83,5 @@ export const useRecipeStore = defineStore('recipeStore', () => {
     return r;
   }
 
-  return { byId, bySearch, filtersCache, getRecipe, search, getFilters };
+  return { byId, bySearch, filtersCache, getRecipe, search, getFilters, clear };
 });

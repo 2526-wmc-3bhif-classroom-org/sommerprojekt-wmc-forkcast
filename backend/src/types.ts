@@ -116,17 +116,23 @@ export interface RecipePreviewResponse {
     userRating?: number;
 }
 
-export interface Notification {
+export interface FriendRequest {
     id: number;
-    type: string;
-    content: string;
-    isRead: boolean;
-    userId: number;
+    fromUserId: number;
+    toUserId: number;
+    createdAt: string;
 }
 
 export interface Friend {
     userId: number;
     friendId: number;
+}
+
+export interface PublicUser {
+    id: number;
+    name: string;
+    profilePicture: string | null;
+    isVerified: boolean;
 }
 
 export interface CalendarEntry {

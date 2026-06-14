@@ -26,6 +26,13 @@ export const useFavoritesStore = defineStore('favoritesStore', () => {
     return ids.value.has(recipeId);
   }
 
+  // Drop cached favorite state so a different user can't inherit it.
+  function clear() {
+    ids.value = new Set();
+    seeded.value = new Set();
+    loaded.value = false;
+  }
+
   function seedFromPayload(recipeId: number, isFavorited: boolean) {
     if (isFavorited) ids.value.add(recipeId);
     else ids.value.delete(recipeId);
@@ -67,6 +74,6 @@ export const useFavoritesStore = defineStore('favoritesStore', () => {
     };
   }
 
-  return { ids, loaded, load, has, seedFromPayload, toggle, getPopulated };
+  return { ids, loaded, load, has, seedFromPayload, toggle, getPopulated, clear };
 })
 
