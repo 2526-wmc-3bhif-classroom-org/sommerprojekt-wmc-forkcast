@@ -11,8 +11,11 @@ const codeRefs = ref<(HTMLInputElement | null)[]>([null, null, null, null, null,
 
 const password = ref<HTMLInputElement>();
 
-const passwordError = ref<HTMLSpanElement>();
-const mainError = ref<HTMLSpanElement>();
+const passwordError = ref("");
+const mainError = ref("");
+
+const showPassword = ref(false);
+const loading = ref(false);
 
 const authService = useAuthService();
 const failureHandler = useFailureHandler();
@@ -22,15 +25,15 @@ const localePath = useLocalePath();
 const router = useRouter();
 
 failureHandler.addHandler("password", (message) => {
-  if (passwordError.value) passwordError.value.innerText = message;
+  passwordError.value = message;
 });
 
 failureHandler.addHandler("code", (message) => {
-  if (mainError.value) mainError.value.innerText = message;
+  mainError.value = message;
 });
 
 failureHandler.setMainHandler(message => {
-  if (mainError.value) mainError.value.innerText = message;
+  mainError.value = message;
 });
 
 async function reset() {
@@ -44,7 +47,9 @@ async function reset() {
     return;
   }
 
+  loading.value = true;
   const failure = await authService.resetPassword(props.enteredEmail, codeStr, password.value.value);
+  loading.value = false;
   if (!failure.ok) {
     failureHandler.fail(failure.failure as Failure);
     return;
@@ -154,10 +159,7 @@ function onPaste(e: ClipboardEvent) {
 
 <template>
   <form class="fieldset w-full" @submit.prevent>
-    <label class="label">
-      <i class="fa-solid fa-hashtag"/>
-      <span>{{$t('forgot.code')}}</span>
-    </label>
+    <label class="label">{{$t('forgot.code')}}</label>
     <div class="inline-flex justify-between">
       <input
         v-for="idx in 6"
@@ -176,21 +178,28 @@ function onPaste(e: ClipboardEvent) {
         @mousedown="onBoxClick"
       />
     </div>
-    <label class="label">
-      <i class="fa-solid fa-key"/>
-      <span>{{$t('forgot.new_password')}}</span>
+
+    <label class="label">{{$t('forgot.new_password')}}</label>
+    <label class="input w-full">
+      <i class="fa-solid fa-key opacity-50"/>
+      <input ref="password" autocomplete="new-password" :type="showPassword ? 'text' : 'password'" class="grow" placeholder="••••••••" @keyup.enter="reset" />
+      <button type="button" tabindex="-1" class="opacity-50 hover:opacity-100 cursor-pointer" @click="showPassword = !showPassword">
+        <i :class="showPassword ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'"/>
+      </button>
     </label>
-    <label class="label text-error text-wrap">
-      <i v-if="failureHandler.has('password')" class="fa-solid fa-triangle-exclamation"/>
-      <span ref="passwordError"></span>
-    </label>
-    <input ref="password" autocomplete="new-password" type="password" class="input w-full" :placeholder="$t('forgot.new_password')" />
-    <label class="label text-error">
-      <i v-if="failureHandler.hasMain() || failureHandler.has('code')" class="fa-solid fa-triangle-exclamation"/>
-      <span ref="mainError"></span>
-    </label>
-    <button class="btn btn-primary mt-4" @click="reset">
-      <i class="fa-solid fa-arrow-right-to-bracket"/>
+    <Transition name="error-reveal">
+      <p v-if="passwordError" class="label text-error gap-1 text-wrap">
+        <i class="fa-solid fa-triangle-exclamation"/><span>{{ passwordError }}</span>
+      </p>
+    </Transition>
+    <Transition name="error-reveal">
+      <p v-if="mainError" class="label text-error gap-1 text-wrap">
+        <i class="fa-solid fa-triangle-exclamation"/><span>{{ mainError }}</span>
+      </p>
+    </Transition>
+    <button class="btn btn-primary mt-4" :disabled="loading" @click="reset">
+      <span v-if="loading" class="loading loading-spinner loading-sm"/>
+      <i v-else class="fa-solid fa-arrow-right-to-bracket"/>
       <span>{{$t('forgot.submit')}}</span>
     </button>
   </form>

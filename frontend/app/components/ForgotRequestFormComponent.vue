@@ -7,19 +7,21 @@ const emit = defineEmits(["continue"]);
 
 const email = ref<HTMLInputElement>();
 
-const emailError = ref<HTMLSpanElement>();
-const mainError = ref<HTMLSpanElement>();
+const emailError = ref("");
+const mainError = ref("");
+
+const loading = ref(false);
 
 const authService = useAuthService();
 const failureHandler = useFailureHandler();
 const { t, locale } = useI18n();
 
 failureHandler.addHandler("email", (message) => {
-  emailError.value!!.innerText = message;
+  emailError.value = message;
 });
 
 failureHandler.setMainHandler(message => {
-  mainError.value!!.innerText = message;
+  mainError.value = message;
 });
 
 async function request() {
@@ -29,7 +31,9 @@ async function request() {
   }
 
   const emailValue = email.value.value;
+  loading.value = true;
   const failure = await authService.forgotPassword(emailValue, locale.value);
+  loading.value = false;
   if (!failure.ok) {
     failureHandler.fail(failure.failure as Failure);
     return;
@@ -41,21 +45,24 @@ async function request() {
 
 <template>
   <form class="fieldset w-full" onsubmit="return false">
-    <label class="label">
-      <i class="fa-solid fa-at"/>
-      <span>{{$t('forgot.email')}}</span>
+    <label class="label">{{$t('forgot.email')}}</label>
+    <label class="input w-full">
+      <i class="fa-solid fa-at opacity-50"/>
+      <input ref="email" autocomplete="email" type="email" class="grow" placeholder="you@example.com" @keyup.enter="request" />
     </label>
-    <label class="label text-error text-wrap">
-      <i v-if="failureHandler.has('email')" class="fa-solid fa-triangle-exclamation"/>
-      <span ref="emailError"></span>
-    </label>
-    <input ref="email" autocomplete="email" type="email" class="input w-full" :placeholder="$t('forgot.email')" />
-    <label class="label text-error">
-      <i v-if="failureHandler.hasMain()" class="fa-solid fa-triangle-exclamation"/>
-      <span ref="mainError"></span>
-    </label>
-    <button class="btn btn-primary mt-4" @click="request">
-      <i class="fa-solid fa-paper-plane"/>
+    <Transition name="error-reveal">
+      <p v-if="emailError" class="label text-error gap-1 text-wrap">
+        <i class="fa-solid fa-triangle-exclamation"/><span>{{ emailError }}</span>
+      </p>
+    </Transition>
+    <Transition name="error-reveal">
+      <p v-if="mainError" class="label text-error gap-1 text-wrap">
+        <i class="fa-solid fa-triangle-exclamation"/><span>{{ mainError }}</span>
+      </p>
+    </Transition>
+    <button class="btn btn-primary mt-4" :disabled="loading" @click="request">
+      <span v-if="loading" class="loading loading-spinner loading-sm"/>
+      <i v-else class="fa-solid fa-paper-plane"/>
       <span>{{$t('forgot.send')}}</span>
     </button>
     <div class="mt-2">

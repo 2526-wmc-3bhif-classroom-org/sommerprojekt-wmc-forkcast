@@ -28,6 +28,9 @@ const passwordSuccess = ref(false);
 const passwordError = ref('');
 const usernameLoading = ref(false);
 const passwordLoading = ref(false);
+const showCurrentPassword = ref(false);
+const showNewPassword = ref(false);
+const showConfirmPassword = ref(false);
 
 function openEditModal() {
   newUsername.value = '';
@@ -324,29 +327,34 @@ async function removeFriend() {
         <!-- Add friend by username -->
         <div class="px-4 py-3 border-b border-base-200 shrink-0">
           <div class="flex gap-2">
-            <input
-                v-model="addUsername"
-                type="text"
-                autocomplete="off"
-                data-1p-ignore
-                data-lpignore="true"
-                data-bwignore
-                :placeholder="$t('page.account.add_friend.placeholder')"
-                class="input input-sm flex-1"
-                @keyup.enter="sendFriendRequest"
-            />
+            <label class="input input-sm flex-1">
+              <i class="fa-solid fa-user opacity-50" />
+              <input
+                  v-model="addUsername"
+                  type="text"
+                  autocomplete="off"
+                  data-1p-ignore
+                  data-lpignore="true"
+                  data-bwignore
+                  :placeholder="$t('page.account.add_friend.placeholder')"
+                  class="grow"
+                  @keyup.enter="sendFriendRequest"
+              />
+            </label>
             <button @click="sendFriendRequest" :disabled="addLoading" class="btn btn-primary btn-sm">
               <span v-if="addLoading" class="loading loading-spinner loading-xs" />
               <i v-else class="fa-solid fa-user-plus" />
               {{ $t('page.account.add_friend.button') }}
             </button>
           </div>
-          <p v-if="addError" class="text-error text-sm mt-2">
-            <i class="fa-solid fa-triangle-exclamation mr-1" />{{ addError }}
-          </p>
-          <p v-else-if="addSuccess" class="text-success text-sm mt-2">
-            <i class="fa-solid fa-circle-check mr-1" />{{ addSuccess }}
-          </p>
+          <Transition name="error-reveal" mode="out-in">
+            <p v-if="addError" class="text-error text-sm mt-2">
+              <i class="fa-solid fa-triangle-exclamation mr-1" />{{ addError }}
+            </p>
+            <p v-else-if="addSuccess" class="text-success text-sm mt-2">
+              <i class="fa-solid fa-circle-check mr-1" />{{ addSuccess }}
+            </p>
+          </Transition>
         </div>
 
         <!-- Incoming friend requests -->
@@ -471,19 +479,21 @@ async function removeFriend() {
         <h3 class="font-bold text-lg">{{ $t('page.modifyprofile.username.title') }}</h3>
       </div>
       <form class="fieldset w-full" onsubmit="return false">
-        <label class="label">
-          <i class="fa-solid fa-user" />
-          <span>{{ $t('page.modifyprofile.username.label') }}</span>
+        <label class="label">{{ $t('page.modifyprofile.username.label') }}</label>
+        <label class="input w-full">
+          <i class="fa-solid fa-user opacity-50" />
+          <input v-model="newUsername" type="text" :placeholder="$t('page.modifyprofile.username.placeholder')" class="grow" @keyup.enter="saveUsername" />
         </label>
-        <input v-model="newUsername" type="text" :placeholder="$t('page.modifyprofile.username.placeholder')" class="input w-full" @keyup.enter="saveUsername" />
-        <label v-if="usernameError" class="label text-error">
-          <i class="fa-solid fa-triangle-exclamation" />
-          <span>{{ usernameError }}</span>
-        </label>
-        <label v-if="usernameSuccess" class="label text-success">
-          <i class="fa-solid fa-circle-check" />
-          <span>{{ $t('page.modifyprofile.username.success') }}</span>
-        </label>
+        <Transition name="error-reveal">
+          <p v-if="usernameError" class="label text-error gap-1 text-wrap">
+            <i class="fa-solid fa-triangle-exclamation" /><span>{{ usernameError }}</span>
+          </p>
+        </Transition>
+        <Transition name="error-reveal">
+          <p v-if="usernameSuccess" class="label text-success gap-1">
+            <i class="fa-solid fa-circle-check" /><span>{{ $t('page.modifyprofile.username.success') }}</span>
+          </p>
+        </Transition>
         <button @click="saveUsername" :disabled="usernameLoading" class="btn btn-primary mt-4 w-full">
           <span v-if="usernameLoading" class="loading loading-spinner loading-sm" />
           <i v-else class="fa-solid fa-user-pen" />
@@ -506,29 +516,40 @@ async function removeFriend() {
       <form class="fieldset w-full" onsubmit="return false">
         <!-- Hidden username for accessibility / password managers -->
         <input type="text" autocomplete="username" :value="user?.email" class="hidden" tabindex="-1" aria-hidden="true" readonly />
-        <label class="label">
-          <i class="fa-solid fa-key" />
-          <span>{{ $t('page.modifyprofile.password.current') }}</span>
+        <label class="label">{{ $t('page.modifyprofile.password.current') }}</label>
+        <label class="input w-full">
+          <i class="fa-solid fa-key opacity-50" />
+          <input v-model="currentPassword" :type="showCurrentPassword ? 'text' : 'password'" autocomplete="current-password" :placeholder="$t('page.modifyprofile.password.current_placeholder')" class="grow" />
+          <button type="button" tabindex="-1" class="opacity-50 hover:opacity-100 cursor-pointer" @click="showCurrentPassword = !showCurrentPassword">
+            <i :class="showCurrentPassword ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'" />
+          </button>
         </label>
-        <input v-model="currentPassword" type="password" autocomplete="current-password" :placeholder="$t('page.modifyprofile.password.current_placeholder')" class="input w-full" />
-        <label class="label">
-          <i class="fa-solid fa-lock" />
-          <span>{{ $t('page.modifyprofile.password.new') }}</span>
+        <label class="label">{{ $t('page.modifyprofile.password.new') }}</label>
+        <label class="input w-full">
+          <i class="fa-solid fa-lock opacity-50" />
+          <input v-model="newPassword" :type="showNewPassword ? 'text' : 'password'" autocomplete="new-password" :placeholder="$t('page.modifyprofile.password.new_placeholder')" class="grow" />
+          <button type="button" tabindex="-1" class="opacity-50 hover:opacity-100 cursor-pointer" @click="showNewPassword = !showNewPassword">
+            <i :class="showNewPassword ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'" />
+          </button>
         </label>
-        <input v-model="newPassword" type="password" autocomplete="new-password" :placeholder="$t('page.modifyprofile.password.new_placeholder')" class="input w-full" />
-        <label class="label">
-          <i class="fa-solid fa-lock-open" />
-          <span>{{ $t('page.modifyprofile.password.confirm') }}</span>
+        <label class="label">{{ $t('page.modifyprofile.password.confirm') }}</label>
+        <label class="input w-full">
+          <i class="fa-solid fa-lock-open opacity-50" />
+          <input v-model="confirmPassword" :type="showConfirmPassword ? 'text' : 'password'" autocomplete="new-password" :placeholder="$t('page.modifyprofile.password.confirm_placeholder')" class="grow" @keyup.enter="savePassword" />
+          <button type="button" tabindex="-1" class="opacity-50 hover:opacity-100 cursor-pointer" @click="showConfirmPassword = !showConfirmPassword">
+            <i :class="showConfirmPassword ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'" />
+          </button>
         </label>
-        <input v-model="confirmPassword" type="password" autocomplete="new-password" :placeholder="$t('page.modifyprofile.password.confirm_placeholder')" class="input w-full" @keyup.enter="savePassword" />
-        <label v-if="passwordError" class="label text-error">
-          <i class="fa-solid fa-triangle-exclamation" />
-          <span>{{ passwordError }}</span>
-        </label>
-        <label v-if="passwordSuccess" class="label text-success">
-          <i class="fa-solid fa-circle-check" />
-          <span>{{ $t('page.modifyprofile.password.success') }}</span>
-        </label>
+        <Transition name="error-reveal">
+          <p v-if="passwordError" class="label text-error gap-1 text-wrap">
+            <i class="fa-solid fa-triangle-exclamation" /><span>{{ passwordError }}</span>
+          </p>
+        </Transition>
+        <Transition name="error-reveal">
+          <p v-if="passwordSuccess" class="label text-success gap-1">
+            <i class="fa-solid fa-circle-check" /><span>{{ $t('page.modifyprofile.password.success') }}</span>
+          </p>
+        </Transition>
         <button @click="savePassword" :disabled="passwordLoading" class="btn btn-primary mt-4 w-full">
           <span v-if="passwordLoading" class="loading loading-spinner loading-sm" />
           <i v-else class="fa-solid fa-key" />

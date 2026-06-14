@@ -69,6 +69,15 @@
     opacity: 0;
 }
 
+/* Inline form error: slide + fade in below the field. */
+.error-reveal-enter-active, .error-reveal-leave-active {
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.error-reveal-enter-from, .error-reveal-leave-to {
+    opacity: 0;
+    transform: translateY(-4px);
+}
+
 /* Scroll-driven parallax for showcase media. Scaled so the vertical drift
    never exposes the edges of the container. Static where unsupported. */
 @keyframes parallax-media {

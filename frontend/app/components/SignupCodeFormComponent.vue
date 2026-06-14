@@ -10,7 +10,8 @@ const code = ref(["", "", "", "", "", ""]);
 const codeRefs = ref<(HTMLInputElement | null)[]>([null, null, null, null, null, null]);
 const isPasting = ref(false);
 
-const mainError = ref<HTMLSpanElement>();
+const mainError = ref("");
+const loading = ref(false);
 
 const authService = useAuthService();
 const failureHandler = useFailureHandler();
@@ -20,11 +21,11 @@ const localePath = useLocalePath();
 const router = useRouter();
 
 failureHandler.addHandler("code", (message) => {
-  if (mainError.value) mainError.value.innerText = message;
+  mainError.value = message;
 });
 
 failureHandler.setMainHandler(message => {
-  if (mainError.value) mainError.value.innerText = message;
+  mainError.value = message;
 });
 
 async function verify() {
@@ -33,7 +34,9 @@ async function verify() {
     failureHandler.fail({ message: t('error.enter_code') } as Failure);
     return;
   }
+  loading.value = true;
   const failure = await authService.verify(props.enteredEmail, props.enteredPassword, codeStr);
+  loading.value = false;
   if (!failure.ok) {
     failureHandler.fail(failure.failure as Failure);
     return;
@@ -183,12 +186,14 @@ function onPaste(e: ClipboardEvent) {
         @mousedown="onBoxClick"
       />
     </div>
-    <label class="label text-error">
-      <i v-if="failureHandler.hasMain() || failureHandler.has('code')" class="fa-solid fa-triangle-exclamation"/>
-      <span ref="mainError"></span>
-    </label>
-    <button class="btn btn-primary mt-4" @click="verify">
-      <i class="fa-solid fa-arrow-right-to-bracket"/>
+    <Transition name="error-reveal">
+      <p v-if="mainError" class="label text-error gap-1 text-wrap">
+        <i class="fa-solid fa-triangle-exclamation"/><span>{{ mainError }}</span>
+      </p>
+    </Transition>
+    <button class="btn btn-primary mt-4" :disabled="loading" @click="verify">
+      <span v-if="loading" class="loading loading-spinner loading-sm"/>
+      <i v-else class="fa-solid fa-arrow-right-to-bracket"/>
       <span>{{$t('signup.submit')}}</span>
     </button>
   </form>
