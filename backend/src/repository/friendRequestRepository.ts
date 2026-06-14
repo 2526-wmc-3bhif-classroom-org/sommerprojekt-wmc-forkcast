@@ -1,6 +1,6 @@
 import { Unit } from "../db/unit";
 import { FriendRequest } from "../types";
-import { FRIEND_REQUEST_TTL_MS } from "../app";
+import { FRIEND_REQUEST_TTL_MS } from "../config";
 
 export class FriendRequestRepository {
     private unit: Unit;

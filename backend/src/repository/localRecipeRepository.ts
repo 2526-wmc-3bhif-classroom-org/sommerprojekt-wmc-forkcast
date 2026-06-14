@@ -1,6 +1,6 @@
 import { Recipe, RecipeDetails, RecipeWithDetails, Ingredient, RecipeInstruction } from '../types';
 import { Unit } from "../db/unit";
-import { CACHE_TTL_MS } from "../app";
+import { CACHE_TTL_MS } from "../config";
 
 const NUTRIENT_COLUMNS = [
     'calories', 'carbs', 'protein', 'fat', 'alcohol', 'caffeine', 'sugar',

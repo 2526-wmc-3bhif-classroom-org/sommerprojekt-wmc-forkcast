@@ -16,7 +16,7 @@ import calendarRoutes from "./routes/calendarRoutes";
 import { RecipeService } from "./services/recipeService";
 import { FriendService } from "./services/friendService";
 import { seedFilters } from "./db/seedFilters";
-import { parseDurationToMilliseconds } from "./utils";
+import { CACHE_TTL_MS, FRIEND_REQUEST_TTL_MS } from "./config";
 import rateLimit from "express-rate-limit";
 import { apiQuotaLimiter } from "./middleware/apiQuotaLimiter";
 import { initializeFilterCache } from "./utils/filterCache";
@@ -26,13 +26,6 @@ const allowedOrigins = (process.env.CORS_ORIGIN ?? "")
     .split(",")
     .map((o) => o.trim())
     .filter(Boolean);
-export const CACHE_TTL_MS =
-    parseDurationToMilliseconds(process.env.CACHE_TTL_MS
-        ,24 * 60 * 60 * 1000);
-export const FRIEND_REQUEST_TTL_MS =
-    parseDurationToMilliseconds(process.env.FRIEND_REQUEST_TTL_MS, 60 * 60 * 1000);
-export const VERIFICATION_CODE_TTL_MS =
-    parseDurationToMilliseconds(process.env.VERIFICATION_CODE_TTL_MS, 60 * 60 * 1000);
 const RATE_LIMIT_WINDOW_MS = parseInt(process.env.RATE_LIMIT_WINDOW_MS || "900000", 10); // 15 minutes
 const RATE_LIMIT_MAX_REQUESTS = parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || "200", 10);
 

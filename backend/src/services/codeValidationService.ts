@@ -1,6 +1,6 @@
 ﻿import {sendResetPasswordEmail, sendVerificationEmail} from "../utils/mailingUtils";
 import {generateCode} from "../utils";
-import {VERIFICATION_CODE_TTL_MS} from "../app";
+import {VERIFICATION_CODE_TTL_MS} from "../config";
 
 const verificationCodeMap: Map<string, { code: number, expiresAt: number }> = new Map();
 const passwordResetCodeMap: Map<string, { code: number, expiresAt: number }> = new Map();
