@@ -18,17 +18,12 @@ const getTransporter = async () => {
     const secure = process.env.EMAIL_SECURE === "true" ? true : (port === 465);
 
     if (!host || !user || !pass) {
-        console.warn("Email credentials missing. Using Ethereal for development.");
-        const testAccount = await nodemailer.createTestAccount();
-        return nodemailer.createTransport({
-            host: "smtp.ethereal.email",
-            port: 587,
-            secure: false,
-            auth: {
-                user: testAccount.user,
-                pass: testAccount.pass,
-            },
-        });
+        // No real SMTP creds: use an offline JSON transport instead of Ethereal.
+        // Ethereal's createTestAccount() hits api.nodemailer.com, which is flaky
+        // (502s) and crashes the dev flow. jsonTransport never touches the network;
+        // sendEmail logs the message so the verification code is readable locally.
+        console.warn("Email credentials missing. Using offline jsonTransport for development; email content will be logged.");
+        return nodemailer.createTransport({ jsonTransport: true });
     }
 
     return nodemailer.createTransport({
@@ -43,14 +38,25 @@ const getTransporter = async () => {
     });
 };
 
-// Singleton-ish promise to avoid recreating transporter constantly, or recreate if needed.
-// For simplicity in this project, we create it once or lazily.
-let transporterPromise = getTransporter();
+// Lazily create the transporter on first send. Creating it eagerly at module
+// load fires a network call (Ethereal) whose rejection is unhandled and crashes
+// the process. A failed attempt resets the cache so the next send retries.
+let transporterPromise: ReturnType<typeof getTransporter> | null = null;
+
+const getCachedTransporter = () => {
+    if (!transporterPromise) {
+        transporterPromise = getTransporter().catch((err) => {
+            transporterPromise = null;
+            throw err;
+        });
+    }
+    return transporterPromise;
+};
 
 export const sendEmail = async (to: string, subject: string, text: string, html?: string,
                                 attachments: {path: string, filename: string, cid: string}[] = []) => {
     try {
-        const transporter = await transporterPromise;
+        const transporter = await getCachedTransporter();
         const info = await transporter.sendMail({
             from: process.env.EMAIL_FROM || process.env.EMAIL_USER || '"ForkCast" <no-reply@forkcast.com>',
             to,
@@ -61,11 +67,11 @@ export const sendEmail = async (to: string, subject: string, text: string, html?
         });
 
         console.log("Message sent: %s", info.messageId);
-        
-        // If using Ethereal, print the URL
-        const previewUrl = nodemailer.getTestMessageUrl(info);
-        if (previewUrl) {
-            console.log("Preview URL: %s", previewUrl);
+
+        // jsonTransport (dev fallback) doesn't deliver anything, so log the body
+        // to make the verification code readable in the console.
+        if ((info as { message?: string }).message) {
+            console.log(`Email to ${to} | ${subject}\n${text}`);
         }
 
         return info;
