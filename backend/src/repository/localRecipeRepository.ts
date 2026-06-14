@@ -213,9 +213,24 @@ export class LocalRecipeRepository {
 
     async removeExpiredRecipes(): Promise<void> {
         const unit = new Unit(false);
-        const cutoff = new Date(Date.now() - CACHE_TTL_MS).toISOString();
-        unit.prepare<void>("DELETE FROM Recipe WHERE updatedAt <= :cutoff", { cutoff }).run();
-        unit.complete(true);
+        try {
+            const cutoff = new Date(Date.now() - CACHE_TTL_MS).toISOString();
+            // Only drop stale cache recipes that no user still references. Deleting a
+            // recipe referenced by a calendar entry, favorite or rating would fail the
+            // FK constraint and corrupt that user's data.
+            unit.prepare<void>(
+                `DELETE FROM Recipe
+                 WHERE updatedAt <= :cutoff
+                   AND id NOT IN (SELECT recipeId FROM CalenderEntry)
+                   AND id NOT IN (SELECT recipeId FROM FavoriteFood)
+                   AND id NOT IN (SELECT recipeId FROM RecipeRating)`,
+                { cutoff }
+            ).run();
+            unit.complete(true);
+        } catch (error) {
+            unit.complete(false);
+            throw error;
+        }
     }
 
     async findInstructionsByRecipeId(id: number): Promise<RecipeInstruction[]> {

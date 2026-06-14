@@ -58,6 +58,7 @@ class DB {
             verbose: (s: unknown) => DB.logStatement(s)
         });
         db.pragma("foreign_keys = ON");
+        db.pragma("busy_timeout = 5000");
 
         DB.ensureTablesCreated(db);
         DB.ensureFiltersSeeded(db);
