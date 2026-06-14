@@ -48,8 +48,11 @@ export default defineNuxtConfig({
         defaultLocale: 'en'
     },
     routeRules: {
-        '/dashboard/**': { prerender: false },
-        '/dashboard': { prerender: false },
+        // Dashboard is auth-gated and renders client-only data (auth lives in
+        // sessionStorage). SSR would render it logged-out and cause hydration
+        // mismatches, so disable SSR and prerender for it.
+        '/dashboard/**': { prerender: false, ssr: false },
+        '/dashboard': { prerender: false, ssr: false },
     },
     nitro: {
         prerender: {

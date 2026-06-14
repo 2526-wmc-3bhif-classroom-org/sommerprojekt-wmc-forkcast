@@ -6,8 +6,6 @@ const authService = useAuthService();
 const img = useImage();
 const bgImage = img('/images/hero-bg.jpg', { quality: 90, format: 'webp' });
 
-const revealEls = ref<Element[]>([]);
-
 onMounted(() => {
   const observer = new IntersectionObserver(
     (entries) => {
@@ -51,18 +49,22 @@ onMounted(() => {
           <p class="py-6 text-md md:text-xl opacity-0 animate-fade-in">
             {{$t('index.subtitle')}}
           </p>
-          <nuxt-link-locale v-if="!authService.authenticated.value" to="/auth/signup" class="btn btn-primary mr-2 opacity-0 animate-fade-in">
-            <i class="fa-solid fa-user-plus mr-1"/>
-            <span>{{$t('index.prompt_signup')}}</span>
-          </nuxt-link-locale>
-          <nuxt-link-locale v-if="!authService.authenticated.value" to="/auth/login" class="btn btn-outline opacity-0 animate-fade-in">
-            <i class="fa-solid fa-user-check mr-1"/>
-            <span>{{$t('index.prompt_login')}}</span>
-          </nuxt-link-locale>
-          <nuxt-link-locale v-if="authService.authenticated.value" to="/dashboard" class="btn btn-outline opacity-0 animate-fade-in">
-            <i class="fa-solid fa-chart-line mr-1"/>
-            <span>{{$t('index.prompt_dashboard')}}</span>
-          </nuxt-link-locale>
+          <!-- Auth-dependent CTAs: client-only because auth state (sessionStorage)
+               is unknown on the server and would otherwise mismatch on hydration. -->
+          <client-only>
+            <nuxt-link-locale v-if="!authService.authenticated.value" to="/auth/signup" class="btn btn-primary mr-2 opacity-0 animate-fade-in">
+              <i class="fa-solid fa-user-plus mr-1"/>
+              <span>{{$t('index.prompt_signup')}}</span>
+            </nuxt-link-locale>
+            <nuxt-link-locale v-if="!authService.authenticated.value" to="/auth/login" class="btn btn-outline opacity-0 animate-fade-in">
+              <i class="fa-solid fa-user-check mr-1"/>
+              <span>{{$t('index.prompt_login')}}</span>
+            </nuxt-link-locale>
+            <nuxt-link-locale v-if="authService.authenticated.value" to="/dashboard" class="btn btn-outline opacity-0 animate-fade-in">
+              <i class="fa-solid fa-chart-line mr-1"/>
+              <span>{{$t('index.prompt_dashboard')}}</span>
+            </nuxt-link-locale>
+          </client-only>
         </div>
       </div>
     </div>
@@ -176,14 +178,16 @@ onMounted(() => {
       <div class="max-w-2xl mx-auto text-center scroll-reveal">
         <h2 class="text-4xl md:text-5xl font-bold mb-4">{{$t('index.cta.title')}}</h2>
         <p class="text-base-content/60 text-lg mb-10">{{$t('index.cta.subtitle')}}</p>
-        <nuxt-link-locale v-if="!authService.authenticated.value" to="/auth/signup" class="btn btn-primary">
-          <i class="fa-solid fa-user-plus mr-1"/>
-          {{$t('index.cta.signup')}}
-        </nuxt-link-locale>
-        <nuxt-link-locale v-if="authService.authenticated.value" to="/dashboard" class="btn btn-primary">
-          <i class="fa-solid fa-chart-line mr-1"/>
-          {{$t('index.prompt_dashboard')}}
-        </nuxt-link-locale>
+        <client-only>
+          <nuxt-link-locale v-if="!authService.authenticated.value" to="/auth/signup" class="btn btn-primary">
+            <i class="fa-solid fa-user-plus mr-1"/>
+            {{$t('index.cta.signup')}}
+          </nuxt-link-locale>
+          <nuxt-link-locale v-if="authService.authenticated.value" to="/dashboard" class="btn btn-primary">
+            <i class="fa-solid fa-chart-line mr-1"/>
+            {{$t('index.prompt_dashboard')}}
+          </nuxt-link-locale>
+        </client-only>
       </div>
     </section>
 

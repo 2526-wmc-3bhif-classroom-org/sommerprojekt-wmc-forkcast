@@ -1,10 +1,6 @@
 <script lang="ts" setup>
-import useAuthService from "~/assets/service/auth-service";
-
 const route = useRoute();
-const router = useRouter();
 const { locale } = useI18n();
-const authService = useAuthService();
 
 const basePath = computed(() => {
   const prefix = `/${locale.value}`;
@@ -16,8 +12,6 @@ const descriptionTranslation = computed(() => $t("route." + basePath.value + ".d
 
 const title = computed(() => titleTranslation.value ? "Forkcast - " + titleTranslation.value : "Forkcast");
 const description = computed(() => descriptionTranslation.value ? descriptionTranslation.value as string : "");
-const layoutName = computed(() => authService.authenticated.value ? 'authenticated' : 'unauthenticated');
-const initializing = computed(() => authService.loading.value);
 
 useSeoMeta({
   title: title,
@@ -49,18 +43,6 @@ useHead({
   ]
 });
 
-onMounted(async () => {
-  await authService.loadUserWithExistingJwt()
-
-  if (authService.authenticated.value && route.path.startsWith("/auth")) {
-     await router.push("/dashboard");
-  }
-
-  if (!authService.authenticated.value && route.path.startsWith("/dashboard")) {
-    await router.push("/auth/login");
-  }
-});
-
 </script>
 
 <template>
@@ -68,10 +50,7 @@ onMounted(async () => {
   <NuxtLoadingIndicator color="var(--color-primary)" :height="2" :throttle="0" />
 
   <NuxtRouteAnnouncer/>
-  <NuxtLayout :name="layoutName">
-    <NuxtPage v-if="!initializing"/>
-    <div v-else class="flex min-h-screen items-center justify-center">
-      <span class="loading loading-spinner loading-lg text-primary"/>
-    </div>
+  <NuxtLayout>
+    <NuxtPage />
   </NuxtLayout>
 </template>
