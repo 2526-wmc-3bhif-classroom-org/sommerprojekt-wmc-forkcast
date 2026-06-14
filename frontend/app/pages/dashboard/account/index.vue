@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type {User} from '~/assets/model/user';
 import type {RecipePreview} from '~/assets/model/recipe-preview';
+import type {FavoritesResponse} from '~/assets/model/favorites-response';
 import useApiConnection from '~/assets/util/api-connector';
 import {useAuthStore} from '~/assets/store/auth-store';
 import {useFavoritesStore} from '~/assets/store/favorites-store';
@@ -88,7 +89,20 @@ const favOffset = ref(0);
 const favHasMore = ref(false);
 const favLoading = ref(false);
 const favCount = ref(0);
+type IncomingRequest = PublicUser & { requestId: number };
+
 const friends = ref<PublicUser[]>([]);
+const friendsLoading = ref(true);
+const friendProfile = ref<PublicUser | null>(null);
+const profileFriends = ref<PublicUser[]>([]);
+const profileFavorites = ref<RecipePreview[]>([]);
+const profileFavCount = ref(0);
+const profileLoading = ref(false);
+const incomingRequests = ref<IncomingRequest[]>([]);
+const addUsername = ref('');
+const addLoading = ref(false);
+const addError = ref('');
+const addSuccess = ref('');
 const friendToRemove = ref<PublicUser | null>(null);
 const favoriteToRemove = ref<RecipePreview | null>(null);
 const favSentinelRef = ref<HTMLElement | null>(null);
@@ -113,8 +127,51 @@ async function loadData() {
   // user is already loaded into the auth store at app boot; reuse it instead of refetching /me
   user.value = authStore.user ?? null;
 
+  friendsLoading.value = true;
   const friendsResult = await apiRequest<PublicUser[]>('/users/me/friends', 'GET', jwt);
   if (friendsResult.ok && friendsResult.value) friends.value = friendsResult.value;
+  friendsLoading.value = false;
+
+  const requestsResult = await apiRequest<IncomingRequest[]>('/users/me/friends/requests', 'GET', jwt);
+  if (requestsResult.ok && requestsResult.value) incomingRequests.value = requestsResult.value;
+}
+
+async function sendFriendRequest() {
+  addError.value = '';
+  addSuccess.value = '';
+  const name = addUsername.value.trim();
+  if (!name) { addError.value = t('page.account.add_friend.empty'); return; }
+  addLoading.value = true;
+  const result = await apiRequest<{ status: 'pending' | 'accepted'; user: PublicUser }>(
+    '/users/me/friends/requests', 'POST', authStore.jwt, { username: name }
+  );
+  addLoading.value = false;
+  if (result.ok && result.value) {
+    if (result.value.status === 'accepted') {
+      friends.value.push(result.value.user);
+      addSuccess.value = t('page.account.add_friend.accepted', { name: result.value.user.name });
+    } else {
+      addSuccess.value = t('page.account.add_friend.sent');
+    }
+    addUsername.value = '';
+  } else {
+    addError.value = result.failure?.message ?? t('page.account.add_friend.error');
+  }
+}
+
+async function acceptRequest(req: IncomingRequest) {
+  const result = await apiRequest<PublicUser>(`/users/me/friends/requests/${req.requestId}/accept`, 'POST', authStore.jwt);
+  if (result.ok && result.value) {
+    friends.value.push(result.value);
+    incomingRequests.value = incomingRequests.value.filter(r => r.requestId !== req.requestId);
+  }
+}
+
+async function declineRequest(req: IncomingRequest) {
+  const result = await apiRequest(`/users/me/friends/requests/${req.requestId}/decline`, 'POST', authStore.jwt);
+  if (result.ok) {
+    incomingRequests.value = incomingRequests.value.filter(r => r.requestId !== req.requestId);
+  }
 }
 
 async function initialLoadFavorites() {
@@ -132,6 +189,7 @@ async function initialLoadFavorites() {
 onMounted(() => {
   loadData();
   initialLoadFavorites();
+  favStore.load();
 
   const observer = new IntersectionObserver((entries) => {
     if (entries[0]?.isIntersecting) loadMoreFavorites();
@@ -155,6 +213,52 @@ async function removeFavorite() {
     favorites.value = favorites.value.filter(f => f.id !== favoriteToRemove.value!.id);
   }
   favoriteToRemove.value = null;
+}
+
+async function openProfile(friend: PublicUser) {
+  friendProfile.value = friend;
+  profileFriends.value = [];
+  profileFavorites.value = [];
+  profileFavCount.value = 0;
+  profileLoading.value = true;
+
+  const [friendsRes, favsRes] = await Promise.all([
+    apiRequest<PublicUser[]>(`/users/me/friends/${friend.id}/friends`, 'GET', authStore.jwt),
+    apiRequest<FavoritesResponse>(`/users/me/friends/${friend.id}/favorites?populate=true`, 'GET', authStore.jwt),
+  ]);
+
+  // Ignore if the user already opened a different profile while this was loading.
+  if (friendProfile.value?.id !== friend.id) return;
+
+  if (friendsRes.ok && friendsRes.value) profileFriends.value = friendsRes.value;
+  if (favsRes.ok && favsRes.value) {
+    profileFavCount.value = favsRes.value.count;
+    profileFavorites.value = favsRes.value.foods
+      .filter(f => f.recipe !== null)
+      .map(f => f.recipe as RecipePreview);
+  }
+  profileLoading.value = false;
+}
+
+async function toggleMyFavorite(recipe: RecipePreview) {
+  const wasFav = favStore.has(recipe.id);
+  await favStore.toggle(recipe.id);
+  const isFav = favStore.has(recipe.id);
+  if (isFav && !wasFav) {
+    if (!favorites.value.some(f => f.id === recipe.id)) {
+      favorites.value.unshift(recipe);
+      favCount.value++;
+    }
+  } else if (!isFav && wasFav) {
+    favorites.value = favorites.value.filter(f => f.id !== recipe.id);
+    favCount.value = Math.max(0, favCount.value - 1);
+  }
+}
+
+function removeFromProfile() {
+  if (!friendProfile.value) return;
+  friendToRemove.value = friendProfile.value;
+  friendProfile.value = null;
 }
 
 function confirmRemove(friend: PublicUser) {
@@ -229,41 +333,88 @@ async function removeFriend() {
           <i class="fa-solid fa-user-group text-primary" />
           <span class="font-semibold text-base-content">{{ $t('page.account.friends') }}</span>
         </div>
-        <div v-if="friends.length === 0" class="flex-1 flex items-center justify-center text-base-content/30 select-none flex-col gap-3 py-8">
+
+        <!-- Add friend by username -->
+        <div class="px-4 py-3 border-b border-base-200 shrink-0">
+          <div class="flex gap-2">
+            <input
+                v-model="addUsername"
+                type="text"
+                :placeholder="$t('page.account.add_friend.placeholder')"
+                class="input input-sm flex-1"
+                @keyup.enter="sendFriendRequest"
+            />
+            <button @click="sendFriendRequest" :disabled="addLoading" class="btn btn-primary btn-sm">
+              <span v-if="addLoading" class="loading loading-spinner loading-xs" />
+              <i v-else class="fa-solid fa-user-plus" />
+              {{ $t('page.account.add_friend.button') }}
+            </button>
+          </div>
+          <p v-if="addError" class="text-error text-sm mt-2">
+            <i class="fa-solid fa-triangle-exclamation mr-1" />{{ addError }}
+          </p>
+          <p v-else-if="addSuccess" class="text-success text-sm mt-2">
+            <i class="fa-solid fa-circle-check mr-1" />{{ addSuccess }}
+          </p>
+        </div>
+
+        <!-- Incoming friend requests -->
+        <div v-if="incomingRequests.length" class="shrink-0 border-b border-base-200">
+          <div class="px-4 pt-3 pb-1 text-xs font-semibold uppercase tracking-wide text-base-content/50">
+            {{ $t('page.account.friend_requests') }}
+          </div>
+          <ul>
+            <li v-for="req in incomingRequests" :key="req.requestId" class="flex items-center gap-3 px-4 py-2">
+              <div class="avatar placeholder">
+                <div v-if="!req.profilePicture" class="bg-neutral text-neutral-content rounded-full w-10 flex items-center justify-center">
+                  <span class="text-sm font-bold">{{ req.name.charAt(0).toUpperCase() }}</span>
+                </div>
+                <div v-else class="rounded-full w-10">
+                  <img :src="`data:image/png;base64,${req.profilePicture}`" :alt="req.name" />
+                </div>
+              </div>
+              <span class="font-medium text-base-content flex-1">{{ req.name }}</span>
+              <button @click="acceptRequest(req)" class="btn btn-success btn-sm">{{ $t('page.account.accept') }}</button>
+              <button @click="declineRequest(req)" class="btn btn-ghost btn-sm">{{ $t('page.account.decline') }}</button>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Loading skeleton -->
+        <div v-if="friendsLoading && friends.length === 0" class="flex-1 flex flex-col">
+          <div v-for="n in 4" :key="n" class="flex items-center gap-3 px-4 py-3">
+            <div class="skeleton h-10 w-10 rounded-full shrink-0" />
+            <div class="skeleton h-4 flex-1 max-w-[8rem]" />
+          </div>
+        </div>
+
+        <!-- Empty state -->
+        <div v-else-if="friends.length === 0" class="flex-1 flex items-center justify-center text-base-content/30 select-none flex-col gap-3 py-8">
           <i class="fa-solid fa-user-group text-4xl" />
           <span class="text-sm font-medium">{{ $t('page.account.no_friends') }}</span>
         </div>
-        <div v-else class="flex-1 overflow-y-auto md:overflow-y-auto overflow-visible">
-          <table class="table table-zebra w-full">
-            <thead class="sticky top-0 bg-base-200 z-10">
-              <tr>
-                <th></th>
-                <th>{{ $t('page.account.friends') }}</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="friend in friends" :key="friend.id">
-                <td class="w-16">
-                  <div class="avatar placeholder">
-                    <div v-if="!friend.profilePicture" class="bg-neutral text-neutral-content rounded-full w-10 flex items-center justify-center">
-                      <span class="text-sm font-bold">{{ friend.name.charAt(0).toUpperCase() }}</span>
-                    </div>
-                    <div v-else class="rounded-full w-10">
-                      <img :src="`data:image/png;base64,${friend.profilePicture}`" :alt="friend.name" />
-                    </div>
-                  </div>
-                </td>
-                <td class="font-medium text-base-content">{{ friend.name }}</td>
-                <td class="text-right">
-                  <button @click="confirmRemove(friend)" class="btn btn-error btn-sm">
-                    {{ $t('page.account.remove') }}
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+
+        <!-- Friends list -->
+        <ul v-else class="flex-1 overflow-y-auto md:overflow-y-auto overflow-visible divide-y divide-base-200">
+          <li v-for="friend in friends" :key="friend.id">
+            <button
+                type="button"
+                @click="openProfile(friend)"
+                class="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-base-200 transition-colors cursor-pointer"
+            >
+              <div class="avatar placeholder">
+                <div v-if="!friend.profilePicture" class="bg-neutral text-neutral-content rounded-full w-10 flex items-center justify-center">
+                  <span class="text-sm font-bold">{{ friend.name.charAt(0).toUpperCase() }}</span>
+                </div>
+                <div v-else class="rounded-full w-10">
+                  <img :src="`data:image/png;base64,${friend.profilePicture}`" :alt="friend.name" />
+                </div>
+              </div>
+              <span class="font-medium text-base-content flex-1 truncate">{{ friend.name }}</span>
+              <i class="fa-solid fa-chevron-right text-base-content/30" />
+            </button>
+          </li>
+        </ul>
       </div>
 
     </div>
@@ -412,6 +563,96 @@ async function removeFriend() {
     <form method="dialog" class="modal-backdrop" @click="cancelRemoveFavorite">
       <button>close</button>
     </form>
+  </dialog>
+
+  <!-- Friend Profile Modal -->
+  <dialog :open="friendProfile !== null" class="modal">
+    <div class="modal-box max-w-md">
+      <div class="flex items-center justify-between mb-2">
+        <h3 class="font-bold text-lg">{{ $t('page.account.profile_title') }}</h3>
+        <button @click="friendProfile = null" class="btn btn-ghost btn-sm btn-circle">
+          <i class="fa-solid fa-xmark" />
+        </button>
+      </div>
+      <div class="flex flex-col items-center gap-3 py-4">
+        <div class="avatar placeholder">
+          <div v-if="!friendProfile?.profilePicture" class="bg-primary text-primary-content rounded-full w-24 flex items-center justify-center">
+            <span class="text-3xl font-bold">{{ friendProfile?.name.charAt(0).toUpperCase() }}</span>
+          </div>
+          <div v-else class="rounded-full w-24">
+            <img :src="`data:image/png;base64,${friendProfile.profilePicture}`" :alt="friendProfile.name" />
+          </div>
+        </div>
+        <span class="text-xl font-bold">{{ friendProfile?.name }}</span>
+      </div>
+
+      <div v-if="profileLoading" class="flex justify-center py-6">
+        <span class="loading loading-spinner text-base-content/30" />
+      </div>
+
+      <div v-else class="flex flex-col gap-4 max-h-[40vh] overflow-y-auto">
+        <!-- Their friends -->
+        <div>
+          <div class="flex items-center gap-2 mb-2 text-sm font-semibold text-base-content/60">
+            <i class="fa-solid fa-user-group text-secondary" />
+            <span>{{ $t('page.account.friends') }}</span>
+            <span v-if="profileFriends.length" class="badge badge-secondary badge-xs">{{ profileFriends.length }}</span>
+          </div>
+          <div v-if="profileFriends.length === 0" class="text-sm text-base-content/30 py-1">{{ $t('page.account.no_friends') }}</div>
+          <div v-else class="flex flex-wrap gap-2">
+            <div v-for="pf in profileFriends" :key="pf.id" class="flex items-center gap-1.5 bg-base-200 rounded-full pl-1 pr-3 py-1">
+              <div class="avatar placeholder">
+                <div v-if="!pf.profilePicture" class="bg-neutral text-neutral-content rounded-full w-6 flex items-center justify-center">
+                  <span class="text-xs font-bold">{{ pf.name.charAt(0).toUpperCase() }}</span>
+                </div>
+                <div v-else class="rounded-full w-6">
+                  <img :src="`data:image/png;base64,${pf.profilePicture}`" :alt="pf.name" />
+                </div>
+              </div>
+              <span class="text-xs font-medium">{{ pf.name }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Their favorites -->
+        <div>
+          <div class="flex items-center gap-2 mb-2 text-sm font-semibold text-base-content/60">
+            <i class="fa-solid fa-heart text-primary" />
+            <span>{{ $t('page.account.favorite_foods') }}</span>
+            <span v-if="profileFavCount" class="badge badge-primary badge-xs">{{ profileFavCount }}</span>
+          </div>
+          <div v-if="profileFavorites.length === 0" class="text-sm text-base-content/30 py-1">{{ $t('page.account.no_favorites') }}</div>
+          <ul v-else class="flex flex-col gap-1.5">
+            <li v-for="recipe in profileFavorites" :key="recipe.id" class="flex items-center gap-3 bg-base-200 rounded-lg p-1.5">
+              <img v-if="recipe.image" :src="recipe.image" :alt="recipe.title" class="w-10 h-10 rounded-md object-cover shrink-0" />
+              <div v-else class="w-10 h-10 rounded-md bg-base-300 flex items-center justify-center shrink-0">
+                <i class="fa-solid fa-utensils text-base-content/30" />
+              </div>
+              <span class="text-sm font-medium truncate flex-1">{{ recipe.title }}</span>
+              <button
+                  type="button"
+                  @click="toggleMyFavorite(recipe)"
+                  class="btn btn-ghost btn-sm btn-circle shrink-0"
+                  :class="favStore.has(recipe.id) ? 'text-error' : 'text-base-content/30'"
+                  :title="favStore.has(recipe.id) ? $t('page.account.in_my_favorites') : $t('page.account.add_to_my_favorites')"
+              >
+                <i :class="favStore.has(recipe.id) ? 'fa-solid fa-heart' : 'fa-regular fa-heart'" />
+              </button>
+            </li>
+          </ul>
+          <p v-if="profileFavCount > profileFavorites.length" class="text-xs text-base-content/40 mt-1.5">
+            +{{ profileFavCount - profileFavorites.length }}
+          </p>
+        </div>
+      </div>
+
+      <div class="modal-action">
+        <button @click="removeFromProfile" class="btn btn-error btn-sm">
+          <i class="fa-solid fa-user-minus" />{{ $t('page.account.remove') }}
+        </button>
+      </div>
+    </div>
+    <form method="dialog" class="modal-backdrop" @click="friendProfile = null"><button>close</button></form>
   </dialog>
 
   <!-- Remove Friend Modal -->
