@@ -111,7 +111,7 @@ const vPreventBackGesture = {
 
           <div class="text-center min-w-64">
             <div class="flex items-center justify-center gap-2 mb-0.5">
-              <span v-if="isToday" class="badge badge-primary badge-sm uppercase tracking-widest font-semibold">
+              <span class="badge badge-primary badge-sm uppercase tracking-widest font-semibold" :class="{ invisible: !isToday }">
                 {{ $t('dashboard.today') }}
               </span>
             </div>

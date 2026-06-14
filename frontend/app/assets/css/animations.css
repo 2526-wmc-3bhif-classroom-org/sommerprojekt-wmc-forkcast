@@ -43,12 +43,44 @@
     animation: zoom-in 0.7s forwards;
 }
 
-.scroll-reveal {
-    opacity: 0;
-    transform: translateY(30px);
-    transition: opacity 0.6s ease calc(var(--reveal-delay, 0ms)), transform 0.6s ease calc(var(--reveal-delay, 0ms));
+@keyframes scroll-reveal {
+    from { opacity: 0; transform: translateY(40px); }
+    to { opacity: 1; transform: translateY(0); }
 }
-.scroll-reveal.reveal-visible {
-    opacity: 1;
-    transform: translateY(0);
+
+/* Scroll-driven: animation progress tied to element position in viewport.
+   Guarded so unsupported browsers (Safari/FF) just show content statically. */
+@supports (animation-timeline: view()) {
+    .scroll-reveal {
+        animation: scroll-reveal linear both;
+        animation-timeline: view();
+        animation-range: entry 0% entry 65%;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .scroll-reveal { animation: none; }
+    }
+}
+
+.fade-enter-active, .fade-leave-active {
+    transition: opacity 0.2s ease;
+}
+.fade-enter-from, .fade-leave-to {
+    opacity: 0;
+}
+
+/* Scroll-driven parallax for showcase media. Scaled so the vertical drift
+   never exposes the edges of the container. Static where unsupported. */
+@keyframes parallax-media {
+    from { transform: translateY(-6%) scale(1.12); }
+    to   { transform: translateY(6%) scale(1.12); }
+}
+@supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+        .parallax-media {
+            animation: parallax-media linear both;
+            animation-timeline: view();
+            animation-range: cover;
+        }
+    }
 }
