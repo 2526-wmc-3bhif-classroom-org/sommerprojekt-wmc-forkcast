@@ -106,13 +106,6 @@ class DB {
                 image TEXT,
                 sourceName TEXT,
                 sourceUrl TEXT,
-                readyInMinutes INTEGER NOT NULL DEFAULT 0,
-                calories INTEGER NOT NULL DEFAULT 0,
-                servings INTEGER NOT NULL DEFAULT 1,
-                vegetarian BOOLEAN NOT NULL DEFAULT 0,
-                vegan BOOLEAN NOT NULL DEFAULT 0,
-                glutenFree BOOLEAN NOT NULL DEFAULT 0,
-                dairyFree BOOLEAN NOT NULL DEFAULT 0,
                 updatedAt DATETIME DEFAULT (datetime('now'))
             );
 
@@ -257,13 +250,6 @@ class DB {
 
         const migrations = [
             "ALTER TABLE Recipe ADD COLUMN updatedAt DATETIME DEFAULT (datetime('now'))",
-            "ALTER TABLE Recipe ADD COLUMN readyInMinutes INTEGER NOT NULL DEFAULT 0",
-            "ALTER TABLE Recipe ADD COLUMN calories INTEGER NOT NULL DEFAULT 0",
-            "ALTER TABLE Recipe ADD COLUMN servings INTEGER NOT NULL DEFAULT 1",
-            "ALTER TABLE Recipe ADD COLUMN vegetarian BOOLEAN NOT NULL DEFAULT 0",
-            "ALTER TABLE Recipe ADD COLUMN vegan BOOLEAN NOT NULL DEFAULT 0",
-            "ALTER TABLE Recipe ADD COLUMN glutenFree BOOLEAN NOT NULL DEFAULT 0",
-            "ALTER TABLE Recipe ADD COLUMN dairyFree BOOLEAN NOT NULL DEFAULT 0",
             "ALTER TABLE Recipe ADD COLUMN sourceName TEXT",
             "ALTER TABLE Recipe ADD COLUMN sourceUrl TEXT",
             "ALTER TABLE RecipeDetails ADD COLUMN pricePerServing REAL NOT NULL DEFAULT 0",
@@ -305,6 +291,15 @@ class DB {
             "ALTER TABLE RecipeDetails ADD COLUMN folicAcid REAL NOT NULL DEFAULT 0",
             "ALTER TABLE RecipeInstruction ADD COLUMN ingredients TEXT NOT NULL DEFAULT '[]'",
             "ALTER TABLE RecipeInstruction ADD COLUMN equipment TEXT NOT NULL DEFAULT '[]'",
+            // Drop columns that duplicate RecipeDetails — the source of truth.
+            // Throws "no such column" on fresh DBs (already absent), caught below.
+            "ALTER TABLE Recipe DROP COLUMN readyInMinutes",
+            "ALTER TABLE Recipe DROP COLUMN calories",
+            "ALTER TABLE Recipe DROP COLUMN servings",
+            "ALTER TABLE Recipe DROP COLUMN vegetarian",
+            "ALTER TABLE Recipe DROP COLUMN vegan",
+            "ALTER TABLE Recipe DROP COLUMN glutenFree",
+            "ALTER TABLE Recipe DROP COLUMN dairyFree",
         ];
         for (const migration of migrations) {
             try {

@@ -30,13 +30,6 @@ entity "Recipe" {
   image : string
   sourceName : string
   sourceUrl : string
-  readyInMinutes : integer
-  calories : integer
-  servings : integer
-  vegetarian : boolean
-  vegan : boolean
-  glutenFree : boolean
-  dairyFree : boolean
   updatedAt : datetime
 }
 
@@ -134,7 +127,7 @@ Recipe ||--o{ FavoriteFood
 User ||--o{ RecipeRating
 Recipe ||--o{ RecipeRating
 
-Recipe ||--|| RecipeDetails
+Recipe ||--o| RecipeDetails
 Recipe ||--o{ RecipeIngredient
 Recipe ||--o{ RecipeInstruction
 
