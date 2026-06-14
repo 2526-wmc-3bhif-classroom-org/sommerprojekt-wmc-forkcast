@@ -18,12 +18,26 @@ const getTransporter = async () => {
     const secure = process.env.EMAIL_SECURE === "true" ? true : (port === 465);
 
     if (!host || !user || !pass) {
-        // No real SMTP creds: use an offline JSON transport instead of Ethereal.
-        // Ethereal's createTestAccount() hits api.nodemailer.com, which is flaky
-        // (502s) and crashes the dev flow. jsonTransport never touches the network;
-        // sendEmail logs the message so the verification code is readable locally.
-        console.warn("Email credentials missing. Using offline jsonTransport for development; email content will be logged.");
-        return nodemailer.createTransport({ jsonTransport: true });
+        // No real SMTP creds: try Ethereal first. createTestAccount() hits
+        // api.nodemailer.com, which is sometimes down (502); if it fails, fall
+        // back to an offline jsonTransport so the dev flow never crashes —
+        // sendEmail logs the body so the verification code stays readable.
+        try {
+            const testAccount = await nodemailer.createTestAccount();
+            console.warn("Email credentials missing. Using Ethereal for development.");
+            return nodemailer.createTransport({
+                host: "smtp.ethereal.email",
+                port: 587,
+                secure: false,
+                auth: {
+                    user: testAccount.user,
+                    pass: testAccount.pass,
+                },
+            });
+        } catch (err) {
+            console.warn("Ethereal unavailable, falling back to offline jsonTransport; email content will be logged.", err instanceof Error ? err.message : err);
+            return nodemailer.createTransport({ jsonTransport: true });
+        }
     }
 
     return nodemailer.createTransport({
@@ -68,8 +82,14 @@ export const sendEmail = async (to: string, subject: string, text: string, html?
 
         console.log("Message sent: %s", info.messageId);
 
-        // jsonTransport (dev fallback) doesn't deliver anything, so log the body
-        // to make the verification code readable in the console.
+        // Ethereal: print the preview URL.
+        const previewUrl = nodemailer.getTestMessageUrl(info);
+        if (previewUrl) {
+            console.log("Preview URL: %s", previewUrl);
+        }
+
+        // jsonTransport (offline fallback) doesn't deliver anything, so log the
+        // body to make the verification code readable in the console.
         if ((info as { message?: string }).message) {
             console.log(`Email to ${to} | ${subject}\n${text}`);
         }
