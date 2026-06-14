@@ -1,0 +1,32 @@
+{
+  "verificationEmail": {
+    "subject": "Doğrulama Kodunuz - ForkCast",
+    "text": "Forkcast'e kayıt olduğunuz için teşekkürler. Doğrulama kodunuz: {{code}}",
+    "html": {
+      "title": "Doğrulama Kodu",
+      "greeting": "Merhaba,",
+      "intro": "Forkcast'e kayıt olduğunuz için teşekkürler. Kaydınızı tamamlamak için lütfen aşağıdaki doğrulama kodunu kullanın:",
+      "outro": "Bu kodu talep etmediyseniz lütfen bu e-postayı dikkate almayın."
+    }
+  },
+  "resetPasswordEmail": {
+    "subject": "Şifrenizi Sıfırlayın - ForkCast",
+    "text": "Şifre sıfırlama talebinde bulundunuz. Sıfırlama kodunuz: {{code}}",
+    "html": {
+      "title": "Şifre Sıfırlama Kodu",
+      "greeting": "Merhaba,",
+      "intro": "Şifrenizi sıfırlamak için talepte bulundunuz. Lütfen aşağıdaki kodu kullanın:",
+      "outro": "Şifre sıfırlama talebinde bulunmadıysanız lütfen bu e-postayı dikkate almayın."
+    }
+  },
+  "resetPasswordSuccessEmail": {
+    "subject": "Şifreniz Sıfırlandı - ForkCast",
+    "text": "Şifreniz başarıyla sıfırlandı. Bu değişikliği siz yapmadıysanız lütfen derhal destekle iletişime geçin.",
+    "html": {
+      "title": "Şifre Sıfırlandı",
+      "greeting": "Merhaba,",
+      "intro": "Şifreniz başarıyla sıfırlandı.",
+      "outro": "Bu değişikliği siz yapmadıysanız lütfen derhal destek ekibimizle iletişime geçin."
+    }
+  }
+}

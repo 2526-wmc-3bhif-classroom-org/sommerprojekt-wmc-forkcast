@@ -67,13 +67,13 @@ export default function useAuthService() {
         return result;
     }
 
-    async function signup(username: string, email: string, password: string) {
+    async function signup(username: string, email: string, password: string, lang: string) {
         if (authenticated.value) throw Error("Already authenticated");
-        return await registerUser(username, email, password);
+        return await registerUser(username, email, password, lang);
     }
 
-    function registerUser(name: string, email: string, password: string) {
-        return connection.apiRequest<User>("/auth/register", "POST", undefined, { name, email, password });
+    function registerUser(name: string, email: string, password: string, lang: string) {
+        return connection.apiRequest<User>("/auth/register", "POST", undefined, { name, email, password, lang });
     }
 
     function loginUser(identifier: string, password: string) {
@@ -82,6 +82,14 @@ export default function useAuthService() {
 
     function verifyUser(email: string, code: string) {
         return connection.apiRequest("/auth/verify", "POST", undefined, { email, code });
+    }
+
+    function forgotPassword(email: string, lang: string) {
+        return connection.apiRequest("/auth/password/forgot", "POST", undefined, { email, lang });
+    }
+
+    function resetPassword(email: string, code: string, password: string) {
+        return connection.apiRequest("/auth/password/reset", "POST", undefined, { email, code, password });
     }
 
     function getUserWithExistingJwt() {
@@ -98,5 +106,5 @@ export default function useAuthService() {
         return connection.apiRequest("/users/me/password", "PATCH", authStore.jwt, { currentPassword, newPassword }, false);
     }
 
-    return { authenticated, loading, jwt, login, logout, signup, verify, loadUserWithExistingJwt, updateName, updatePassword };
+    return { authenticated, loading, jwt, login, logout, signup, verify, forgotPassword, resetPassword, loadUserWithExistingJwt, updateName, updatePassword };
 }

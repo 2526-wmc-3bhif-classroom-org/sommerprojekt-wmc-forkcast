@@ -1,0 +1,32 @@
+{
+  "verificationEmail": {
+    "subject": "您的验证码 - ForkCast",
+    "text": "感谢您注册 Forkcast。您的验证码为：{{code}}",
+    "html": {
+      "title": "验证码",
+      "greeting": "您好，",
+      "intro": "感谢您注册 Forkcast。请使用以下验证码完成注册：",
+      "outro": "如果您未请求此验证码，请忽略此邮件。"
+    }
+  },
+  "resetPasswordEmail": {
+    "subject": "重置您的密码 - ForkCast",
+    "text": "您已请求重置密码。您的重置码为：{{code}}",
+    "html": {
+      "title": "密码重置码",
+      "greeting": "您好，",
+      "intro": "您已请求重置密码。请使用以下验证码：",
+      "outro": "如果您未请求重置密码，请忽略此邮件。"
+    }
+  },
+  "resetPasswordSuccessEmail": {
+    "subject": "您的密码已重置 - ForkCast",
+    "text": "您的密码已成功重置。如果您未进行此操作，请立即联系客服支持。",
+    "html": {
+      "title": "密码已重置",
+      "greeting": "您好，",
+      "intro": "您的密码已成功重置。",
+      "outro": "如果您未进行此操作，请立即联系我们的客服团队。"
+    }
+  }
+}

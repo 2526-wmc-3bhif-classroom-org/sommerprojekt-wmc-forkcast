@@ -6,9 +6,12 @@ import useAuthService from "~/assets/service/auth-service";
 const identifier = ref<HTMLInputElement>();
 const password = ref<HTMLInputElement>();
 
-const identifierError = ref<HTMLSpanElement>();
-const passwordError = ref<HTMLSpanElement>();
-const mainError = ref<HTMLSpanElement>();
+const identifierError = ref("");
+const passwordError = ref("");
+const mainError = ref("");
+
+const showPassword = ref(false);
+const loading = ref(false);
 
 const localePath = useLocalePath();
 const router = useRouter();
@@ -20,15 +23,15 @@ const img = useImage();
 const bgImage = img('/images/signup-bg.jpg', { quality: 90, format: 'webp' });
 
 failureHandler.addHandler("identifier", (message) => {
-  identifierError.value!!.innerText = message;
+  identifierError.value = message;
 });
 
 failureHandler.addHandler("password", (message) => {
-  passwordError.value!!.innerText = message;
+  passwordError.value = message;
 });
 
 failureHandler.setMainHandler(message => {
-  mainError.value!!.innerText = message;
+  mainError.value = message;
 });
 
 async function login() {
@@ -37,7 +40,9 @@ async function login() {
     return;
   }
 
+  loading.value = true;
   let failure = await auth.login(identifier.value.value, password.value.value);
+  loading.value = false;
   if (!failure.ok) {
     failureHandler.fail(failure.failure as Failure);
     return;
@@ -65,33 +70,42 @@ async function login() {
         <div class="card bg-base-100 rounded-2xl w-full max-w-sm shrink-0 shadow-2xl opacity-0 animate-fade-in-slide-in-up">
           <div class="card-body w-full">
             <form class="fieldset w-full" onsubmit="return false">
-              <label class="label">
-                <i class="fa-solid fa-at"/>
-                <span>{{$t('login.identifier')}}</span>
+              <label class="label">{{$t('login.identifier')}}</label>
+              <label class="input w-full">
+                <i class="fa-solid fa-at opacity-50"/>
+                <input ref="identifier" autocomplete="username or email" type="text" class="grow" placeholder="you@example.com" @keyup.enter="login" />
               </label>
-              <label class="label text-error text-wrap">
-                <i v-if="failureHandler.has('identifier')" class="fa-solid fa-triangle-exclamation"/>
-                <span ref="identifierError"></span>
+              <Transition name="error-reveal">
+                <p v-if="identifierError" class="label text-error gap-1 text-wrap">
+                  <i class="fa-solid fa-triangle-exclamation"/><span>{{ identifierError }}</span>
+                </p>
+              </Transition>
+
+              <label class="label">{{$t('login.password')}}</label>
+              <label class="input w-full">
+                <i class="fa-solid fa-key opacity-50"/>
+                <input ref="password" autocomplete="current-password" :type="showPassword ? 'text' : 'password'" class="grow" placeholder="••••••••" @keyup.enter="login" />
+                <button type="button" tabindex="-1" class="opacity-50 hover:opacity-100 cursor-pointer" @click="showPassword = !showPassword">
+                  <i :class="showPassword ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'"/>
+                </button>
               </label>
-              <input ref="identifier" autocomplete="username or email" type="text" class="input w-full" :placeholder="$t('login.identifier')" />
-              <label class="label">
-                <i class="fa-solid fa-key"/>
-                <span>{{$t('login.password')}}</span>
-              </label>
-              <label class="label text-error text-wrap">
-                <i v-if="failureHandler.has('password')" class="fa-solid fa-triangle-exclamation"/>
-                <span ref="passwordError"></span>
-              </label>
-              <input ref="password" autocomplete="current-password" type="password" class="input w-full" :placeholder="$t('login.password')" />
-              <div>
+              <Transition name="error-reveal">
+                <p v-if="passwordError" class="label text-error gap-1 text-wrap">
+                  <i class="fa-solid fa-triangle-exclamation"/><span>{{ passwordError }}</span>
+                </p>
+              </Transition>
+
+              <div class="mt-1">
                 <nuxt-link-locale to="/auth/forgot" class="link link-hover">{{$t('login.forgot')}}</nuxt-link-locale>
               </div>
-              <label class="label text-error">
-                <i v-if="failureHandler.hasMain()" class="fa-solid fa-triangle-exclamation"/>
-                <span ref="mainError"></span>
-              </label>
-              <button class="btn btn-primary mt-4" @click="login">
-                <i class="fa-solid fa-arrow-right-to-bracket"/>
+              <Transition name="error-reveal">
+                <p v-if="mainError" class="label text-error gap-1 text-wrap">
+                  <i class="fa-solid fa-triangle-exclamation"/><span>{{ mainError }}</span>
+                </p>
+              </Transition>
+              <button class="btn btn-primary mt-4" :disabled="loading" @click="login">
+                <span v-if="loading" class="loading loading-spinner loading-sm"/>
+                <i v-else class="fa-solid fa-arrow-right-to-bracket"/>
                 <span>{{$t('login.submit')}}</span>
               </button>
             </form>

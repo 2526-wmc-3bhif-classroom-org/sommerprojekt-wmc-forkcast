@@ -62,7 +62,7 @@ export class UserRepository {
 
         return user;
     }
-    
+
     public updateVerificationStatus(email: string, isVerified: boolean): void {
         const stmt = this.unit.prepare(
             "UPDATE User SET isVerified = :isVerified WHERE email = :email",
@@ -76,6 +76,19 @@ export class UserRepository {
         }
     }
 
+    public updatePassword(id: number, passwordHash: string): void {
+        const stmt = this.unit.prepare(
+            "UPDATE User SET password = :password WHERE id = :id",
+            {
+                password: passwordHash,
+                id: id
+            });
+        const result = stmt.run();
+        if (result.changes === 0) {
+            throw new Error("User not found to update password");
+        }
+    }
+
     public updateName(id: number, name: string): User {
         const stmt = this.unit.prepare<User>("UPDATE User SET name = :name WHERE id = :id RETURNING *", { id, name });
         const user = stmt.get();
@@ -83,10 +96,5 @@ export class UserRepository {
             throw new Error("User not found to update name");
         }
         return user;
-    }
-
-    public updatePassword(id: number, passwordHash: string): void {
-        const stmt = this.unit.prepare("UPDATE User SET password = :passwordHash WHERE id = :id", { id, passwordHash });
-        stmt.run();
     }
 }

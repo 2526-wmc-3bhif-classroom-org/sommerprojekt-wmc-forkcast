@@ -1,0 +1,32 @@
+{
+  "verificationEmail": {
+    "subject": "Tu código de verificación - ForkCast",
+    "text": "Gracias por registrarte en Forkcast. Tu código de verificación es: {{code}}",
+    "html": {
+      "title": "Código de verificación",
+      "greeting": "Hola,",
+      "intro": "Gracias por registrarte en Forkcast. Por favor, usa el siguiente código de verificación para completar tu registro:",
+      "outro": "Si no solicitaste este código, ignora este correo electrónico."
+    }
+  },
+  "resetPasswordEmail": {
+    "subject": "Restablecer tu contraseña - ForkCast",
+    "text": "Has solicitado restablecer tu contraseña. Tu código de restablecimiento es: {{code}}",
+    "html": {
+      "title": "Código de restablecimiento de contraseña",
+      "greeting": "Hola,",
+      "intro": "Has solicitado restablecer tu contraseña. Por favor, usa el siguiente código:",
+      "outro": "Si no solicitaste restablecer tu contraseña, ignora este correo electrónico."
+    }
+  },
+  "resetPasswordSuccessEmail": {
+    "subject": "Tu contraseña ha sido restablecida - ForkCast",
+    "text": "Tu contraseña ha sido restablecida correctamente. Si no realizaste este cambio, contacta con el soporte de inmediato.",
+    "html": {
+      "title": "Contraseña restablecida",
+      "greeting": "Hola,",
+      "intro": "Tu contraseña ha sido restablecida correctamente.",
+      "outro": "Si no realizaste este cambio, contacta con nuestro equipo de soporte de inmediato."
+    }
+  }
+}

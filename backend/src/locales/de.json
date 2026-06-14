@@ -8,5 +8,25 @@
       "intro": "Danke für deine Registrierung bei Forkcast. Bitte benutze den untenstehenden Verifizierungscode, um deine Registrierung abzuschließen:",
       "outro": "Falls du diesen Code nicht angefordert hast, ignoriere diese E-Mail bitte."
     }
+  },
+  "resetPasswordEmail": {
+    "subject": "Passwort zurücksetzen - ForkCast",
+    "text": "Du hast angefordert, dein Passwort zurückzusetzen. Dein Code ist: {{code}}",
+    "html": {
+      "title": "Code zum Zurücksetzen",
+      "greeting": "Hallo,",
+      "intro": "Du hast angefordert, dein Passwort zurückzusetzen. Bitte benutze den folgenden Code:",
+      "outro": "Falls du diese Änderung nicht angefordert hast, ignoriere diese E-Mail bitte."
+    }
+  },
+  "resetPasswordSuccessEmail": {
+    "subject": "Dein Passwort wurde zurückgesetzt - ForkCast",
+    "text": "Dein Passwort wurde erfolgreich zurückgesetzt. Falls du dies nicht warst, kontaktiere bitte umgehend den Support.",
+    "html": {
+      "title": "Passwort zurückgesetzt",
+      "greeting": "Hallo,",
+      "intro": "Dein Passwort wurde erfolgreich zurückgesetzt.",
+      "outro": "Falls du diese Änderung nicht vorgenommen hast, kontaktiere bitte umgehend unseren Support."
+    }
   }
 }

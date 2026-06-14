@@ -131,6 +131,9 @@ components:
           type: string
           format: password
           description: Must satisfy the backend strong-password validation.
+        lang:
+          type: string
+          description: The language locale to use for the email
     LoginRequest:
       type: object
       required:
@@ -156,6 +159,37 @@ components:
           type: string
           pattern: '^\d{6}$'
           description: 6-digit verification code
+    ForgotPasswordRequest:
+      type: object
+      required:
+        - email
+      properties:
+        email:
+          type: string
+          format: email
+          description: The email address to send the reset code to
+        lang:
+          type: string
+          description: The language locale to use for the email
+    ResetPasswordRequest:
+      type: object
+      required:
+        - email
+        - code
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+        code:
+          type: string
+          pattern: '^\d{6}$'
+          description: 6-digit verification code
+        password:
+          type: string
+          format: password
+          description: Must satisfy the backend strong-password validation.
+    UpdateProfileRequest:
     UpdatePictureRequest:
       type: object
       required:
@@ -515,6 +549,70 @@ paths:
                 $ref: '#/components/schemas/ValidationErrorResponse'
         '401':
           description: Invalid code
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '500':
+          description: Internal server error
+  /auth/password/forgot:
+    post:
+      summary: Request a password reset code
+      tags: [Auth]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ForgotPasswordRequest'
+      responses:
+        '200':
+          description: Code sent successfully (if user exists)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+        '500':
+          description: Internal server error
+  /auth/password/reset:
+    post:
+      summary: Reset the user's password using the code
+      tags: [Auth]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetPasswordRequest'
+      responses:
+        '200':
+          description: Password reset successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+        '401':
+          description: Invalid code
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '404':
+          description: User not found
           content:
             application/json:
               schema:

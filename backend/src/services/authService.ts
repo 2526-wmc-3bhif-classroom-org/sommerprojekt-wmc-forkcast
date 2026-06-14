@@ -1,9 +1,10 @@
 import { Unit } from "../db/unit";
 import { UserRepository } from "../repository/userRepository";
 import { User } from "../types";
-import { hashPassword, comparePassword } from "../utils";
+import {hashPassword, comparePassword, generateCode} from "../utils";
 import { generateJWT } from "../utils/jwtUtils";
-import { sendEmail } from "./emailValidationService";
+import { sendEmail } from "../services/codeValidationService";
+import {sendPasswordResetSuccessEmail, sendResetPasswordEmail} from "../utils/mailingUtils";
 
 export class AuthService {
     private userRepository: UserRepository;
@@ -12,7 +13,7 @@ export class AuthService {
         this.userRepository = new UserRepository(unit);
     }
 
-    public async register(name: string, email: string, password: string): Promise<Omit<User, "password">> {
+    public async register(name: string, email: string, password: string, lang?: string): Promise<Omit<User, "password">> {
         const existingUserByEmail = this.userRepository.findByEmail(email);
         if (existingUserByEmail) {
             throw new Error("User with this email already exists");
@@ -33,7 +34,7 @@ export class AuthService {
             isVerified: false
         });
 
-        sendEmail(email).catch(error => {
+        sendEmail(email, lang).catch(error => {
             console.error(`Failed to send verification email to ${email}:`, error);
         });
 
@@ -73,5 +74,23 @@ export class AuthService {
             throw new Error("User not found");
         }
         this.userRepository.updateVerificationStatus(email, true);
+    }
+
+    public checkUserExists(email: string): boolean {
+        return !!this.userRepository.findByEmail(email);
+    }
+
+    public async resetPasswordByEmail(email: string, newPassword: string): Promise<void> {
+        const user = this.userRepository.findByEmail(email);
+        if (!user) {
+            throw new Error("User not found");
+        }
+
+        const hashedPassword = await hashPassword(newPassword);
+        this.userRepository.updatePassword(user.id, hashedPassword);
+
+        sendPasswordResetSuccessEmail(user.email).catch((error: any) => {
+            console.error(`Failed to send reset password success email to ${user.email}:`, error);
+        });
     }
 }

@@ -137,36 +137,53 @@ const getTemplate = async (templateName: string) => {
     return html;
 };
 
-export const sendVerificationEmail = async (to: string, code: string, lang: string = 'en') => {
+const sendTemplatedEmail = async (
+    to: string, 
+    templateName: string, 
+    translationKey: string, 
+    contextParams: any, 
+    lang: string = 'en'
+) => {
     const t = await loadTranslations(lang);
+    const translation = t[translationKey] || {};
     
-    // We can also use mustache for the text fallback!
-    const subject = t.verificationEmail?.subject || "Your Verification Code";
-    const textTemplate = t.verificationEmail?.text || "Your code is: {{code}}";
+    const subject = translation.subject || "Notification from ForkCast";
+    const textTemplate = translation.text || "";
+    const htmlTranslation = translation.html || {};
+    
+    const context = {
+        ...htmlTranslation,
+        ...contextParams
+    };
+    
+    const text = mustache.render(textTemplate, context);
+    
     const logoAttachment = {
         path: path.join(process.cwd(), "src/templates/logo.svg"),
         filename: "logo.svg",
         cid: "logo"
-    }
-    
-    const context = {
-        code,
-        title: t.verificationEmail?.html?.title || "Verification Code",
-        greeting: t.verificationEmail?.html?.greeting || "Hello,",
-        intro: t.verificationEmail?.html?.intro || "Please use the verification code below:",
-        outro: t.verificationEmail?.html?.outro || "If you didn't request this code, ignore this email.",
     };
-    
-    const text = mustache.render(textTemplate, context);
 
     try {
-        const htmlTemplate = await getTemplate("verificationEmail");
+        const htmlTemplate = await getTemplate(templateName);
         const html = mustache.render(htmlTemplate, context);
         
         await sendEmail(to, subject, text, html, [logoAttachment]);
     } catch (error) {
-        console.error("Error sending verification email: ", error);
+        console.error(`Error sending ${templateName} email: `, error);
         // Fallback to plain text if template fails
         await sendEmail(to, subject, text);
     }
+};
+
+export const sendVerificationEmail = async (to: string, code: string, lang: string = 'en') => {
+    await sendTemplatedEmail(to, "codeEmail", "verificationEmail", { code }, lang);
+};
+
+export const sendResetPasswordEmail = async (to: string, code: string, lang: string = 'en') => {
+    await sendTemplatedEmail(to, "codeEmail", "resetPasswordEmail", { code }, lang);
+};
+
+export const sendPasswordResetSuccessEmail = async (to: string, lang: string = 'en') => {
+    await sendTemplatedEmail(to, "confirmationEmail", "resetPasswordSuccessEmail", {}, lang);
 };

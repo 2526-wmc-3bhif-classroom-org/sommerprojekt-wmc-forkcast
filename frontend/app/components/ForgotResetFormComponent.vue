@@ -4,13 +4,17 @@ import useAuthService from "~/assets/service/auth-service";
 import useFailureHandler from "~/assets/util/failure-handler";
 import { onMounted, ref } from 'vue';
 
-const props = defineProps(["enteredEmail", "enteredPassword"]);
+const props = defineProps(["enteredEmail"]);
 
 const code = ref(["", "", "", "", "", ""]);
 const codeRefs = ref<(HTMLInputElement | null)[]>([null, null, null, null, null, null]);
-const isPasting = ref(false);
 
+const password = ref<HTMLInputElement>();
+
+const passwordError = ref("");
 const mainError = ref("");
+
+const showPassword = ref(false);
 const loading = ref(false);
 
 const authService = useAuthService();
@@ -20,6 +24,10 @@ const { t } = useI18n();
 const localePath = useLocalePath();
 const router = useRouter();
 
+failureHandler.addHandler("password", (message) => {
+  passwordError.value = message;
+});
+
 failureHandler.addHandler("code", (message) => {
   mainError.value = message;
 });
@@ -28,20 +36,26 @@ failureHandler.setMainHandler(message => {
   mainError.value = message;
 });
 
-async function verify() {
+async function reset() {
   const codeStr = code.value.join("");
   if (!codeStr || codeStr.length < 6) {
     failureHandler.fail({ message: t('error.enter_code') } as Failure);
     return;
   }
+  if (!password.value?.value) {
+    failureHandler.fail({ message: t('error.fill_all_fields') } as Failure);
+    return;
+  }
+
   loading.value = true;
-  const failure = await authService.verify(props.enteredEmail, props.enteredPassword, codeStr);
+  const failure = await authService.resetPassword(props.enteredEmail, codeStr, password.value.value);
   loading.value = false;
   if (!failure.ok) {
     failureHandler.fail(failure.failure as Failure);
     return;
   }
-  await router.push(localePath("/dashboard"));
+
+  await router.push(localePath("/auth/login"));
 }
 
 function setCodeRef(el: unknown, idx: number) {
@@ -53,9 +67,9 @@ function getFirstEmptyIdx() {
 }
 
 function onBoxClick(event: MouseEvent) {
-    event.preventDefault();
-    const nextIdx = getFirstEmptyIdx();
-    focusInput(nextIdx === -1 ? 5 : nextIdx);
+  event.preventDefault();
+  const nextIdx = getFirstEmptyIdx();
+  focusInput(nextIdx === -1 ? 5 : nextIdx);
 }
 
 function focusInput(idx: number) {
@@ -71,23 +85,16 @@ function onInput(e: Event, idx: number) {
   const input = e.target as HTMLInputElement;
 
   let val = input.value.replace(/\D/g, "");
-  // Always use the last digit entered, replacing any existing value
   if (val.length > 1) val = val.slice(-1);
 
   code.value[i] = val;
   input.value = val;
 
-  // Always focus the first empty field after input, or stay at last if all filled
   const nextIdx = getFirstEmptyIdx();
   if (val && nextIdx !== -1 && nextIdx !== i) {
     focusInput(nextIdx);
   } else if (val && nextIdx === -1 && i < 5) {
     focusInput(5);
-  }
-
-  // If all boxes are filled, trigger verify, but skip if pasting
-  if (!isPasting.value && code.value.every(c => c.length === 1)) {
-    verify();
   }
 }
 
@@ -96,7 +103,6 @@ function onKeydown(e: KeyboardEvent, idx: number) {
   const input = codeRefs.value[i];
   if (!input) return;
 
-  // Handle Backspace
   if (e.key === "Backspace") {
     if (code.value[i]) {
       code.value[i] = "";
@@ -106,7 +112,6 @@ function onKeydown(e: KeyboardEvent, idx: number) {
       }
       e.preventDefault();
     } else if (i > 0) {
-      // Move focus to previous field and clear it
       const prevInput = codeRefs.value[i - 1];
       code.value[i - 1] = "";
       if (prevInput) prevInput.value = "";
@@ -116,7 +121,6 @@ function onKeydown(e: KeyboardEvent, idx: number) {
     return;
   }
 
-  // Handle Arrow navigation
   if (e.key === "ArrowLeft" && i > 0) {
     focusInput(i - 1);
     e.preventDefault();
@@ -128,13 +132,10 @@ function onKeydown(e: KeyboardEvent, idx: number) {
     return;
   }
 
-  // Allow digit entry, let onInput handle focus advance
   if (/^\d$/.test(e.key)) {
-    // No preventDefault: allow input
     return;
   }
 
-  // Prevent non-digit input except allowed keys
   if (!e.ctrlKey && !e.metaKey && !["Tab", "Shift", "Alt"].includes(e.key) && !/^\d$/.test(e.key)) {
     e.preventDefault();
   }
@@ -145,29 +146,20 @@ function onPaste(e: ClipboardEvent) {
   if (!paste) return;
 
   const chars = paste.replace(/\D/g, "").slice(0, 6).split("");
-  isPasting.value = true;
   chars.forEach((c, i) => {
     code.value[i] = c;
     if (codeRefs.value[i]) codeRefs.value[i]!.value = c;
   });
-  // Keep isPasting true until after all input events from paste are processed
-  setTimeout(() => { isPasting.value = false }, 0);
 
-  // Focus the first empty field after paste, or last if all filled
   const nextIdx = getFirstEmptyIdx();
   if (nextIdx !== -1) focusInput(nextIdx);
   else focusInput(5);
-
-  if (chars.length === 6) verify();
 }
 </script>
 
 <template>
   <form class="fieldset w-full" @submit.prevent>
-    <label class="label">
-      <i class="fa-solid fa-hashtag"/>
-      <span>{{$t('signup.code')}}</span>
-    </label>
+    <label class="label">{{$t('forgot.code')}}</label>
     <div class="inline-flex justify-between">
       <input
         v-for="idx in 6"
@@ -186,15 +178,29 @@ function onPaste(e: ClipboardEvent) {
         @mousedown="onBoxClick"
       />
     </div>
+
+    <label class="label">{{$t('forgot.new_password')}}</label>
+    <label class="input w-full">
+      <i class="fa-solid fa-key opacity-50"/>
+      <input ref="password" autocomplete="new-password" :type="showPassword ? 'text' : 'password'" class="grow" placeholder="••••••••" @keyup.enter="reset" />
+      <button type="button" tabindex="-1" class="opacity-50 hover:opacity-100 cursor-pointer" @click="showPassword = !showPassword">
+        <i :class="showPassword ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'"/>
+      </button>
+    </label>
+    <Transition name="error-reveal">
+      <p v-if="passwordError" class="label text-error gap-1 text-wrap">
+        <i class="fa-solid fa-triangle-exclamation"/><span>{{ passwordError }}</span>
+      </p>
+    </Transition>
     <Transition name="error-reveal">
       <p v-if="mainError" class="label text-error gap-1 text-wrap">
         <i class="fa-solid fa-triangle-exclamation"/><span>{{ mainError }}</span>
       </p>
     </Transition>
-    <button class="btn btn-primary mt-4" :disabled="loading" @click="verify">
+    <button class="btn btn-primary mt-4" :disabled="loading" @click="reset">
       <span v-if="loading" class="loading loading-spinner loading-sm"/>
       <i v-else class="fa-solid fa-arrow-right-to-bracket"/>
-      <span>{{$t('signup.submit')}}</span>
+      <span>{{$t('forgot.submit')}}</span>
     </button>
   </form>
 </template>
