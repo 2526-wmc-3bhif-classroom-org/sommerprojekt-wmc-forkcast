@@ -1,4 +1,5 @@
 import type {Failure} from "~/assets/model/failure";
+import {triggerAuthExpiry} from "~/assets/util/auth-expiry";
 
 export type ApiMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
@@ -39,7 +40,8 @@ export default function useApiConnection() {
                 return { ok: false, needsAuth: false, rateLimited: true, failure: { message: "Too many requests. Please wait a moment.", errors: null } };
             }
 
-            if (response.status === 401) {
+            if (response.status === 401 || response.status === 403) {
+                if (import.meta.client) triggerAuthExpiry();
                 return { ok: false, needsAuth: true, rateLimited: false, failure: { message: "Unauthorized", errors: null } };
             }
 
