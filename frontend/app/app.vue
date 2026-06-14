@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 const route = useRoute();
-const { locale } = useI18n();
+const { locale, localeProperties } = useI18n();
 
 const basePath = computed(() => {
   const prefix = `/${locale.value}`;
@@ -32,7 +32,8 @@ useHead({
     }
   ],
   htmlAttrs: {
-    lang: locale
+    lang: locale,
+    dir: computed(() => localeProperties.value.dir ?? 'ltr')
   },
   link: [
     {
