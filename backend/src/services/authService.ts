@@ -13,7 +13,7 @@ export class AuthService {
         this.userRepository = new UserRepository(unit);
     }
 
-    public async register(name: string, email: string, password: string): Promise<Omit<User, "password">> {
+    public async register(name: string, email: string, password: string, lang?: string): Promise<Omit<User, "password">> {
         const existingUserByEmail = this.userRepository.findByEmail(email);
         if (existingUserByEmail) {
             throw new Error("User with this email already exists");
@@ -34,7 +34,7 @@ export class AuthService {
             isVerified: false
         });
 
-        sendEmail(email).catch(error => {
+        sendEmail(email, lang).catch(error => {
             console.error(`Failed to send verification email to ${email}:`, error);
         });
 

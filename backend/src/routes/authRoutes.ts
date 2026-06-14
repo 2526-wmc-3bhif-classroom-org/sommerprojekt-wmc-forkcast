@@ -13,14 +13,15 @@ router.post("/register",
     body("name").notEmpty().withMessage("Username is required"),
     body("email").notEmpty().isEmail().withMessage("Email is required and must be a valid email"),
     body("password").notEmpty().withMessage("Password is required").isStrongPassword().withMessage("Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number and one special character"),
+    body("lang").optional().isString().withMessage("If provided, language must be a string"),
     validateRequest,
     async (req: Request, res: Response) => {
     const unit = new Unit(false);
     try {
-        const { name, email, password } = req.body;
+        const { name, email, password, lang } = req.body;
 
         const authService = new AuthService(unit);
-        const user = await authService.register(name, email, password);
+        const user = await authService.register(name, email, password, lang);
         unit.complete(true);
         res.status(StatusCodes.CREATED).json(user);
     } catch (error: any) {
@@ -91,10 +92,11 @@ router.post("/verify",
 
 router.post("/password/forgot",
     body("email").optional().isEmail().withMessage("If provided, email must be a valid email"),
+    body("lang").optional().isString().withMessage("If provided, language must be a string"),
     validateRequest,
     async (req: Request, res: Response) => {
     try {
-        const { email } = req.body;
+        const { email, lang } = req.body;
 
         // Even if user isn't found, we return 200 so an attacker can't enumerate emails.
         const unit = new Unit(false);
@@ -103,7 +105,7 @@ router.post("/password/forgot",
         unit.complete(true);
 
         if (userExists) {
-            sendPasswordResetEmail(email).catch(console.error);
+            sendPasswordResetEmail(email, lang).catch(console.error);
         }
 
         res.status(StatusCodes.OK).json({ message: "If an account with that email exists, a reset code has been sent." });

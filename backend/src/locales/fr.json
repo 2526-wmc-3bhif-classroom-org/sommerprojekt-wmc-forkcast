@@ -1,0 +1,32 @@
+{
+  "verificationEmail": {
+    "subject": "Votre code de vérification - ForkCast",
+    "text": "Merci de vous être inscrit sur Forkcast. Votre code de vérification est : {{code}}",
+    "html": {
+      "title": "Code de vérification",
+      "greeting": "Bonjour,",
+      "intro": "Merci de vous être inscrit sur Forkcast. Veuillez utiliser le code de vérification ci-dessous pour finaliser votre inscription :",
+      "outro": "Si vous n'avez pas demandé ce code, veuillez ignorer cet e-mail."
+    }
+  },
+  "resetPasswordEmail": {
+    "subject": "Réinitialisation de votre mot de passe - ForkCast",
+    "text": "Vous avez demandé une réinitialisation de mot de passe. Votre code de réinitialisation est : {{code}}",
+    "html": {
+      "title": "Code de réinitialisation du mot de passe",
+      "greeting": "Bonjour,",
+      "intro": "Vous avez demandé à réinitialiser votre mot de passe. Veuillez utiliser le code suivant :",
+      "outro": "Si vous n'avez pas demandé de réinitialisation de mot de passe, veuillez ignorer cet e-mail."
+    }
+  },
+  "resetPasswordSuccessEmail": {
+    "subject": "Votre mot de passe a été réinitialisé - ForkCast",
+    "text": "Votre mot de passe a été réinitialisé avec succès. Si vous n'avez pas effectué cette modification, veuillez contacter le support immédiatement.",
+    "html": {
+      "title": "Mot de passe réinitialisé",
+      "greeting": "Bonjour,",
+      "intro": "Votre mot de passe a été réinitialisé avec succès.",
+      "outro": "Si vous n'avez pas effectué cette modification, veuillez contacter notre équipe de support immédiatement."
+    }
+  }
+}
