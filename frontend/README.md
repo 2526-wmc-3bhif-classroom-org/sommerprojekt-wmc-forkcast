@@ -29,13 +29,15 @@ The only config is the backend API base URL, read at runtime:
 | `API_BASE_URL` | `http://localhost:3000/api` | Backend REST API base URL |
 
 ```bash
-API_BASE_URL=http://localhost:3000/api npm run dev
+# dev server on :8080 (matches the backend's default CORS_ORIGIN);
+# API_BASE_URL defaults to http://localhost:3000/api
+npm run dev -- --port 8080
 ```
 
 ## Scripts
 
 ```bash
-npm run dev        # dev server with HMR
+npm run dev        # dev server with HMR (defaults to :3000 — pass --port 8080)
 npm run generate   # static site → .output/public (used for Pages deploy)
 ```
 

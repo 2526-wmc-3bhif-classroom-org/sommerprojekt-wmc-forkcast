@@ -57,8 +57,7 @@ sommerprojekt-wmc-forkcast/
 ├── frontend/   # Nuxt 4 client
 ├── backend/    # Express REST API + SQLite
 ├── .github/    # CI: Pages deploy, backend Docker build
-├── erd.puml    # entity-relationship diagram source
-└── mockup.png
+└── erd.puml    # entity-relationship diagram source
 ```
 
 ## Quick Start
@@ -72,11 +71,14 @@ cp example.env .env        # then fill in JWT_SECRET, SPOONACULAR_API_KEY, ...
 npm install
 npm start
 
-# 2. Frontend (Nuxt dev server on :3000 by default — set a different port if needed)
+# 2. Frontend (Nuxt dev server on :8080 — matches the backend's default CORS_ORIGIN)
 cd frontend
 npm install
-API_BASE_URL=http://localhost:3000/api npm run dev
+npm run dev -- --port 8080
 ```
+
+The frontend reads the API base URL from `API_BASE_URL` (defaults to
+`http://localhost:3000/api`), so no override is needed with the backend on :3000.
 
 See [`backend/README.md`](backend/README.md) and [`frontend/README.md`](frontend/README.md) for details.
 
