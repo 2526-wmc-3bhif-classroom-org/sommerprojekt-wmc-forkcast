@@ -1,12 +1,13 @@
 import type {Failure} from "~/assets/model/failure";
 
-export type ApiMethod = "GET" | "POST" | "PUT" | "DELETE";
+export type ApiMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
 export type ApiResponse<T> = {
     value?: T;
     failure?: Failure;
     ok: boolean;
     needsAuth: boolean;
+    rateLimited: boolean;
 };
 
 export default function useApiConnection() {
@@ -34,26 +35,34 @@ export default function useApiConnection() {
                 body: body ? JSON.stringify(body) : undefined,
             });
 
+            if (response.status === 429) {
+                return { ok: false, needsAuth: false, rateLimited: true, failure: { message: "Too many requests. Please wait a moment.", errors: null } };
+            }
+
+            if (response.status === 401) {
+                return { ok: false, needsAuth: true, rateLimited: false, failure: { message: "Unauthorized", errors: null } };
+            }
+
             if (!parseBody) {
                 if (!response.ok) {
-                    if (response.status === 401) {
-                        return { ok: false, needsAuth: true, failure: { message: "Unauthorized" } as Failure };
+                    try {
+                        const errData = await response.json();
+                        return { ok: false, needsAuth: false, rateLimited: false, failure: errData as Failure };
+                    } catch {
+                        return { ok: false, needsAuth: false, rateLimited: false, failure: { message: `Request failed (${response.status})`, errors: null } };
                     }
-
-                    return { ok: false, needsAuth: false, failure: { message: "Request failed" } as Failure };
                 }
-
-                return { ok: true } as ApiResponse<T>;
+                return { ok: true, needsAuth: false, rateLimited: false };
             }
 
             const data = await response.json();
 
             if (!response.ok) {
-                return { ok: false, needsAuth: false, failure: data as Failure };
+                return { ok: false, needsAuth: false, rateLimited: false, failure: data as Failure };
             }
-            return { ok: true, needsAuth: false, value: data as T };
+            return { ok: true, needsAuth: false, rateLimited: false, value: data as T };
         } catch (error) {
-            return { ok: false, needsAuth: false, failure: { message: "Network error: " + error } as Failure };
+            return { ok: false, needsAuth: false, rateLimited: false, failure: { message: "Network error: " + error, errors: null } };
         }
     }
 

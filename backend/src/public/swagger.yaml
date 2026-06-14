@@ -13,14 +13,86 @@ components:
       scheme: bearer
       bearerFormat: JWT
   schemas:
-    User:
+    PublicUser:
       type: object
       required:
         - id
         - name
-        - email
         - profilePicture
       properties:
+        id:
+          type: integer
+        name:
+          type: string
+        profilePicture:
+          type: string
+          format: uri
+          nullable: true
+        isVerified:
+           type: boolean
+    Friend:
+       type: object
+       properties:
+         userId:
+           type: integer
+         friendId:
+           type: integer
+    FavoriteFood:
+       type: object
+       properties:
+         userId:
+           type: integer
+         recipeId:
+           type: integer
+    FavoriteFoodWithRecipe:
+       type: object
+       properties:
+         userId:
+           type: integer
+         recipeId:
+           type: integer
+         recipe:
+           allOf:
+             - $ref: '#/components/schemas/RecipePreview'
+             - type: object
+               nullable: true
+    CalendarEntry:
+       type: object
+       properties:
+         id:
+           type: integer
+         date:
+           type: string
+           format: date-time
+         userId:
+           type: integer
+         recipeId:
+           type: integer
+    CalendarEntryWithRecipe:
+       type: object
+       properties:
+         id:
+           type: integer
+         date:
+           type: string
+           format: date-time
+         userId:
+           type: integer
+         recipeId:
+           type: integer
+         recipe:
+           allOf:
+             - $ref: '#/components/schemas/RecipePreview'
+             - type: object
+               nullable: true
+    User:
+       type: object
+       required:
+         - id
+         - name
+         - email
+         - profilePicture
+       properties:
         id:
           type: integer
         name:
@@ -112,22 +184,58 @@ components:
           format: password
           description: Must satisfy the backend strong-password validation.
     UpdateProfileRequest:
+    UpdatePictureRequest:
+      type: object
+      required:
+        - profilePicture
+      properties:
+        profilePicture:
+          type: string
+          description: Base64 encoded image string
+    UpdateNameRequest:
       type: object
       required:
         - name
       properties:
         name:
           type: string
-        profilePicture:
-          type: string
-          format: uri
-    AddFriendRequest:
+          maxLength: 50
+    UpdatePasswordRequest:
       type: object
       required:
-        - friendId
+        - currentPassword
+        - newPassword
       properties:
-        friendId:
-          type: integer
+        currentPassword:
+          type: string
+          format: password
+        newPassword:
+          type: string
+          format: password
+          minLength: 8
+          description: Must contain at least one uppercase letter, one lowercase letter, one number and one special character
+    SendFriendRequest:
+      type: object
+      required:
+        - username
+      properties:
+        username:
+          type: string
+    SendFriendRequestResult:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [pending, accepted]
+        user:
+          $ref: '#/components/schemas/PublicUser'
+    IncomingFriendRequest:
+      allOf:
+        - $ref: '#/components/schemas/PublicUser'
+        - type: object
+          properties:
+            requestId:
+              type: integer
     AddFavoriteRequest:
       type: object
       required:
@@ -147,13 +255,45 @@ components:
           type: string
           format: date-time
           description: ISO 8601 date string.
-    UpdateNotificationRequest:
+    ShoppingListIngredient:
       type: object
-      required:
-        - isRead
       properties:
-        isRead:
-          type: boolean
+        name:
+          type: string
+        us:
+          type: object
+          properties:
+            amount:
+              type: number
+            unit:
+              type: string
+        metric:
+          type: object
+          properties:
+            amount:
+              type: number
+            unit:
+              type: string
+    DateRange:
+      type: object
+      properties:
+        start:
+          type: string
+          format: date
+        end:
+          type: string
+          format: date
+    ShoppingListResponse:
+      type: object
+      properties:
+        dateRange:
+          $ref: '#/components/schemas/DateRange'
+        recipeCount:
+          type: integer
+        ingredients:
+          type: array
+          items:
+            $ref: '#/components/schemas/ShoppingListIngredient'
     ValidationErrorItem:
       type: object
       properties:
@@ -179,6 +319,143 @@ components:
       properties:
         message:
           type: string
+    QuotaExceededResponse:
+      type: object
+      required: [message, retry_after]
+      properties:
+        message:
+          type: string
+          description: Error message indicating quota exceeded
+        retry_after:
+          type: integer
+          description: Seconds until the quota resets
+    RecipePreviewRating:
+      type: object
+      required: [rating, count]
+      properties:
+        rating:
+          type: number
+          minimum: 1
+          maximum: 5
+          description: >-
+            Average rating. Reflects the live user-rating average (1 decimal) when at least
+            one user has rated the recipe; otherwise falls back to the Spoonacular score.
+        count:
+          type: integer
+          description: >-
+            Number of user ratings when any exist; otherwise the Spoonacular aggregate-likes count.
+    RecipePreviewAttribute:
+      type: object
+      required: [icon, text]
+      properties:
+        icon:
+          type: string
+          description: Font Awesome icon name (without fa- prefix)
+        text:
+          type: string
+    RecipePreviewTag:
+      type: object
+      required: [icon, text, color]
+      properties:
+        icon:
+          type: string
+          description: Font Awesome icon name (without fa- prefix)
+        text:
+          type: string
+        color:
+          type: string
+          description: DaisyUI badge color (success, warning, primary, error, neutral)
+    RecipePreview:
+      type: object
+      required: [id, title, image, effort, rating, attributes, tags]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        image:
+          type: string
+          format: uri
+        effort:
+          type: integer
+          minimum: 1
+          maximum: 100
+          description: Effort score calculated from cook time, step count and ingredient count
+        rating:
+          $ref: '#/components/schemas/RecipePreviewRating'
+        attributes:
+          type: array
+          items:
+            $ref: '#/components/schemas/RecipePreviewAttribute'
+          description: Display attributes (e.g. cook time, servings)
+        tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/RecipePreviewTag'
+          description: Dietary tags (Vegan, Vegetarian, Gluten Free, Dairy Free)
+        isFavorited:
+          type: boolean
+          description: Whether the authenticated user has favorited this recipe. Absent when the caller is unauthenticated.
+        userRating:
+          type: integer
+          minimum: 1
+          maximum: 5
+          description: The authenticated user's own rating for this recipe. Absent when the caller is unauthenticated or has not rated it.
+    RatingResponse:
+      type: object
+      required: [rating, userRating]
+      properties:
+        rating:
+          $ref: '#/components/schemas/RecipePreviewRating'
+        userRating:
+          type: integer
+          minimum: 1
+          maximum: 5
+          description: The rating the user just submitted
+    FilterOption:
+      type: object
+      required: [name, pretty_name, type]
+      properties:
+        name:
+          type: string
+          description: Filter parameter name (e.g. calories, diet)
+        pretty_name:
+          type: string
+          description: User-friendly filter name
+        type:
+          type: string
+          enum: [number, string, boolean, range]
+          description: Filter input type
+        min:
+          type: number
+          description: Minimum allowed value (for number/range types)
+        max:
+          type: number
+          description: Maximum allowed value (for number/range types)
+    FilterGroup:
+      type: object
+      required: [pretty_name, icon, options]
+      properties:
+        pretty_name:
+          type: string
+          description: User-friendly group name
+        icon:
+          type: string
+          description: Font Awesome icon name
+        options:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/FilterOption'
+          description: Map of filter names to their configurations
+    FiltersResponse:
+      type: object
+      required: [filters]
+      properties:
+        filters:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/FilterGroup'
+          description: Map of filter group names to their configurations
 security:
   - bearerAuth: []
 paths:
@@ -205,7 +482,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ValidationErrorResponse'
+                  $ref: '#/components/schemas/ValidationErrorResponse'
         '500':
           description: Internal server error
   /auth/login:
@@ -334,38 +611,137 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/MessageResponse'
-        '500':
-          description: Internal server error
+          '500':
+            description: Internal server error
   /recipes:
     get:
-      summary: Get all recipes
+       summary: Search recipes with optional filters
+       tags: [Recipes]
+       parameters:
+         - in: query
+           name: search
+           schema:
+             type: string
+           description: Search term. Returns empty array if omitted.
+         - in: query
+           name: calories
+           schema:
+             type: string
+           description: Calorie range filter (e.g. 50-500, 50-, -500)
+         - in: query
+           name: carbs
+           schema:
+             type: string
+           description: Carbs range filter in grams
+         - in: query
+           name: protein
+           schema:
+             type: string
+           description: Protein range filter in grams
+         - in: query
+           name: fat
+           schema:
+             type: string
+           description: Fat range filter in grams
+         - in: query
+           name: sugar
+           schema:
+             type: string
+           description: Sugar range filter in grams
+         - in: query
+           name: sodium
+           schema:
+             type: string
+           description: Sodium range filter in mg
+         - in: query
+           name: fiber
+           schema:
+             type: string
+           description: Fiber range filter in grams
+         - in: query
+           name: diet
+           schema:
+             type: string
+           description: Diet type (e.g. vegetarian, vegan, gluten free)
+         - in: query
+           name: intolerances
+           schema:
+             type: string
+           description: Comma-separated intolerances
+         - in: query
+           name: maxReadyTime
+           schema:
+             type: integer
+           description: Maximum ready time in minutes
+         - in: query
+           name: servings
+           schema:
+             type: string
+           description: Servings range (e.g. 2-4)
+         - in: query
+           name: equipment
+           schema:
+             type: string
+           description: Required equipment
+         - in: query
+           name: type
+           schema:
+             type: string
+           description: Meal type
+         - in: query
+           name: cuisine
+           schema:
+             type: string
+           description: Cuisine type
+         - in: query
+           name: number
+           schema:
+             type: integer
+             minimum: 1
+             maximum: 100
+           description: Number of results (default 10)
+       responses:
+         '200':
+           description: List of matching recipes with effort score, rating and dietary tags
+           content:
+             application/json:
+               schema:
+                 type: array
+                 items:
+                   $ref: '#/components/schemas/RecipePreview'
+         '400':
+           description: Invalid query parameter
+           content:
+            application/json:
+              schema:
+                 $ref: '#/components/schemas/ValidationErrorResponse'
+         '429':
+           description: Daily API quota exceeded
+           content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuotaExceededResponse'
+         '500':
+           description: Internal server error
+  /recipes/filters:
+    get:
+      summary: Get available recipe filters
       tags: [Recipes]
-      parameters:
-        - in: query
-          name: search
-          schema:
-            type: string
-          description: Search term
+      security:
+        - bearerAuth: []
+      description: Returns all available filters organized by group. Range-type filters accept format 'min-max' (e.g., calories=50-500).
       responses:
         '200':
-          description: List of recipes
+          description: Available filters grouped by category
           content:
             application/json:
               schema:
-                type: array
-                items:
-                   type: object
-        '400':
-          description: Invalid query parameter
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ValidationErrorResponse'
+                $ref: '#/components/schemas/FiltersResponse'
         '500':
           description: Internal server error
   /recipes/{id}:
     get:
-      summary: Get recipe details
+      summary: Get recipe by ID
       tags: [Recipes]
       parameters:
         - in: path
@@ -375,13 +751,68 @@ paths:
             type: integer
       responses:
         '200':
-          description: Recipe details
+          description: Recipe with effort score, rating and dietary tags
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecipePreview'
         '400':
           description: Invalid recipe ID
           content:
              application/json:
                schema:
                  $ref: '#/components/schemas/ValidationErrorResponse'
+        '429':
+          description: Daily API quota exceeded
+          content:
+             application/json:
+               schema:
+                 $ref: '#/components/schemas/QuotaExceededResponse'
+        '404':
+          description: Recipe not found
+        '500':
+          description: Internal server error
+  /recipes/{id}/rating:
+    post:
+      summary: Submit or update the authenticated user's rating for a recipe
+      description: >-
+        Upserts the user's 1–5 star rating (re-submitting overwrites the previous value).
+        The recipe is cached locally if not already present. Returns the recalculated
+        aggregate plus the user's own rating.
+      tags: [Recipes]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [rating]
+              properties:
+                rating:
+                  type: integer
+                  minimum: 1
+                  maximum: 5
+      responses:
+        '200':
+          description: Rating saved; returns the updated aggregate and the user's rating
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RatingResponse'
+        '400':
+          description: Invalid recipe ID or rating value
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+        '401':
+          description: Missing or invalid authentication
         '404':
           description: Recipe not found
         '500':
@@ -401,18 +832,23 @@ paths:
           description: Missing or invalid authentication
         '500':
           description: Internal server error
-    put:
-      summary: Update current user profile
+  /users/me/picture:
+    patch:
+      summary: Update current user's profile picture
       tags: [User]
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdateProfileRequest'
+              $ref: '#/components/schemas/UpdatePictureRequest'
       responses:
         '200':
-          description: Profile updated
+          description: Profile picture updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
         '400':
           description: Invalid request body
           content:
@@ -421,6 +857,60 @@ paths:
                  $ref: '#/components/schemas/ValidationErrorResponse'
         '401':
           description: Missing or invalid authentication
+        '404':
+          description: User not found
+        '500':
+          description: Internal server error
+  /users/me/name:
+    patch:
+      summary: Update current user's name
+      tags: [User]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateNameRequest'
+      responses:
+        '200':
+          description: Name updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Invalid request body
+          content:
+            application/json:
+              schema:
+                 $ref: '#/components/schemas/ValidationErrorResponse'
+        '401':
+          description: Missing or invalid authentication
+        '404':
+          description: User not found
+        '409':
+          description: Name already taken
+        '500':
+          description: Internal server error
+  /users/me/password:
+    patch:
+      summary: Update current user's password
+      tags: [User]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePasswordRequest'
+      responses:
+        '204':
+          description: Password updated successfully
+        '400':
+          description: Invalid request body or incorrect current password
+        '401':
+          description: Missing or invalid authentication
+        '404':
+          description: User not found
         '500':
           description: Internal server error
   /users/me/friends:
@@ -429,42 +919,133 @@ paths:
       tags: [Friends]
       responses:
         '200':
-          description: Friend list
+          description: Friend list mappings
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/User'
+                  $ref: '#/components/schemas/PublicUser'
+        '401':
+          description: Missing or invalid authentication
+        '500':
+          description: Internal server error
+  /users/me/friends/requests:
+    get:
+      summary: Get incoming (non-expired) friend requests
+      tags: [Friends]
+      responses:
+        '200':
+          description: Incoming friend requests
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/IncomingFriendRequest'
         '401':
           description: Missing or invalid authentication
         '500':
           description: Internal server error
     post:
-      summary: Add a friend
+      summary: Send a friend request by username
       tags: [Friends]
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AddFriendRequest'
+              $ref: '#/components/schemas/SendFriendRequest'
       responses:
-        '200':
-          description: Friend added
-        '400':
-          description: Invalid request body
+        '201':
+          description: Friend request sent (pending)
           content:
-             application/json:
-               schema:
-                 $ref: '#/components/schemas/ValidationErrorResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SendFriendRequestResult'
+        '200':
+          description: Auto-accepted because the target had already requested you
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SendFriendRequestResult'
+        '400':
+          description: Invalid request body or adding self
+        '404':
+          description: Username not found
+        '409':
+          description: Already friends or request already sent
         '401':
           description: Missing or invalid authentication
-        '409':
-          description: Already friends or pending
+        '500':
+          description: Internal server error
+  /users/me/friends/requests/{id}/accept:
+    post:
+      summary: Accept an incoming friend request
+      tags: [Friends]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Request accepted; returns the new friend's profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicUser'
+        '404':
+          description: Friend request not found
+        '401':
+          description: Missing or invalid authentication
+        '500':
+          description: Internal server error
+  /users/me/friends/requests/{id}/decline:
+    post:
+      summary: Decline an incoming friend request
+      tags: [Friends]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Request declined
+        '404':
+          description: Friend request not found
+        '401':
+          description: Missing or invalid authentication
         '500':
           description: Internal server error
   /users/me/friends/{friendId}:
+    get:
+      summary: Get a specific friend's profile
+      tags: [Friends]
+      parameters:
+        - in: path
+          name: friendId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Friend profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicUser'
+        '400':
+          description: Invalid friend ID
+        '401':
+          description: Missing or invalid authentication
+        '404':
+          description: Friend or user not found
+        '500':
+          description: Internal server error
     delete:
       summary: Remove a friend
       tags: [Friends]
@@ -481,47 +1062,81 @@ paths:
           description: Invalid friend ID
         '401':
           description: Missing or invalid authentication
+        '404':
+          description: Friend connection not found
         '500':
           description: Internal server error
   /users/me/favorites:
-    get:
-      summary: Get favorite recipes
-      tags: [Favorites]
-      responses:
-        '200':
-           description: Favorite recipes
+     get:
+       summary: Get favorite recipes
+       tags: [Favorites]
+       parameters:
+         - in: query
+           name: populate
+           schema:
+             type: boolean
+           description: 'When true, includes full recipe details. When false (default), returns only IDs'
+         - in: query
+           name: offset
+           schema:
+             type: integer
+             minimum: 0
+           description: Number of results to skip (pagination). Applied before population for performance.
+         - in: query
+           name: limit
+           schema:
+             type: integer
+             minimum: 1
+           description: Maximum number of results to return. Unlimited if omitted.
+       responses:
+         '200':
+            description: Favorite recipes (with or without full recipe details based on populate flag)
+            content:
+             application/json:
+               schema:
+                 type: array
+                 items:
+                   oneOf:
+                     - $ref: '#/components/schemas/FavoriteFood'
+                     - $ref: '#/components/schemas/FavoriteFoodWithRecipe'
+         '400':
+           description: Invalid query parameters
            content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-        '401':
-          description: Missing or invalid authentication
-        '500':
-          description: Internal server error
-    post:
-      summary: Add recipe to favorites
-      tags: [Favorites]
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AddFavoriteRequest'
-      responses:
-        '200':
-          description: Added to favorites
-        '400':
-          description: Invalid request body
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ValidationErrorResponse'
-        '401':
-          description: Missing or invalid authentication
-        '500':
-          description: Internal server error
+             application/json:
+               schema:
+                 $ref: '#/components/schemas/ValidationErrorResponse'
+         '401':
+           description: Missing or invalid authentication
+         '500':
+           description: Internal server error
+     post:
+       summary: Add recipe to favorites
+       tags: [Favorites]
+       requestBody:
+         required: true
+         content:
+           application/json:
+             schema:
+               $ref: '#/components/schemas/AddFavoriteRequest'
+       responses:
+         '201':
+           description: Added to favorites
+           content:
+             application/json:
+               schema:
+                 $ref: '#/components/schemas/FavoriteFood'
+         '400':
+           description: Invalid request body
+           content:
+             application/json:
+               schema:
+                 $ref: '#/components/schemas/ValidationErrorResponse'
+         '401':
+           description: Missing or invalid authentication
+         '404':
+           description: Recipe not found
+         '500':
+           description: Internal server error
   /users/me/favorites/{recipeId}:
     delete:
       summary: Remove recipe from favorites
@@ -539,15 +1154,49 @@ paths:
           description: Invalid recipe ID
         '401':
           description: Missing or invalid authentication
+        '404':
+          description: Favorite not found
         '500':
           description: Internal server error
   /users/me/calendar:
     get:
       summary: Get calendar entries
       tags: [Calendar]
+      parameters:
+        - in: query
+          name: from
+          schema:
+            type: string
+            format: date
+          description: Start date in ISO8601 format (YYYY-MM-DD). Optional, returns all if omitted.
+        - in: query
+          name: to
+          schema:
+            type: string
+            format: date
+          description: End date in ISO8601 format (YYYY-MM-DD). Optional, returns all if omitted.
+        - in: query
+          name: populate
+          schema:
+            type: boolean
+          description: 'When true, embeds full recipe details (including isFavorited) inside each entry. When false (default), returns only raw CalendarEntry objects.'
       responses:
         '200':
-           description: Calendar entries
+          description: Calendar entries (with or without recipe details based on populate flag)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  oneOf:
+                    - $ref: '#/components/schemas/CalendarEntry'
+                    - $ref: '#/components/schemas/CalendarEntryWithRecipe'
+        '400':
+          description: Invalid query parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
         '401':
           description: Missing or invalid authentication
         '500':
@@ -574,6 +1223,49 @@ paths:
           description: Missing or invalid authentication
         '500':
           description: Internal server error
+  /users/me/calendar/shopping-list:
+    get:
+      summary: Get shopping list for calendar entries in date range
+      tags: [Calendar]
+      parameters:
+        - in: query
+          name: from
+          required: true
+          schema:
+            type: string
+            format: date
+          description: Start date in ISO8601 format (YYYY-MM-DD)
+        - in: query
+          name: to
+          required: true
+          schema:
+            type: string
+            format: date
+          description: End date in ISO8601 format (YYYY-MM-DD)
+        - in: query
+          name: units
+          schema:
+            type: string
+            enum: [us, metric, both]
+            default: metric
+          description: Unit system for ingredient amounts
+      responses:
+        '200':
+          description: Aggregated shopping list with ingredients
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShoppingListResponse'
+        '400':
+          description: Invalid parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+        '401':
+          description: Missing or invalid authentication
+        '500':
+          description: Internal server error
   /users/me/calendar/{calendarEntryId}:
     delete:
       summary: Remove calendar entry
@@ -591,6 +1283,8 @@ paths:
            description: Invalid ID
         '401':
           description: Missing or invalid authentication
+        '404':
+          description: Not found
         '500':
           description: Internal server error
     get:
@@ -611,32 +1305,3 @@ paths:
            description: Missing or invalid authentication
         '500':
            description: Internal server error
-  /users/me/notifications/{notificationId}:
-    put:
-      summary: Mark notification as read
-      tags: [Notifications]
-      parameters:
-        - in: path
-          name: notificationId
-          required: true
-          schema:
-            type: integer
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UpdateNotificationRequest'
-      responses:
-        '200':
-          description: Notification updated
-        '400':
-           description: Invalid request body
-           content:
-             application/json:
-               schema:
-                 $ref: '#/components/schemas/ValidationErrorResponse'
-        '401':
-          description: Missing or invalid authentication
-        '500':
-          description: Internal server error

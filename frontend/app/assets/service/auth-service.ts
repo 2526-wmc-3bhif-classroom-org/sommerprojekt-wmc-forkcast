@@ -1,70 +1,74 @@
 import type {User} from "~/assets/model/user";
 import useApiConnection from "~/assets/util/api-connector";
 import type {AuthResponse} from "~/assets/model/auth-response";
-import {useJwtStore} from "~/assets/store/jwt-store";
-import {useUserStore} from "~/assets/store/user-store";
+import {useAuthStore} from "~/assets/store/auth-store";
+import {useCalendarStore} from "~/assets/store/calendar-store";
+import {useFavoritesStore} from "~/assets/store/favorites-store";
+import {useRecipeStore} from "~/assets/store/recipe-store";
 
 export default function useAuthService() {
     const connection = useApiConnection();
-    const jwtStore = useJwtStore();
-    const userStore = useUserStore();
+    const authStore = useAuthStore();
+    const calendarStore = useCalendarStore();
+    const favoritesStore = useFavoritesStore();
+    const recipeStore = useRecipeStore();
 
-    const authenticated = computed(() => !userStore.loading && jwtStore.jwt !== undefined);
+    const loading = computed(() => authStore.loading);
+    const authenticated = computed(() => !authStore.loading && authStore.jwt !== undefined);
+    const jwt = computed(() => authStore.jwt);
 
     async function clearAuthState() {
-        userStore.user = undefined
-        jwtStore.jwt = undefined;
+        authStore.user = undefined;
+        authStore.jwt = undefined;
+        calendarStore.clear();
+        favoritesStore.clear();
+        recipeStore.clear();
     }
 
     async function setAuthState(res: AuthResponse) {
-        userStore.user = res.user;
-        jwtStore.jwt = res.token;
+        authStore.user = res.user;
+        authStore.jwt = res.token;
     }
 
     async function logout() {
-        if (!authenticated.value) throw Error("Not authenticated");
-
+        if (!authenticated.value) return;
         await clearAuthState();
     }
 
     async function loadUserWithExistingJwt() {
+        if (!authStore.jwt) {
+            authStore.loading = false;
+            return { ok: false, error: "No JWT found" };
+        }
+
         let result = await getUserWithExistingJwt();
 
         if (result.ok) {
-            userStore.user = result.value as User;
-        } else {
-            await clearAuthState(); // If the JWT is invalid or expired, clear the auth state to prevent using an invalid token
+            authStore.user = result.value as User;
+        } else if (result.needsAuth) {
+            await clearAuthState();
         }
 
-        userStore.loading = false; // Set loading to false after attempting to load the user
+        authStore.loading = false;
         return result;
     }
 
-    async function login(email: string, password: string) {
+    async function login(identifier: string, password: string) {
         if (authenticated.value) throw Error("Already authenticated");
-
-        let result = await loginUser(email, password);
-        if (result.ok) {
-            await setAuthState(result.value as AuthResponse);
-        }
-
+        let result = await loginUser(identifier, password);
+        if (result.ok) await setAuthState(result.value as AuthResponse);
         return result;
     }
 
     async function verify(email: string, password: string, code: string) {
         if (authenticated.value) throw Error("Already authenticated");
-
         let result = await verifyUser(email, code);
-        if (result.ok) {
-            await login(email, password); // Automatically log in the user after successful verification
-        }
-
+        if (result.ok) await login(email, password);
         return result;
     }
 
     async function signup(username: string, email: string, password: string) {
         if (authenticated.value) throw Error("Already authenticated");
-
         return await registerUser(username, email, password);
     }
 
@@ -72,8 +76,8 @@ export default function useAuthService() {
         return connection.apiRequest<User>("/auth/register", "POST", undefined, { name, email, password });
     }
 
-    function loginUser(email: string, password: string) {
-        return connection.apiRequest<AuthResponse>("/auth/login", "POST", undefined, { email, password });
+    function loginUser(identifier: string, password: string) {
+        return connection.apiRequest<AuthResponse>("/auth/login", "POST", undefined, { identifier, password });
     }
 
     function verifyUser(email: string, code: string) {
@@ -81,15 +85,18 @@ export default function useAuthService() {
     }
 
     function getUserWithExistingJwt() {
-        return connection.apiRequest<User>("/users/me", "GET", jwtStore.jwt);
+        return connection.apiRequest<User>("/users/me", "GET", authStore.jwt);
     }
 
-    return {
-        authenticated,
-        login,
-        logout,
-        signup,
-        verify,
-        loadUserWithExistingJwt
-    };
+    async function updateName(name: string) {
+        const result = await connection.apiRequest("/users/me/name", "PATCH", authStore.jwt, { name }, false);
+        if (result.ok && authStore.user) authStore.user = { ...authStore.user, name };
+        return result;
+    }
+
+    function updatePassword(currentPassword: string, newPassword: string) {
+        return connection.apiRequest("/users/me/password", "PATCH", authStore.jwt, { currentPassword, newPassword }, false);
+    }
+
+    return { authenticated, loading, jwt, login, logout, signup, verify, loadUserWithExistingJwt, updateName, updatePassword };
 }

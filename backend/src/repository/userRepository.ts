@@ -48,7 +48,21 @@ export class UserRepository {
         }
         return newUser;
     }
-    
+
+    public updateProfilePicture(id: number, profilePicture: string): User {
+        const stmt = this.unit.prepare<User>( "UPDATE User SET profilePicture = :profilePicture WHERE id = :id RETURNING *", {
+            id: id,
+            profilePicture: profilePicture
+        });
+
+        const user = stmt.get();
+        if (!user) {
+            throw new Error("User not found to update profile picture");
+        }
+
+        return user;
+    }
+
     public updateVerificationStatus(email: string, isVerified: boolean): void {
         const stmt = this.unit.prepare(
             "UPDATE User SET isVerified = :isVerified WHERE email = :email",
@@ -73,5 +87,14 @@ export class UserRepository {
         if (result.changes === 0) {
             throw new Error("User not found to update password");
         }
+    }
+
+    public updateName(id: number, name: string): User {
+        const stmt = this.unit.prepare<User>("UPDATE User SET name = :name WHERE id = :id RETURNING *", { id, name });
+        const user = stmt.get();
+        if (!user) {
+            throw new Error("User not found to update name");
+        }
+        return user;
     }
 }

@@ -1,10 +1,11 @@
 import { Router, Request, Response } from "express";
-import { AuthService } from "../service/authService";
+import { AuthService } from "../services/authService";
 import { Unit } from "../db/unit";
 import {StatusCodes} from "http-status-codes";
 import {body} from "express-validator";
 import {validateRequest} from "../middleware/validationMiddleware";
 import {verifyCode, sendPasswordResetEmail, verifyPasswordResetCode} from "../services/codeValidationService";
+import { ErrorResponse } from "../utils/errorResponse";
 
 const router = Router();
 
@@ -25,11 +26,10 @@ router.post("/register",
     } catch (error: any) {
         unit.complete(false);
         if (error.message.includes("email already exists") || error.message.includes("username already exists")) {
-            res.status(StatusCodes.CONFLICT).json({ message: error.message });
-        } else {
-            console.error("Register error:", error);
-            res.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR);
+            return ErrorResponse.conflict(res, error.message);
         }
+        console.error("Register error:", error);
+        return ErrorResponse.internalServerError(res, "An error occurred during registration");
     }
 });
 
@@ -54,14 +54,12 @@ router.post("/login",
     } catch (error: any) {
         unit.complete(false);
         if (error.message.includes("Invalid credentials")) {
-            res.status(StatusCodes.UNAUTHORIZED).json({ message: error.message });
+            return ErrorResponse.unauthorized(res, error.message);
         } else if (error.message.includes("Account not verified")) {
-            res.status(StatusCodes.FORBIDDEN).json({ message: error.message });
+            return ErrorResponse.forbidden(res, error.message);
         }
-        else {
-            console.error("Login error:", error);
-            res.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR);
-        }
+        console.error("Login error:", error);
+        return ErrorResponse.internalServerError(res, "An error occurred during login");
     }
 });
 
@@ -75,19 +73,19 @@ router.post("/verify",
         const { email, code } = req.body;
 
         if (!verifyCode(email, code)) {
-            return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Invalid code" });
+            return ErrorResponse.unauthorized(res, "Invalid code");
         }
 
         const authService = new AuthService(unit);
         await authService.verifyUser(email);
         unit.complete(true);
 
-        res.status(StatusCodes.OK).json({ message: "Code verified successfully" });
+        return res.status(StatusCodes.OK).json({ message: "Code verified successfully" });
     }
     catch (error: any) {
         unit.complete(false);
         console.error("Verify error:", error);
-        res.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR);
+        return ErrorResponse.internalServerError(res, "An error occurred during verification");
     }
 });
 

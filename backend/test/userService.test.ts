@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import os from "os";
-import { AuthService } from "../src/service/authService";
+import { AuthService } from "../src/services/authService";
 import { Unit } from "../src/db/unit";
 import jwt from "jsonwebtoken";
 import { Response } from "express"; // Import Response

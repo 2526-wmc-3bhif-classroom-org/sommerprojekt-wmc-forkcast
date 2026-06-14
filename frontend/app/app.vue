@@ -1,18 +1,17 @@
 <script lang="ts" setup>
-import useAuthService from "~/assets/service/auth-service";
-
 const route = useRoute();
-const router = useRouter();
 const { locale } = useI18n();
-const authService = useAuthService();
 
-const titleTranslation = computed(() => $t("route." + route.path));
-const descriptionTranslation = computed(() => $t("route." + route.path + ".desc"));
+const basePath = computed(() => {
+  const prefix = `/${locale.value}`;
+  return route.path.startsWith(prefix) ? route.path.slice(prefix.length) || '/' : route.path;
+});
 
+const titleTranslation = computed(() => $t("route." + basePath.value));
+const descriptionTranslation = computed(() => $t("route." + basePath.value + ".desc"));
 
 const title = computed(() => titleTranslation.value ? "Forkcast - " + titleTranslation.value : "Forkcast");
 const description = computed(() => descriptionTranslation.value ? descriptionTranslation.value as string : "");
-const layoutName = computed(() => authService.authenticated.value ? 'authenticated' : 'unauthenticated');
 
 useSeoMeta({
   title: title,
@@ -39,21 +38,9 @@ useHead({
     {
       rel: "icon",
       type: "image/svg+xml",
-      href: "/logo.svg"
+      href: "/sommerprojekt-wmc-forkcast/logo.svg"
     }
   ]
-});
-
-onMounted(async () => {
-  await authService.loadUserWithExistingJwt()
-
-  if (authService.authenticated.value && route.path.startsWith("/auth")) {
-     await router.push("/dashboard");
-  }
-
-  if (!authService.authenticated.value && route.path.startsWith("/dashboard")) {
-    await router.push("/auth/login");
-  }
 });
 
 </script>
@@ -63,7 +50,7 @@ onMounted(async () => {
   <NuxtLoadingIndicator color="var(--color-primary)" :height="2" :throttle="0" />
 
   <NuxtRouteAnnouncer/>
-  <NuxtLayout :name="layoutName">
-    <NuxtPage/>
+  <NuxtLayout>
+    <NuxtPage />
   </NuxtLayout>
 </template>

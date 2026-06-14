@@ -1,0 +1,50 @@
+import { Unit } from "../db/unit";
+import { CalendarRepository } from "../repository/calendarRepository";
+import { CalendarEntry, CalendarEntryWithRecipe } from "../types";
+import { RecipeService } from "./recipeService";
+
+export class CalendarService {
+    private calendarRepository: CalendarRepository;
+
+    constructor(unit: Unit) {
+        this.calendarRepository = new CalendarRepository(unit);
+    }
+
+    public getCalendarEntries(userId: number): CalendarEntry[] {
+        return this.calendarRepository.findByUserId(userId);
+    }
+
+    public getCalendarEntriesByDateRange(userId: number, fromDate: Date, toDate: Date): CalendarEntry[] {
+        return this.calendarRepository.findByUserIdAndDateRange(userId, fromDate, toDate);
+    }
+
+    public async populateWithRecipes(entries: CalendarEntry[], userIp?: string, userId?: number): Promise<CalendarEntryWithRecipe[]> {
+        const recipeIds = [...new Set(entries.map(e => e.recipeId))];
+        const recipeService = new RecipeService();
+        const recipeMap = await recipeService.getRecipesByIds(recipeIds, userIp, userId);
+        return entries.map(entry => ({
+            ...entry,
+            recipe: recipeMap.get(entry.recipeId) ?? null,
+        }));
+    }
+
+    public getCalendarEntryById(id: number): CalendarEntry | undefined {
+        return this.calendarRepository.findById(id);
+    }
+
+    public addCalendarEntry(userId: number, recipeId: number, date: Date): CalendarEntry {
+        return this.calendarRepository.create({
+            date,
+            userId,
+            recipeId
+        });
+    }
+
+    public removeCalendarEntry(userId: number, calendarEntryId: number): boolean {
+        const entry = this.calendarRepository.findById(calendarEntryId);
+        if (!entry || entry.userId !== userId) {
+            return false;
+        }
+        return this.calendarRepository.deleteById(calendarEntryId);
+    }
+}

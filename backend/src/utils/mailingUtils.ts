@@ -18,17 +18,26 @@ const getTransporter = async () => {
     const secure = process.env.EMAIL_SECURE === "true" ? true : (port === 465);
 
     if (!host || !user || !pass) {
-        console.warn("Email credentials missing. Using Ethereal for development.");
-        const testAccount = await nodemailer.createTestAccount();
-        return nodemailer.createTransport({
-            host: "smtp.ethereal.email",
-            port: 587,
-            secure: false,
-            auth: {
-                user: testAccount.user,
-                pass: testAccount.pass,
-            },
-        });
+        // No real SMTP creds: try Ethereal first. createTestAccount() hits
+        // api.nodemailer.com, which is sometimes down (502); if it fails, fall
+        // back to an offline jsonTransport so the dev flow never crashes —
+        // sendEmail logs the body so the verification code stays readable.
+        try {
+            const testAccount = await nodemailer.createTestAccount();
+            console.warn("Email credentials missing. Using Ethereal for development.");
+            return nodemailer.createTransport({
+                host: "smtp.ethereal.email",
+                port: 587,
+                secure: false,
+                auth: {
+                    user: testAccount.user,
+                    pass: testAccount.pass,
+                },
+            });
+        } catch (err) {
+            console.warn("Ethereal unavailable, falling back to offline jsonTransport; email content will be logged.", err instanceof Error ? err.message : err);
+            return nodemailer.createTransport({ jsonTransport: true });
+        }
     }
 
     return nodemailer.createTransport({
@@ -43,14 +52,25 @@ const getTransporter = async () => {
     });
 };
 
-// Singleton-ish promise to avoid recreating transporter constantly, or recreate if needed.
-// For simplicity in this project, we create it once or lazily.
-let transporterPromise = getTransporter();
+// Lazily create the transporter on first send. Creating it eagerly at module
+// load fires a network call (Ethereal) whose rejection is unhandled and crashes
+// the process. A failed attempt resets the cache so the next send retries.
+let transporterPromise: ReturnType<typeof getTransporter> | null = null;
+
+const getCachedTransporter = () => {
+    if (!transporterPromise) {
+        transporterPromise = getTransporter().catch((err) => {
+            transporterPromise = null;
+            throw err;
+        });
+    }
+    return transporterPromise;
+};
 
 export const sendEmail = async (to: string, subject: string, text: string, html?: string,
                                 attachments: {path: string, filename: string, cid: string}[] = []) => {
     try {
-        const transporter = await transporterPromise;
+        const transporter = await getCachedTransporter();
         const info = await transporter.sendMail({
             from: process.env.EMAIL_FROM || process.env.EMAIL_USER || '"ForkCast" <no-reply@forkcast.com>',
             to,
@@ -61,11 +81,17 @@ export const sendEmail = async (to: string, subject: string, text: string, html?
         });
 
         console.log("Message sent: %s", info.messageId);
-        
-        // If using Ethereal, print the URL
+
+        // Ethereal: print the preview URL.
         const previewUrl = nodemailer.getTestMessageUrl(info);
         if (previewUrl) {
             console.log("Preview URL: %s", previewUrl);
+        }
+
+        // jsonTransport (offline fallback) doesn't deliver anything, so log the
+        // body to make the verification code readable in the console.
+        if ((info as { message?: string }).message) {
+            console.log(`Email to ${to} | ${subject}\n${text}`);
         }
 
         return info;

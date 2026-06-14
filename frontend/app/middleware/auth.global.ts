@@ -1,7 +1,12 @@
 import useAuthService from "~/assets/service/auth-service";
 
-export default defineNuxtRouteMiddleware(async (to, from) => {
-    let authService = useAuthService();
+// Auth is resolved on the client by the auth.client plugin before the app
+// mounts. This middleware only guards client-side navigations; the server can't
+// know auth state (jwt lives in sessionStorage), so it never runs there.
+export default defineNuxtRouteMiddleware((to) => {
+    if (import.meta.server) return;
+
+    const authService = useAuthService();
 
     if (authService.authenticated.value && to.path.startsWith("/auth")) {
         return navigateTo("/dashboard");
@@ -10,4 +15,4 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
     if (!authService.authenticated.value && to.path.startsWith("/dashboard")) {
         return navigateTo("/auth/login");
     }
-})
+});

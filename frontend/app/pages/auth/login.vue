@@ -3,10 +3,10 @@ import useFailureHandler from "~/assets/util/failure-handler";
 import type {Failure} from "~/assets/model/failure";
 import useAuthService from "~/assets/service/auth-service";
 
-const email = ref<HTMLInputElement>();
+const identifier = ref<HTMLInputElement>();
 const password = ref<HTMLInputElement>();
 
-const emailError = ref<HTMLSpanElement>();
+const identifierError = ref<HTMLSpanElement>();
 const passwordError = ref<HTMLSpanElement>();
 const mainError = ref<HTMLSpanElement>();
 
@@ -14,12 +14,13 @@ const localePath = useLocalePath();
 const router = useRouter();
 const auth = useAuthService();
 const failureHandler = useFailureHandler();
+const { t } = useI18n();
 
 const img = useImage();
 const bgImage = img('/images/signup-bg.jpg', { quality: 90, format: 'webp' });
 
-failureHandler.addHandler("email", (message) => {
-  emailError.value!!.innerText = message;
+failureHandler.addHandler("identifier", (message) => {
+  identifierError.value!!.innerText = message;
 });
 
 failureHandler.addHandler("password", (message) => {
@@ -31,12 +32,12 @@ failureHandler.setMainHandler(message => {
 });
 
 async function login() {
-  if (!email.value?.value || !password.value?.value) {
-    failureHandler.fail({ message: "Please fill in all fields." } as Failure);
+  if (!identifier.value?.value || !password.value?.value) {
+    failureHandler.fail({ message: t('error.fill_all_fields') } as Failure);
     return;
   }
 
-  let failure = await auth.login(email.value.value, password.value.value);
+  let failure = await auth.login(identifier.value.value, password.value.value);
   if (!failure.ok) {
     failureHandler.fail(failure.failure as Failure);
     return;
@@ -66,13 +67,13 @@ async function login() {
             <form class="fieldset w-full" onsubmit="return false">
               <label class="label">
                 <i class="fa-solid fa-at"/>
-                <span>{{$t('login.email')}}</span>
+                <span>{{$t('login.identifier')}}</span>
               </label>
               <label class="label text-error text-wrap">
-                <i v-if="failureHandler.has('email')" class="fa-solid fa-triangle-exclamation"/>
-                <span ref="emailError"></span>
+                <i v-if="failureHandler.has('identifier')" class="fa-solid fa-triangle-exclamation"/>
+                <span ref="identifierError"></span>
               </label>
-              <input ref="email" autocomplete="email" type="text" class="input w-full" :placeholder="$t('login.email')" />
+              <input ref="identifier" autocomplete="username or email" type="text" class="input w-full" :placeholder="$t('login.identifier')" />
               <label class="label">
                 <i class="fa-solid fa-key"/>
                 <span>{{$t('login.password')}}</span>
