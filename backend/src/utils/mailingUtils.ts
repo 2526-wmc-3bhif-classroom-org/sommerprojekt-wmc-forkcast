@@ -151,9 +151,12 @@ const sendTemplatedEmail = async (
     const textTemplate = translation.text || "";
     const htmlTranslation = translation.html || {};
     
+    const rtlLangs = ['ar', 'he'];
     const context = {
         ...htmlTranslation,
-        ...contextParams
+        ...contextParams,
+        lang,
+        dir: rtlLangs.includes(lang) ? 'rtl' : 'ltr'
     };
     
     const text = mustache.render(textTemplate, context);
