@@ -13,8 +13,8 @@ import recipeRoutes from "./routes/recipeRoutes";
 import favoriteRoutes from "./routes/favoriteRoutes";
 import profileRoutes from "./routes/profileRoutes";
 import calendarRoutes from "./routes/calendarRoutes";
-import notificationRoutes from "./routes/notificationRoutes";
 import { RecipeService } from "./services/recipeService";
+import { FriendService } from "./services/friendService";
 import { seedFilters } from "./db/seedFilters";
 import { parseDurationToMilliseconds } from "./utils";
 import rateLimit from "express-rate-limit";
@@ -29,6 +29,8 @@ const allowedOrigins = (process.env.CORS_ORIGIN ?? "")
 export const CACHE_TTL_MS =
     parseDurationToMilliseconds(process.env.CACHE_TTL_MS
         ,24 * 60 * 60 * 1000);
+export const FRIEND_REQUEST_TTL_MS =
+    parseDurationToMilliseconds(process.env.FRIEND_REQUEST_TTL_MS, 60 * 60 * 1000);
 const RATE_LIMIT_WINDOW_MS = parseInt(process.env.RATE_LIMIT_WINDOW_MS || "900000", 10); // 15 minutes
 const RATE_LIMIT_MAX_REQUESTS = parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || "200", 10);
 
@@ -62,7 +64,6 @@ app.use("/api/users/me", authenticateToken, profileRoutes);
 app.use("/api/users/me/friends", authenticateToken, friendRoutes);
 app.use("/api/users/me/favorites", authenticateToken, favoriteRoutes);
 app.use("/api/users/me/calendar", authenticateToken, calendarRoutes);
-app.use("/api/users/me/notifications", authenticateToken, notificationRoutes);
 
 const swaggerDocument = YAML.load(path.join(process.cwd(), "src/public/swagger.yaml"));
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
@@ -80,4 +81,14 @@ async function cleanup() {
 
     // Initial cleanup on startup
     recipeService.removeExpiredRecipes().catch(console.error);
+
+    const sweepRequests = () => {
+        try {
+            FriendService.removeExpiredRequests();
+        } catch (error) {
+            console.error("Cleaning up expired friend requests failed:", error);
+        }
+    };
+    setInterval(sweepRequests, FRIEND_REQUEST_TTL_MS);
+    sweepRequests();
 }

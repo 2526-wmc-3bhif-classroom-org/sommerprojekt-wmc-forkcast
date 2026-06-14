@@ -20,6 +20,12 @@ export const useCalendarStore = defineStore('calendarStore', () => {
     authStore.jwt = undefined;
   }
 
+  // Drop all cached calendar data so a different user can't see the previous user's entries.
+  function clear() {
+    for (const key of Object.keys(entriesByDate)) delete entriesByDate[key];
+    fetchedWeeks.clear();
+  }
+
   // Use local YYYY-MM-DD keys (matches ScheduleCalendarComponent.toDateKey)
   function toLocalDateKey(date: Date | string): string {
     const d = typeof date === 'string' ? new Date(date) : new Date(date);
@@ -131,5 +137,5 @@ export const useCalendarStore = defineStore('calendarStore', () => {
     return result;
   }
 
-  return { entriesByDate, fetchedWeeks, getEntries, addEntry, deleteEntry };
+  return { entriesByDate, fetchedWeeks, getEntries, addEntry, deleteEntry, clear };
 });

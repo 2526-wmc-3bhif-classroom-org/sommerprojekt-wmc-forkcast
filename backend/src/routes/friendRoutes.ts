@@ -2,13 +2,31 @@ import { ErrorResponse } from "../utils/errorResponse";
 import { Router } from "express";
 import { AuthRequest, authenticateToken } from "../middleware/authMiddleware";
 import { StatusCodes } from "http-status-codes";
-import { body, param } from 'express-validator';
+import { body, param, query } from 'express-validator';
 import { validateRequest } from "../middleware/validationMiddleware";
 import { Unit } from "../db/unit";
-import { FriendService } from "../services/friendService";
+import { FriendService, FriendServiceError, FriendServiceErrorCode } from "../services/friendService";
+import { FavoriteService } from "../services/favoriteService";
 import { UserRepository } from "../repository/userRepository";
 
 const router = Router();
+
+const ERROR_STATUS: Record<FriendServiceErrorCode, number> = {
+    NOT_FOUND: StatusCodes.NOT_FOUND,
+    SELF: StatusCodes.BAD_REQUEST,
+    ALREADY_FRIENDS: StatusCodes.CONFLICT,
+    DUPLICATE: StatusCodes.CONFLICT,
+    FORBIDDEN: StatusCodes.FORBIDDEN,
+};
+
+function handleServiceError(res: any, error: unknown, context: string): void {
+    if (error instanceof FriendServiceError) {
+        res.status(ERROR_STATUS[error.code]).json({ message: error.message });
+        return;
+    }
+    console.error(`${context}:`, error);
+    ErrorResponse.internalServerError(res);
+}
 
 router.get('/', authenticateToken, (req: AuthRequest, res) => {
     const unit = new Unit(true);
@@ -17,7 +35,7 @@ router.get('/', authenticateToken, (req: AuthRequest, res) => {
         const userRepo = new UserRepository(unit);
         const userId = parseInt(req.user!.userId as unknown as string, 10);
         const friends = friendService.getFriends(userId);
-        
+
         const friendProfiles = friends.map(f => {
             const user = userRepo.findById(f.friendId);
             if (user) {
@@ -35,6 +53,77 @@ router.get('/', authenticateToken, (req: AuthRequest, res) => {
         unit.complete();
     }
 });
+
+router.get('/requests', authenticateToken, (req: AuthRequest, res) => {
+    const unit = new Unit(true);
+    try {
+        const friendService = new FriendService(unit);
+        const userId = parseInt(req.user!.userId as unknown as string, 10);
+        res.status(StatusCodes.OK).json(friendService.getIncomingRequests(userId));
+    } catch (error) {
+        console.error("Get friend requests error:", error);
+        ErrorResponse.internalServerError(res);
+    } finally {
+        unit.complete();
+    }
+});
+
+router.post('/requests',
+    authenticateToken,
+    body('username').trim().notEmpty().withMessage('username is required').isString().withMessage('username must be a string'),
+    validateRequest,
+    (req: AuthRequest, res) => {
+        const unit = new Unit(false);
+        try {
+            const friendService = new FriendService(unit);
+            const userId = parseInt(req.user!.userId as unknown as string, 10);
+            const result = friendService.sendRequest(userId, req.body.username);
+            unit.complete(true);
+            const status = result.status === 'accepted' ? StatusCodes.OK : StatusCodes.CREATED;
+            res.status(status).json(result);
+        } catch (error) {
+            unit.complete(false);
+            handleServiceError(res, error, "Send friend request error");
+        }
+    });
+
+router.post('/requests/:id/accept',
+    authenticateToken,
+    param('id').isInt().withMessage('id must be an integer').toInt(),
+    validateRequest,
+    (req: AuthRequest, res) => {
+        const unit = new Unit(false);
+        try {
+            const friendService = new FriendService(unit);
+            const userId = parseInt(req.user!.userId as unknown as string, 10);
+            const requestId = parseInt(req.params.id as string, 10);
+            const friend = friendService.acceptRequest(userId, requestId);
+            unit.complete(true);
+            res.status(StatusCodes.OK).json(friend);
+        } catch (error) {
+            unit.complete(false);
+            handleServiceError(res, error, "Accept friend request error");
+        }
+    });
+
+router.post('/requests/:id/decline',
+    authenticateToken,
+    param('id').isInt().withMessage('id must be an integer').toInt(),
+    validateRequest,
+    (req: AuthRequest, res) => {
+        const unit = new Unit(false);
+        try {
+            const friendService = new FriendService(unit);
+            const userId = parseInt(req.user!.userId as unknown as string, 10);
+            const requestId = parseInt(req.params.id as string, 10);
+            friendService.declineRequest(userId, requestId);
+            unit.complete(true);
+            res.status(StatusCodes.OK).json({});
+        } catch (error) {
+            unit.complete(false);
+            handleServiceError(res, error, "Decline friend request error");
+        }
+    });
 
 router.get('/:friendId',
     authenticateToken,
@@ -70,36 +159,73 @@ router.get('/:friendId',
         }
     });
 
-router.post(
-    '/',
+router.get('/:friendId/friends',
     authenticateToken,
-    body('friendId').notEmpty().withMessage('friendId is required').isInt().withMessage('friendId must be an integer').toInt(),
+    param('friendId').isInt().withMessage('friendId must be an integer').toInt(),
     validateRequest,
     (req: AuthRequest, res) => {
-        const unit = new Unit(false);
+        const unit = new Unit(true);
         try {
             const friendService = new FriendService(unit);
+            const userRepo = new UserRepository(unit);
             const userId = parseInt(req.user!.userId as unknown as string, 10);
-            const { friendId } = req.body;
+            const friendId = parseInt(req.params.friendId as string, 10);
 
-            const newFriend = friendService.addFriend(userId, friendId);
-            unit.complete(true);
-            res.status(StatusCodes.CREATED).json(newFriend);
-        } catch (error: any) {
-            unit.complete(false);
-            if (error.message && error.message.includes('FOREIGN KEY constraint failed')) {
-                res.status(StatusCodes.BAD_REQUEST).json({ message: "User to add as friend not found." });
-            } else if (error.message === "Cannot add yourself as a friend") {
-                res.status(StatusCodes.BAD_REQUEST).json({ message: error.message });
-            } else {
-                console.error("Add friend error:", error);
-                ErrorResponse.internalServerError(res);
+            if (!friendService.getFriends(userId).some(f => f.friendId === friendId)) {
+                return res.status(StatusCodes.NOT_FOUND).json({ message: "Friend not found in your friend list" });
             }
-        }
-    }
-);
 
-router.delete('/:friendId', 
+            const profiles = friendService.getFriends(friendId).map(f => {
+                const user = userRepo.findById(f.friendId);
+                if (!user) return null;
+                const { password, email, ...publicProfile } = user;
+                return publicProfile;
+            }).filter(Boolean);
+
+            res.status(StatusCodes.OK).json(profiles);
+        } catch (error) {
+            console.error("Get friend's friends error:", error);
+            ErrorResponse.internalServerError(res);
+        } finally {
+            unit.complete();
+        }
+    });
+
+router.get('/:friendId/favorites',
+    authenticateToken,
+    param('friendId').isInt().withMessage('friendId must be an integer').toInt(),
+    query('limit').optional().isInt({ min: 1 }).toInt(),
+    validateRequest,
+    async (req: AuthRequest, res) => {
+        const unit = new Unit(true);
+        try {
+            const friendService = new FriendService(unit);
+            const favoriteService = new FavoriteService(unit);
+            const userId = parseInt(req.user!.userId as unknown as string, 10);
+            const friendId = parseInt(req.params.friendId as string, 10);
+
+            if (!friendService.getFriends(userId).some(f => f.friendId === friendId)) {
+                return res.status(StatusCodes.NOT_FOUND).json({ message: "Friend not found in your friend list" });
+            }
+
+            const limit = req.query.limit as number | undefined;
+            const favorites = favoriteService.getFavorites(friendId, 0, limit);
+            const foods = await favoriteService.populateWithRecipes(favorites, friendId, req.ip);
+
+            res.status(StatusCodes.OK).json({
+                count: favoriteService.getTotalCount(friendId),
+                populated: true,
+                foods,
+            });
+        } catch (error) {
+            console.error("Get friend's favorites error:", error);
+            ErrorResponse.internalServerError(res);
+        } finally {
+            unit.complete();
+        }
+    });
+
+router.delete('/:friendId',
     authenticateToken,
     param('friendId').isInt().withMessage('friendId must be an integer').toInt(),
     validateRequest,
