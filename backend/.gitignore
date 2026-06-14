@@ -27,6 +27,7 @@ logs
 !.env.example
 
 **.db
+**.db-journal
 **.http
 
 # TypeScript incremental build info
