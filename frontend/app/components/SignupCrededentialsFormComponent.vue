@@ -17,7 +17,7 @@ const mainError = ref<HTMLSpanElement>();
 
 const authService = useAuthService();
 const failureHandler = useFailureHandler();
-const { t } = useI18n();
+const { t, locale } = useI18n();
 
 failureHandler.addHandler("name", (message) => {
   usernameError.value!!.innerText = message;
@@ -49,7 +49,7 @@ async function signup() {
   const passwordValue = password.value.value;
   const emailValue = email.value.value;
 
-  let failure = await authService.signup(username.value.value, email.value.value, password.value.value);
+  let failure = await authService.signup(username.value.value, email.value.value, password.value.value, locale.value);
   if (!failure.ok) {
     failureHandler.fail(failure.failure as Failure);
     return;
