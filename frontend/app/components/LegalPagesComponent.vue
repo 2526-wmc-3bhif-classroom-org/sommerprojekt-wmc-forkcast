@@ -2,10 +2,10 @@
 const props = defineProps(["src"])
 
 // This will be pre-rendered in the production build.
-const { data: md } = await useAsyncData(`content-${props.src.value}`, () => {
+const { data: md } = await useAsyncData(`content-${props.src}`, () => {
   return $fetch('/api/get-content', {query: { src: props.src }})
 }, {
-  watch: [props.src]
+  watch: [() => props.src]
 })
 </script>
 

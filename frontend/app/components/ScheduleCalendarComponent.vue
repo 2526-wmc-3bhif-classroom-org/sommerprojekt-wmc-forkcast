@@ -2,6 +2,10 @@
 import draggable from 'vuedraggable';
 import { useCalendarStore } from '~/assets/store/calendar-store';
 
+// Component has two root nodes (grid + dialog), so disable auto attr
+// inheritance and bind parent attrs (e.g. class) to the grid root explicitly.
+defineOptions({ inheritAttrs: false });
+
 const { locale, t } = useI18n();
 
 type WeekDay = {
@@ -261,7 +265,7 @@ function goToToday() {
 </script>
 
 <template>
-  <div class="grid grid-rows-[4.5rem_1fr] grid-cols-1 gap-4 h-full min-h-0 rounded-2xl overflow-hidden opacity-0 animate-fade-in-slide-in-right">
+  <div v-bind="$attrs" class="grid grid-rows-[4.5rem_1fr] grid-cols-1 gap-4 h-full min-h-0 rounded-2xl overflow-hidden opacity-0 animate-fade-in-slide-in-right">
     <div class="bg-base-100 rounded-2xl text-base-content">
       <div class="flex items-center justify-between gap-4 px-4 py-4">
         <div class="flex flex-col gap-0.5 min-w-0">
