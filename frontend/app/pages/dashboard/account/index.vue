@@ -1,26 +1,20 @@
 <script setup lang="ts">
-import type {User} from '~/assets/model/user';
 import type {RecipePreview} from '~/assets/model/recipe-preview';
-import type {FavoritesResponse} from '~/assets/model/favorites-response';
-import useApiConnection from '~/assets/util/api-connector';
+import type {PublicUser, IncomingRequest} from '~/assets/model/public-user';
 import {useAuthStore} from '~/assets/store/auth-store';
 import {useFavoritesStore} from '~/assets/store/favorites-store';
-
-type PublicUser = {
-  id: number;
-  name: string;
-  profilePicture: string | null;
-  isVerified: boolean;
-};
+import useAuthService from '~/assets/service/auth-service';
+import useFriendService from '~/assets/service/friend-service';
 
 definePageMeta({ showFooter: false })
 
-const {apiRequest} = useApiConnection();
 const authStore = useAuthStore();
 const favStore = useFavoritesStore();
+const authService = useAuthService();
+const friendService = useFriendService();
 const { t } = useI18n();
 
-const user = ref<User | null>(null);
+const user = computed(() => authStore.user ?? null);
 
 // Edit modal: null | 'chooser' | 'username' | 'password'
 const editModal = ref<null | 'chooser' | 'username' | 'password'>(null);
@@ -51,13 +45,13 @@ async function saveUsername() {
   usernameError.value = '';
   usernameSuccess.value = false;
   if (!newUsername.value.trim()) { usernameError.value = t('page.modifyprofile.username.empty'); return; }
+  const name = newUsername.value.trim();
   usernameLoading.value = true;
-  const result = await apiRequest('/users/me/name', 'PATCH', authStore.jwt, {name: newUsername.value.trim()}, false);
+  const result = await authService.updateName(name);
   usernameLoading.value = false;
   if (result.ok) {
     usernameSuccess.value = true;
     newUsername.value = '';
-    if (user.value) user.value = {...user.value, name: newUsername.value || user.value.name};
   } else {
     const errs = result.failure?.errors;
     usernameError.value = errs?.length ? errs.map(e => e.msg).join(' · ') : (result.failure?.message ?? t('page.modifyprofile.username.error'));
@@ -71,7 +65,7 @@ async function savePassword() {
   if (newPassword.value.length < 8) { passwordError.value = t('page.modifyprofile.password.too_short'); return; }
   if (newPassword.value !== confirmPassword.value) { passwordError.value = t('page.modifyprofile.password.mismatch'); return; }
   passwordLoading.value = true;
-  const result = await apiRequest('/users/me/password', 'PATCH', authStore.jwt, {currentPassword: currentPassword.value, newPassword: newPassword.value}, false);
+  const result = await authService.updatePassword(currentPassword.value, newPassword.value);
   passwordLoading.value = false;
   if (result.ok) {
     passwordSuccess.value = true;
@@ -89,7 +83,6 @@ const favOffset = ref(0);
 const favHasMore = ref(false);
 const favLoading = ref(false);
 const favCount = ref(0);
-type IncomingRequest = PublicUser & { requestId: number };
 
 const friends = ref<PublicUser[]>([]);
 const friendsLoading = ref(true);
@@ -123,16 +116,12 @@ async function loadMoreFavorites() {
 }
 
 async function loadData() {
-  const jwt = authStore.jwt;
-  // user is already loaded into the auth store at app boot; reuse it instead of refetching /me
-  user.value = authStore.user ?? null;
-
   friendsLoading.value = true;
-  const friendsResult = await apiRequest<PublicUser[]>('/users/me/friends', 'GET', jwt);
+  const friendsResult = await friendService.getFriends();
   if (friendsResult.ok && friendsResult.value) friends.value = friendsResult.value;
   friendsLoading.value = false;
 
-  const requestsResult = await apiRequest<IncomingRequest[]>('/users/me/friends/requests', 'GET', jwt);
+  const requestsResult = await friendService.getRequests();
   if (requestsResult.ok && requestsResult.value) incomingRequests.value = requestsResult.value;
 }
 
@@ -142,9 +131,7 @@ async function sendFriendRequest() {
   const name = addUsername.value.trim();
   if (!name) { addError.value = t('page.account.add_friend.empty'); return; }
   addLoading.value = true;
-  const result = await apiRequest<{ status: 'pending' | 'accepted'; user: PublicUser }>(
-    '/users/me/friends/requests', 'POST', authStore.jwt, { username: name }
-  );
+  const result = await friendService.sendRequest(name);
   addLoading.value = false;
   if (result.ok && result.value) {
     if (result.value.status === 'accepted') {
@@ -160,7 +147,7 @@ async function sendFriendRequest() {
 }
 
 async function acceptRequest(req: IncomingRequest) {
-  const result = await apiRequest<PublicUser>(`/users/me/friends/requests/${req.requestId}/accept`, 'POST', authStore.jwt);
+  const result = await friendService.acceptRequest(req.requestId);
   if (result.ok && result.value) {
     friends.value.push(result.value);
     incomingRequests.value = incomingRequests.value.filter(r => r.requestId !== req.requestId);
@@ -168,7 +155,7 @@ async function acceptRequest(req: IncomingRequest) {
 }
 
 async function declineRequest(req: IncomingRequest) {
-  const result = await apiRequest(`/users/me/friends/requests/${req.requestId}/decline`, 'POST', authStore.jwt);
+  const result = await friendService.declineRequest(req.requestId);
   if (result.ok) {
     incomingRequests.value = incomingRequests.value.filter(r => r.requestId !== req.requestId);
   }
@@ -189,7 +176,6 @@ async function initialLoadFavorites() {
 onMounted(() => {
   loadData();
   initialLoadFavorites();
-  favStore.load();
 
   const observer = new IntersectionObserver((entries) => {
     if (entries[0]?.isIntersecting) loadMoreFavorites();
@@ -208,9 +194,10 @@ function cancelRemoveFavorite() {
 
 async function removeFavorite() {
   if (!favoriteToRemove.value) return;
-  const result = await apiRequest(`/users/me/favorites/${favoriteToRemove.value.id}`, 'DELETE', authStore.jwt);
-  if (result.ok) {
+  const ok = await favStore.remove(favoriteToRemove.value.id);
+  if (ok) {
     favorites.value = favorites.value.filter(f => f.id !== favoriteToRemove.value!.id);
+    favCount.value = Math.max(0, favCount.value - 1);
   }
   favoriteToRemove.value = null;
 }
@@ -223,8 +210,8 @@ async function openProfile(friend: PublicUser) {
   profileLoading.value = true;
 
   const [friendsRes, favsRes] = await Promise.all([
-    apiRequest<PublicUser[]>(`/users/me/friends/${friend.id}/friends`, 'GET', authStore.jwt),
-    apiRequest<FavoritesResponse>(`/users/me/friends/${friend.id}/favorites?populate=true`, 'GET', authStore.jwt),
+    friendService.getFriendFriends(friend.id),
+    favStore.getFriendPopulated(friend.id),
   ]);
 
   // Ignore if the user already opened a different profile while this was loading.
@@ -233,9 +220,7 @@ async function openProfile(friend: PublicUser) {
   if (friendsRes.ok && friendsRes.value) profileFriends.value = friendsRes.value;
   if (favsRes.ok && favsRes.value) {
     profileFavCount.value = favsRes.value.count;
-    profileFavorites.value = favsRes.value.foods
-      .filter(f => f.recipe !== null)
-      .map(f => f.recipe as RecipePreview);
+    profileFavorites.value = favsRes.value.recipes;
   }
   profileLoading.value = false;
 }
@@ -246,7 +231,9 @@ async function toggleMyFavorite(recipe: RecipePreview) {
   const isFav = favStore.has(recipe.id);
   if (isFav && !wasFav) {
     if (!favorites.value.some(f => f.id === recipe.id)) {
-      favorites.value.unshift(recipe);
+      // Stamp isFavorited so the mounted RecipeListComponent doesn't re-seed the
+      // favorite state to the stale (false) value it had in the friend profile.
+      favorites.value.unshift({ ...recipe, isFavorited: true });
       favCount.value++;
     }
   } else if (!isFav && wasFav) {
@@ -271,7 +258,7 @@ function cancelRemove() {
 
 async function removeFriend() {
   if (!friendToRemove.value) return;
-  const result = await apiRequest(`/users/me/friends/${friendToRemove.value.id}`, 'DELETE', authStore.jwt);
+  const result = await friendService.removeFriend(friendToRemove.value.id);
   if (result.ok) {
     friends.value = friends.value.filter(f => f.id !== friendToRemove.value!.id);
   }
@@ -340,6 +327,10 @@ async function removeFriend() {
             <input
                 v-model="addUsername"
                 type="text"
+                autocomplete="off"
+                data-1p-ignore
+                data-lpignore="true"
+                data-bwignore
                 :placeholder="$t('page.account.add_friend.placeholder')"
                 class="input input-sm flex-1"
                 @keyup.enter="sendFriendRequest"
@@ -513,21 +504,23 @@ async function removeFriend() {
         <h3 class="font-bold text-lg">{{ $t('page.modifyprofile.password.title') }}</h3>
       </div>
       <form class="fieldset w-full" onsubmit="return false">
+        <!-- Hidden username for accessibility / password managers -->
+        <input type="text" autocomplete="username" :value="user?.email" class="hidden" tabindex="-1" aria-hidden="true" readonly />
         <label class="label">
           <i class="fa-solid fa-key" />
           <span>{{ $t('page.modifyprofile.password.current') }}</span>
         </label>
-        <input v-model="currentPassword" type="password" :placeholder="$t('page.modifyprofile.password.current_placeholder')" class="input w-full" />
+        <input v-model="currentPassword" type="password" autocomplete="current-password" :placeholder="$t('page.modifyprofile.password.current_placeholder')" class="input w-full" />
         <label class="label">
           <i class="fa-solid fa-lock" />
           <span>{{ $t('page.modifyprofile.password.new') }}</span>
         </label>
-        <input v-model="newPassword" type="password" :placeholder="$t('page.modifyprofile.password.new_placeholder')" class="input w-full" />
+        <input v-model="newPassword" type="password" autocomplete="new-password" :placeholder="$t('page.modifyprofile.password.new_placeholder')" class="input w-full" />
         <label class="label">
           <i class="fa-solid fa-lock-open" />
           <span>{{ $t('page.modifyprofile.password.confirm') }}</span>
         </label>
-        <input v-model="confirmPassword" type="password" :placeholder="$t('page.modifyprofile.password.confirm_placeholder')" class="input w-full" @keyup.enter="savePassword" />
+        <input v-model="confirmPassword" type="password" autocomplete="new-password" :placeholder="$t('page.modifyprofile.password.confirm_placeholder')" class="input w-full" @keyup.enter="savePassword" />
         <label v-if="passwordError" class="label text-error">
           <i class="fa-solid fa-triangle-exclamation" />
           <span>{{ passwordError }}</span>

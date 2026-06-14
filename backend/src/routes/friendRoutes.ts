@@ -210,7 +210,9 @@ router.get('/:friendId/favorites',
 
             const limit = req.query.limit as number | undefined;
             const favorites = favoriteService.getFavorites(friendId, 0, limit);
-            const foods = await favoriteService.populateWithRecipes(favorites, friendId, req.ip);
+            // Annotate isFavorited against the requesting user (not the friend) so
+            // the client knows which of the friend's favorites it already has.
+            const foods = await favoriteService.populateWithRecipes(favorites, userId, req.ip);
 
             res.status(StatusCodes.OK).json({
                 count: favoriteService.getTotalCount(friendId),

@@ -7,20 +7,9 @@ export const useFavoritesStore = defineStore('favoritesStore', () => {
   const { apiRequest } = useApiConnection();
   const authStore = useAuthStore();
 
+  // Recipe ids the current user has favorited. Seeded from the isFavorited flag
+  // that ships with recipe payloads, so hearts across the app stay reactive.
   const ids = ref<Set<number>>(new Set());
-  const seeded = ref<Set<number>>(new Set());
-  const loaded = ref(false);
-
-  //TODO: remove this when recipe payload contains fav state, this is only
-  //TODO: really used in the cards to know if they are favorite
-  async function load() {
-    if (loaded.value) return;
-    const result = await apiRequest<FavoritesResponse>('/users/me/favorites', 'GET', authStore.jwt);
-    if (result.ok && result.value) {
-      ids.value = new Set(result.value.foods.map(f => f.recipeId));
-      loaded.value = true;
-    }
-  }
 
   function has(recipeId: number) {
     return ids.value.has(recipeId);
@@ -29,25 +18,57 @@ export const useFavoritesStore = defineStore('favoritesStore', () => {
   // Drop cached favorite state so a different user can't inherit it.
   function clear() {
     ids.value = new Set();
-    seeded.value = new Set();
-    loaded.value = false;
   }
 
   function seedFromPayload(recipeId: number, isFavorited: boolean) {
     if (isFavorited) ids.value.add(recipeId);
     else ids.value.delete(recipeId);
-    seeded.value.add(recipeId);
   }
 
   async function toggle(recipeId: number) {
-    if (!loaded.value && !seeded.value.has(recipeId)) await load();
     if (ids.value.has(recipeId)) {
-      const result = await apiRequest(`/users/me/favorites/${recipeId}`, 'DELETE', authStore.jwt);
-      if (result.ok) ids.value.delete(recipeId);
+      await remove(recipeId);
     } else {
-      const result = await apiRequest('/users/me/favorites', 'POST', authStore.jwt, { recipeId });
-      if (result.ok) ids.value.add(recipeId);
+      await add(recipeId);
     }
+  }
+
+  async function add(recipeId: number): Promise<boolean> {
+    const result = await apiRequest('/users/me/favorites', 'POST', authStore.jwt, { recipeId });
+    if (result.ok) ids.value.add(recipeId);
+    return result.ok;
+  }
+
+  async function remove(recipeId: number): Promise<boolean> {
+    const result = await apiRequest(`/users/me/favorites/${recipeId}`, 'DELETE', authStore.jwt);
+    if (result.ok) ids.value.delete(recipeId);
+    return result.ok;
+  }
+
+  // Same shaping as getPopulated, but for a friend's favorites. Returns all of
+  // them (no pagination) so the friend profile popup can list everything.
+  async function getFriendPopulated(friendId: number): Promise<ApiResponse<{ count: number; recipes: RecipePreview[] }>> {
+    if (!authStore.jwt) return { ok: false, needsAuth: true, rateLimited: false };
+    const result = await apiRequest<FavoritesResponse>(
+      `/users/me/friends/${friendId}/favorites?populate=true`,
+      'GET',
+      authStore.jwt
+    );
+    if (!result.ok || !result.value) return { ok: false, needsAuth: result.needsAuth, rateLimited: result.rateLimited };
+
+    const recipes = result.value.foods
+      .filter(item => item.recipe !== null)
+      .map(item => item.recipe as RecipePreview);
+
+    // Backend annotates these against the current user, so seed our own state.
+    recipes.forEach(r => seedFromPayload(r.id, r.isFavorited ?? false));
+
+    return {
+      ok: true,
+      needsAuth: false,
+      rateLimited: false,
+      value: { count: result.value.count, recipes },
+    };
   }
 
   async function getPopulated(offset: number, limit: number): Promise<ApiResponse<{ count: number; recipes: RecipePreview[] }>> {
@@ -62,7 +83,10 @@ export const useFavoritesStore = defineStore('favoritesStore', () => {
     const recipes = result.value.foods
       .filter(item => item.recipe !== null)
       .map(item => item.recipe as RecipePreview);
-    
+
+    // These are the user's own favorites, so they are favorited by definition.
+    recipes.forEach(r => seedFromPayload(r.id, true));
+
     return {
       ok: true,
       needsAuth: false,
@@ -74,6 +98,6 @@ export const useFavoritesStore = defineStore('favoritesStore', () => {
     };
   }
 
-  return { ids, loaded, load, has, seedFromPayload, toggle, getPopulated, clear };
+  return { ids, has, seedFromPayload, toggle, add, remove, getPopulated, getFriendPopulated, clear };
 })
 

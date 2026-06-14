@@ -88,5 +88,15 @@ export default function useAuthService() {
         return connection.apiRequest<User>("/users/me", "GET", authStore.jwt);
     }
 
-    return { authenticated, loading, jwt, login, logout, signup, verify, loadUserWithExistingJwt };
+    async function updateName(name: string) {
+        const result = await connection.apiRequest("/users/me/name", "PATCH", authStore.jwt, { name }, false);
+        if (result.ok && authStore.user) authStore.user = { ...authStore.user, name };
+        return result;
+    }
+
+    function updatePassword(currentPassword: string, newPassword: string) {
+        return connection.apiRequest("/users/me/password", "PATCH", authStore.jwt, { currentPassword, newPassword }, false);
+    }
+
+    return { authenticated, loading, jwt, login, logout, signup, verify, loadUserWithExistingJwt, updateName, updatePassword };
 }
