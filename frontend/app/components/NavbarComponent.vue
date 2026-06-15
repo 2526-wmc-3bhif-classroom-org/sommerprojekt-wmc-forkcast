@@ -1,7 +1,12 @@
 <script setup lang="ts">
+import { joinURL } from "ufo";
 import useAuthService from "~/assets/service/auth-service";
 import { useAuthStore } from "~/assets/store/auth-store";
 import LanguageSwitcherComponent from "~/components/LanguageSwitcherComponent.vue";
+
+// Client-only navbar: serve the SVG logo directly (base-path aware) instead of
+// via NuxtImg, whose /_ipx/ URL wouldn't be prerendered/generated for a static host.
+const logoSrc = joinURL(useRuntimeConfig().app.baseURL, "/logo.svg");
 
 const isScrolled = ref(false);
 
@@ -48,7 +53,7 @@ function onCalendarClick(event: Event) {
   <div :class="['fixed top-0 navbar transition-colors duration-300', { 'navbar-scrolled': isScrolled }, { 'bg-transparent': !isScrolled }]">
     <div class="flex-1">
       <nuxt-link-locale to="/" class="btn btn-ghost text-xl">
-        <nuxt-img src="/logo.svg" width="30px" />
+        <img :src="logoSrc" width="30" alt="" />
         <span>{{$t('component.navbar.title')}}</span>
       </nuxt-link-locale>
     </div>

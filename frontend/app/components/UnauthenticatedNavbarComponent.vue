@@ -1,4 +1,12 @@
 <script setup lang="ts">
+import { joinURL } from "ufo";
+
+// This navbar is rendered client-only, so a NuxtImg <img> here is never in the
+// prerendered HTML and its /_ipx/ URL never gets generated → 404 on a static host.
+// The logo is an SVG (no optimization needed), so serve the public file directly,
+// base-path aware.
+const logoSrc = joinURL(useRuntimeConfig().app.baseURL, "/logo.svg");
+
 const isScrolled = ref(false);
 
 const handleScroll = () => {
@@ -17,7 +25,7 @@ onUnmounted(() => {
   <div :class="['fixed top-0 navbar transition-colors duration-300', { 'navbar-scrolled': isScrolled }, { 'bg-transparent': !isScrolled }]">
     <div class="flex-1">
       <nuxt-link-locale to="/" class="btn btn-ghost text-xl">
-        <nuxt-img src="/logo.svg" width="30px" />
+        <img :src="logoSrc" width="30" alt="" />
         <span>{{$t('component.navbar.title')}}</span>
       </nuxt-link-locale>
     </div>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { joinURL } from "ufo";
 import useAuthService from "~/assets/service/auth-service";
 
 const authService = useAuthService();
@@ -45,6 +46,12 @@ const faqs = [
 ];
 
 const lightbox = ref<string | null>(null);
+// Public assets live under the deploy base path (e.g. /sommerprojekt-wmc-forkcast).
+// A raw "/images/.." src resolves to the domain root and 404s on GitHub Pages, so
+// the lightbox (which sets src from a raw path) must join it with the base URL.
+const { app } = useRuntimeConfig();
+const asset = (p: string) => joinURL(app.baseURL, p);
+const lightboxSrc = computed(() => (lightbox.value ? asset(lightbox.value) : ""));
 const activeStep = ref(0);
 const trackRef = ref<HTMLElement | null>(null);
 const statsRef = ref<HTMLElement | null>(null);
@@ -242,13 +249,11 @@ onUnmounted(() => {
                 class="relative order-1 md:order-2 w-full aspect-video rounded-2xl overflow-hidden border border-base-content/10 bg-base-200 shadow-2xl shadow-black/30 cursor-zoom-in"
                 @click="lightbox = steps[activeStep].img"
               >
-                <nuxt-img
+                <img
                   v-for="(s, i) in steps"
                   :key="s.img"
-                  :src="s.img"
+                  :src="asset(s.img)"
                   :alt="$t(s.title)"
-                  format="webp"
-                  sizes="100vw md:600px"
                   class="absolute inset-0 w-full h-full object-contain transition-opacity duration-700"
                   :class="activeStep === i ? 'opacity-100' : 'opacity-0'"
                 />
@@ -291,7 +296,8 @@ onUnmounted(() => {
                 :src="item.img"
                 :alt="$t(item.alt)"
                 format="webp"
-                sizes="100vw md:600px"
+                width="1280"
+                densities="1x"
                 loading="lazy"
                 class="relative w-full h-full object-cover object-top parallax-media"
                 @error="($event.target as HTMLImageElement).style.opacity = '0'"
@@ -343,7 +349,8 @@ onUnmounted(() => {
           src="/images/signup-bg.jpg"
           format="webp"
           quality="80"
-          sizes="100vw lg:1152px"
+          width="1536"
+          densities="1x"
           loading="lazy"
           alt=""
           class="absolute inset-0 w-full h-full object-cover"
@@ -375,7 +382,7 @@ onUnmounted(() => {
             class="fixed inset-0 z-[100] bg-black/85 backdrop-blur-sm flex items-center justify-center p-4 sm:p-10 cursor-zoom-out"
             @click="lightbox = null"
           >
-            <img :src="lightbox" alt="" class="max-w-full max-h-full rounded-xl shadow-2xl" @click.stop/>
+            <img :src="lightboxSrc" alt="" class="max-w-full max-h-full rounded-xl shadow-2xl" @click.stop/>
             <button class="btn btn-circle btn-ghost absolute top-4 right-4 text-white" @click="lightbox = null">
               <i class="fa-solid fa-xmark text-xl"/>
             </button>
