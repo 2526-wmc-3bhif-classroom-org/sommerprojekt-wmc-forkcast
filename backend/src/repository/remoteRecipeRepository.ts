@@ -53,6 +53,7 @@ export class RemoteRecipeRepository {
         params.append("number", String(filters.number ?? number));
         params.append("addRecipeInformation", "true");
         params.append("addRecipeNutritionInformation", "true");
+        params.append("fillIngredients", "true");
         params.append("apiKey", this.API_KEY);
 
         for (const [key, value] of Object.entries(filters)) {
