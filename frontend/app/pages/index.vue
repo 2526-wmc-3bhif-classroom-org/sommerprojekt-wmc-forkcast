@@ -5,7 +5,6 @@ const authService = useAuthService();
 
 const img = useImage();
 const bgImage = img('/images/hero-bg.jpg', { quality: 90, format: 'webp' });
-const ctaImage = img('/images/signup-bg.jpg', { quality: 80, format: 'webp' });
 
 const steps = [
   { n: '01', title: 'index.how.1.title', desc: 'index.how.1.desc', img: '/images/screenshot-schedule.png' },
@@ -243,11 +242,13 @@ onUnmounted(() => {
                 class="relative order-1 md:order-2 w-full aspect-video rounded-2xl overflow-hidden border border-base-content/10 bg-base-200 shadow-2xl shadow-black/30 cursor-zoom-in"
                 @click="lightbox = steps[activeStep].img"
               >
-                <img
+                <nuxt-img
                   v-for="(s, i) in steps"
                   :key="s.img"
                   :src="s.img"
                   :alt="$t(s.title)"
+                  format="webp"
+                  sizes="100vw md:600px"
                   class="absolute inset-0 w-full h-full object-contain transition-opacity duration-700"
                   :class="activeStep === i ? 'opacity-100' : 'opacity-0'"
                 />
@@ -286,9 +287,12 @@ onUnmounted(() => {
               <div class="absolute inset-0 flex items-center justify-center text-base-content/15">
                 <i class="fa-regular fa-image text-5xl"/>
               </div>
-              <img
+              <nuxt-img
                 :src="item.img"
                 :alt="$t(item.alt)"
+                format="webp"
+                sizes="100vw md:600px"
+                loading="lazy"
                 class="relative w-full h-full object-cover object-top parallax-media"
                 @error="($event.target as HTMLImageElement).style.opacity = '0'"
               />
@@ -335,10 +339,16 @@ onUnmounted(() => {
     <!-- CTA banner -->
     <section class="py-24 px-6 bg-base-100 border-t border-base-content/10">
       <div class="max-w-6xl mx-auto relative overflow-hidden rounded-3xl">
-        <div
-          class="absolute inset-0 bg-cover bg-center"
-          :style="`background-image: linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.7)), url('${ctaImage}');`"
+        <nuxt-img
+          src="/images/signup-bg.jpg"
+          format="webp"
+          quality="80"
+          sizes="100vw lg:1152px"
+          loading="lazy"
+          alt=""
+          class="absolute inset-0 w-full h-full object-cover"
         />
+        <div class="absolute inset-0 bg-gradient-to-b from-black/55 to-black/70"/>
         <div class="relative px-6 py-20 md:py-28 text-center scroll-reveal">
           <h2 class="text-3xl md:text-5xl font-semibold tracking-tight mb-3 text-white">{{$t('index.cta.title')}}</h2>
           <p class="text-white/70 text-lg mb-8">{{$t('index.cta.subtitle')}}</p>

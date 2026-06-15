@@ -56,6 +56,9 @@ export default defineNuxtConfig({
     },
     nitro: {
         prerender: {
+            // Follow links/<img> in prerendered pages so @nuxt/image's /_ipx/
+            // variants get generated at build time (GitHub Pages has no runtime IPX).
+            crawlLinks: true,
             ignore: [/dashboard/],
             routes: fs.readdirSync(path.resolve(__dirname, 'app/content'))
                 .filter(file => file.endsWith('.md'))
