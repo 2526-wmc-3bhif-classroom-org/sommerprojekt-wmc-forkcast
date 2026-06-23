@@ -25,8 +25,14 @@ failureHandler.setMainHandler(message => {
 });
 
 async function request() {
+  emailError.value = "";
   if (!email.value?.value) {
     failureHandler.fail({ message: t('error.fill_all_fields') } as Failure);
+    return;
+  }
+
+  if (!/^\S+@\S+\.\S+$/.test(email.value.value)) {
+    emailError.value = t('error.invalid_email');
     return;
   }
 
@@ -48,7 +54,7 @@ async function request() {
     <label class="label">{{$t('forgot.email')}}</label>
     <label class="input w-full">
       <i class="fa-solid fa-at opacity-50"/>
-      <input ref="email" autocomplete="email" type="email" class="grow" placeholder="you@example.com" @keyup.enter="request" />
+      <input ref="email" autocomplete="email" type="text" inputmode="email" class="grow" placeholder="you@example.com" @keyup.enter="request" />
     </label>
     <Transition name="error-reveal">
       <p v-if="emailError" class="label text-error gap-1 text-wrap">

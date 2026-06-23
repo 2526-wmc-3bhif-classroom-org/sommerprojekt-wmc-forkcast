@@ -5,9 +5,27 @@ const bgImage = img('/images/signup-bg.jpg', { quality: 90, format: 'webp' });
 const mode = ref<"request" | "reset">("request");
 const enteredEmail = ref("");
 
+// Survive a reload mid-reset: the pending email keeps us on the reset step.
+// The new password is typed fresh on that step, so nothing sensitive is stored.
+const PENDING_EMAIL_KEY = "forgot-pending-email";
+
+onMounted(() => {
+  const saved = sessionStorage.getItem(PENDING_EMAIL_KEY);
+  if (saved) {
+    enteredEmail.value = saved;
+    mode.value = "reset";
+  }
+});
+
 function continueWithEmail(email: string) {
   enteredEmail.value = email;
+  sessionStorage.setItem(PENDING_EMAIL_KEY, email);
   mode.value = "reset";
+}
+
+function restartForgot() {
+  enteredEmail.value = "";
+  mode.value = "request";
 }
 </script>
 
@@ -28,7 +46,7 @@ function continueWithEmail(email: string) {
         </div>
         <div class="card bg-base-100 rounded-2xl w-full max-w-sm shrink-0 shadow-2xl opacity-0 animate-fade-in-slide-in-up">
           <div class="card-body w-full">
-            <forgot-reset-form-component v-if="mode == 'reset'" :enteredEmail="enteredEmail"/>
+            <forgot-reset-form-component v-if="mode == 'reset'" :enteredEmail="enteredEmail" @restart="restartForgot"/>
             <forgot-request-form-component v-else @continue="continueWithEmail"/>
           </div>
         </div>

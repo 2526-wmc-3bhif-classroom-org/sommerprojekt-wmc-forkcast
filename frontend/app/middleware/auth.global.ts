@@ -13,6 +13,8 @@ export default defineNuxtRouteMiddleware((to) => {
     }
 
     if (!authService.authenticated.value && to.path.startsWith("/dashboard")) {
-        return navigateTo("/auth/login");
+        // Remember where the user was headed (incl. query, e.g. a share link) so
+        // login/register can send them back there afterwards.
+        return navigateTo({ path: "/auth/login", query: { redirect: to.fullPath } });
     }
 });

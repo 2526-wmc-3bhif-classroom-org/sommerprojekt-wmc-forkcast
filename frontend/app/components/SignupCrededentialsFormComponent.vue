@@ -8,14 +8,17 @@ const emit = defineEmits(["continue"]);
 const username = ref<HTMLInputElement>();
 const email = ref<HTMLInputElement>();
 const password = ref<HTMLInputElement>();
+const confirmPassword = ref<HTMLInputElement>();
 const terms = ref<HTMLInputElement>();
 
 const usernameError = ref("");
 const emailError = ref("");
 const passwordError = ref("");
+const confirmPasswordError = ref("");
 const mainError = ref("");
 
 const showPassword = ref(false);
+const showConfirmPassword = ref(false);
 const loading = ref(false);
 
 const authService = useAuthService();
@@ -39,8 +42,21 @@ failureHandler.setMainHandler(message => {
 });
 
 async function signup() {
+  emailError.value = "";
+  confirmPasswordError.value = "";
+
   if (!username.value?.value || !email.value?.value || !password.value?.value) {
     failureHandler.fail({ message: t('error.fill_all_fields') } as Failure);
+    return;
+  }
+
+  if (!/^\S+@\S+\.\S+$/.test(email.value.value)) {
+    emailError.value = t('error.invalid_email');
+    return;
+  }
+
+  if (password.value.value !== confirmPassword.value?.value) {
+    confirmPasswordError.value = t('signup.password_mismatch');
     return;
   }
 
@@ -80,7 +96,7 @@ async function signup() {
     <label class="label">{{$t('signup.email')}}</label>
     <label class="input w-full">
       <i class="fa-solid fa-at opacity-50"/>
-      <input ref="email" autocomplete="email" type="email" class="grow" placeholder="you@example.com" />
+      <input ref="email" autocomplete="email" type="text" inputmode="email" class="grow" placeholder="you@example.com" />
     </label>
     <Transition name="error-reveal">
       <p v-if="emailError" class="label text-error gap-1 text-wrap">
@@ -99,6 +115,20 @@ async function signup() {
     <Transition name="error-reveal">
       <p v-if="passwordError" class="label text-error gap-1 text-wrap">
         <i class="fa-solid fa-triangle-exclamation"/><span>{{ passwordError }}</span>
+      </p>
+    </Transition>
+
+    <label class="label">{{$t('signup.confirm')}}</label>
+    <label class="input w-full">
+      <i class="fa-solid fa-lock-open opacity-50"/>
+      <input ref="confirmPassword" autocomplete="new-password" :type="showConfirmPassword ? 'text' : 'password'" class="grow" placeholder="••••••••" @keyup.enter="signup" />
+      <button type="button" tabindex="-1" class="opacity-50 hover:opacity-100 cursor-pointer" @click="showConfirmPassword = !showConfirmPassword">
+        <i :class="showConfirmPassword ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'"/>
+      </button>
+    </label>
+    <Transition name="error-reveal">
+      <p v-if="confirmPasswordError" class="label text-error gap-1 text-wrap">
+        <i class="fa-solid fa-triangle-exclamation"/><span>{{ confirmPasswordError }}</span>
       </p>
     </Transition>
 

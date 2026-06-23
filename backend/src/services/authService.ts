@@ -68,12 +68,22 @@ export class AuthService {
         }
     }
 
-    public async verifyUser(email: string): Promise<void> {
+    public async verifyUser(email: string) {
         const user = this.userRepository.findByEmail(email);
         if (!user) {
             throw new Error("User not found");
         }
         this.userRepository.updateVerificationStatus(email, true);
+
+        // Verifying the emailed code proves ownership, so issue a session right
+        // away — the client can log in without re-sending the password.
+        const token = generateJWT(user.id);
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { password: _, ...userWithoutPassword } = user;
+        return {
+            user: { ...userWithoutPassword, isVerified: true },
+            token
+        };
     }
 
     public checkUserExists(email: string): boolean {
