@@ -60,3 +60,16 @@ defineExpose({ open });
     </form>
   </dialog>
 </template>
+
+<style scoped>
+/* Keep the dialog in the top layer for the whole close transition so the box
+   animates out smoothly instead of snapping once it leaves the overlay. */
+.modal {
+  transition-property: visibility, background-color, opacity, overlay, display;
+  transition-duration: 0.18s;
+  transition-behavior: allow-discrete;
+}
+.modal-box {
+  transition-duration: 0.18s;
+}
+</style>

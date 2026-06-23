@@ -6,6 +6,7 @@ const props = defineProps(["data"]);
 const data = computed(() => props.data as RecipePreview);
 
 const infoModal = ref();
+const shareModal = ref();
 const favStore = useFavoritesStore();
 onMounted(() => {
   if (data.value?.isFavorited !== undefined) favStore.seedFromPayload(data.value.id, data.value.isFavorited);
@@ -62,8 +63,12 @@ const legend = computed(() => {
       <button @click.stop="infoModal?.open()" class="btn btn-circle btn-sm absolute top-11 right-2 bg-base-100/70 hover:bg-base-100 border-0 backdrop-blur-sm">
         <i class="fa-solid fa-circle-info text-base-content/50 text-lg"/>
       </button>
+      <button @click.stop="shareModal?.open()" class="btn btn-circle btn-sm absolute top-20 right-2 bg-base-100/70 hover:bg-base-100 border-0 backdrop-blur-sm">
+        <i class="fa-solid fa-share-nodes text-base-content/50 text-lg"/>
+      </button>
     </figure>
     <RecipeInfoModalComponent ref="infoModal" :data="data" />
+    <RecipeShareModalComponent ref="shareModal" :data="data" />
     <div class="card-body text-left">
       <div class="flex items-start gap-2">
         <div class="flex-1 min-w-0">

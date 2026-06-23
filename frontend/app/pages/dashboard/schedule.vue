@@ -1,17 +1,53 @@
 <script setup lang="ts">
 import draggable from 'vuedraggable';
 import type { RecipePreview } from '~/assets/model/recipe-preview';
+import { useFavoritesStore } from '~/assets/store/favorites-store';
+import { useRecipeStore } from '~/assets/store/recipe-store';
 
 definePageMeta({
   showFooter: false,
   ssr: false
 })
 
+const favStore = useFavoritesStore();
+const recipeStore = useRecipeStore();
+const route = useRoute();
+
 const searchRef = ref<{ loadMore: () => void } | null>(null);
 const listContainerRef = ref<HTMLElement | null>(null);
 const sentinelRef = ref<HTMLElement | null>(null);
 
+// Favorites shown in the left list while no search is active, so users can drag
+// scheduled meals straight from their favorites without searching first.
+const favorites = ref<(RecipePreview & { __sourceItemId: string })[]>([]);
+
+async function loadFavorites() {
+  const result = await favStore.getPopulated(0, 20);
+  if (result.ok && result.value) {
+    favorites.value = result.value.recipes.map(r => ({
+      ...r,
+      __sourceItemId: `fav-recipe-${r.id}`
+    }));
+  }
+}
+
+// A ?share=<id> link pins that recipe at the top of the list so the recipient
+// can drag it straight onto a day. Kept as a 0/1-length array for draggable.
+const sharedRecipes = ref<(RecipePreview & { __sourceItemId: string })[]>([]);
+
+async function loadSharedRecipe() {
+  const id = Number(route.query.share);
+  if (!Number.isInteger(id) || id <= 0) return;
+  const result = await recipeStore.getRecipe(id);
+  if (result.ok && result.value) {
+    sharedRecipes.value = [{ ...result.value, __sourceItemId: `shared-recipe-${id}` }];
+  }
+}
+
 onMounted(() => {
+  loadFavorites();
+  loadSharedRecipe();
+
   const observer = new IntersectionObserver(
     (entries) => { if (entries[0]?.isIntersecting) searchRef.value?.loadMore(); },
     { root: listContainerRef.value, threshold: 0 }
@@ -42,8 +78,7 @@ function onSearchResults(results: RecipePreview[]) {
 
 let dragGhostEl: HTMLElement | null = null;
 
-function onMainListDragStart(evt: any) {
-  const recipe = datas.value[evt.oldIndex];
+function buildDragGhost(recipe: RecipePreview, evt: any) {
   if (!recipe || !evt.originalEvent?.dataTransfer) return;
 
   const style = getComputedStyle(document.documentElement);
@@ -72,6 +107,18 @@ function onMainListDragStart(evt: any) {
 
   document.body.appendChild(dragGhostEl);
   evt.originalEvent.dataTransfer.setDragImage(dragGhostEl, 24, 24);
+}
+
+function onMainListDragStart(evt: any) {
+  buildDragGhost(datas.value[evt.oldIndex]!, evt);
+}
+
+function onFavListDragStart(evt: any) {
+  buildDragGhost(favorites.value[evt.oldIndex]!, evt);
+}
+
+function onSharedListDragStart(evt: any) {
+  buildDragGhost(sharedRecipes.value[evt.oldIndex]!, evt);
 }
 
 function onMainListDragEnd() {
@@ -113,6 +160,40 @@ function onMainListDragEnd() {
         <recipe-search-component ref="searchRef" class="m-3 w-[stretch] shrink-0" @results="onSearchResults" @loading="isSearchLoading = $event"/>
 
         <div ref="listContainerRef" class="overflow-y-scroll flex-1">
+          <!-- Pinned recipe arriving via a ?share=<id> link -->
+          <template v-if="sharedRecipes.length > 0">
+            <div class="flex items-center justify-between px-3 pt-2 pb-1">
+              <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-base-content/50 select-none">
+                <i class="fa-solid fa-share-nodes text-primary"/>
+                <span>{{ $t('dashboard.schedule.shared_with_you') }}</span>
+              </div>
+              <button @click="sharedRecipes = []" class="btn btn-ghost btn-xs btn-circle">
+                <i class="fa-solid fa-xmark"/>
+              </button>
+            </div>
+            <draggable
+                v-model="sharedRecipes"
+                :animation="300"
+                :clone="cloneRecipeForDrop"
+                :sort="false"
+                :group="{ name: 'items', pull: 'clone', put: false }"
+                tag="ul"
+                item-key="__sourceItemId"
+                class="list"
+                ghost-class="hidden"
+                @start="onSharedListDragStart"
+                @end="onMainListDragEnd"
+                :data-zone="'main'"
+            >
+              <template #item="{ element: data }">
+                <div class="cursor-grab active:cursor-grabbing touch-none select-none">
+                  <recipe-list-component :data="data"/>
+                </div>
+              </template>
+            </draggable>
+            <div class="divider my-1"/>
+          </template>
+
           <ul v-if="isSearchLoading && datas.length === 0" class="list">
             <li v-for="i in 5" :key="i" class="list-row flex items-center gap-4 p-3">
               <div class="skeleton size-33 rounded-box shrink-0"/>
@@ -124,6 +205,32 @@ function onMainListDragEnd() {
               </div>
             </li>
           </ul>
+          <template v-else-if="datas.length === 0 && favorites.length > 0">
+            <div class="flex items-center gap-2 px-3 pt-2 pb-1 text-xs font-semibold uppercase tracking-wide text-base-content/50 select-none">
+              <i class="fa-solid fa-heart text-primary"/>
+              <span>{{ $t('page.account.favorite_foods') }}</span>
+            </div>
+            <draggable
+                v-model="favorites"
+                :animation="300"
+                :clone="cloneRecipeForDrop"
+                :sort="false"
+                :group="{ name: 'items', pull: 'clone', put: false }"
+                tag="ul"
+                item-key="__sourceItemId"
+                class="list"
+                ghost-class="hidden"
+                @start="onFavListDragStart"
+                @end="onMainListDragEnd"
+                :data-zone="'main'"
+            >
+              <template #item="{ element: data }">
+                <div class="cursor-grab active:cursor-grabbing touch-none select-none">
+                  <recipe-list-component :data="data"/>
+                </div>
+              </template>
+            </draggable>
+          </template>
           <div v-else-if="datas.length === 0" class="flex flex-col items-center justify-center h-full gap-3 text-base-content/30 select-none">
             <i class="fa-solid fa-magnifying-glass text-4xl"/>
             <span class="text-sm font-medium">{{ $t('component.search.start_searching') }}</span>

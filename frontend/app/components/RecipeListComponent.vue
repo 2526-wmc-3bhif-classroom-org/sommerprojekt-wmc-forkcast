@@ -6,6 +6,7 @@ const props = defineProps(["data"]);
 const data = computed(() => props.data as RecipePreview);
 
 const infoModal = ref();
+const shareModal = ref();
 const favStore = useFavoritesStore();
 onMounted(() => {
   if (data.value?.isFavorited !== undefined) favStore.seedFromPayload(data.value.id, data.value.isFavorited);
@@ -101,11 +102,18 @@ const legend = computed(() => {
       <button @click.stop="favStore.toggle(data.id)" class="btn btn-ghost btn-sm btn-circle">
         <i :class="['fa-heart text-lg', isFav ? 'fa-solid text-error' : 'fa-regular text-base-content/30']" />
       </button>
-      <button @click.stop="infoModal?.open()" class="btn btn-ghost btn-sm btn-circle">
-        <i class="fa-solid fa-circle-info text-base-content/30 text-lg"/>
-      </button>
+      <div class="dropdown dropdown-end">
+        <button tabindex="0" @click.stop class="btn btn-ghost btn-sm btn-circle">
+          <i class="fa-solid fa-ellipsis-vertical text-base-content/30 text-lg"/>
+        </button>
+        <ul tabindex="0" class="dropdown-content menu menu-sm bg-base-200 rounded-box z-10 w-40 p-2 shadow">
+          <li><button @click.stop="infoModal?.open()"><i class="fa-solid fa-circle-info"/>{{ $t('component.recipe.menu.details') }}</button></li>
+          <li><button @click.stop="shareModal?.open()"><i class="fa-solid fa-share-nodes"/>{{ $t('component.recipe.menu.share') }}</button></li>
+        </ul>
+      </div>
     </div>
     <RecipeInfoModalComponent ref="infoModal" :data="data" />
+    <RecipeShareModalComponent ref="shareModal" :data="data" />
   </li>
 </template>
 
