@@ -2,9 +2,20 @@
 import type { Failure } from "~/assets/model/failure";
 import useAuthService from "~/assets/service/auth-service";
 import useFailureHandler from "~/assets/util/failure-handler";
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 
 const props = defineProps(["enteredEmail"]);
+const emit = defineEmits(["restart"]);
+
+// Persist the typed code so a reload mid-reset doesn't wipe it.
+const CODE_KEY = "forgot-pending-code";
+
+// Clears the persisted step and hands control back to the request form.
+function restart() {
+  sessionStorage.removeItem("forgot-pending-email");
+  sessionStorage.removeItem(CODE_KEY);
+  emit("restart");
+}
 
 const code = ref(["", "", "", "", "", ""]);
 const codeRefs = ref<(HTMLInputElement | null)[]>([null, null, null, null, null, null]);
@@ -55,6 +66,10 @@ async function reset() {
     return;
   }
 
+  // Reset done — drop the persisted step so a later visit starts fresh.
+  sessionStorage.removeItem("forgot-pending-email");
+  sessionStorage.removeItem(CODE_KEY);
+
   await router.push(localePath("/auth/login"));
 }
 
@@ -77,8 +92,20 @@ function focusInput(idx: number) {
 }
 
 onMounted(() => {
-  focusInput(0);
+  const saved = sessionStorage.getItem(CODE_KEY);
+  if (saved) {
+    saved.replace(/\D/g, "").slice(0, 6).split("").forEach((d, i) => { code.value[i] = d; });
+    const firstEmpty = getFirstEmptyIdx();
+    focusInput(firstEmpty === -1 ? 5 : firstEmpty);
+  } else {
+    focusInput(0);
+  }
 });
+
+// Mirror every change into sessionStorage; restored on the next mount/reload.
+watch(code, (val) => {
+  sessionStorage.setItem(CODE_KEY, val.join(""));
+}, { deep: true });
 
 function onInput(e: Event, idx: number) {
   const i = idx - 1;
@@ -201,6 +228,9 @@ function onPaste(e: ClipboardEvent) {
       <span v-if="loading" class="loading loading-spinner loading-sm"/>
       <i v-else class="fa-solid fa-arrow-right-to-bracket"/>
       <span>{{$t('forgot.submit')}}</span>
+    </button>
+    <button type="button" class="link link-hover text-sm mt-1 self-center" @click="restart">
+      <i class="fa-solid fa-arrow-left mr-1"/>{{ $t('signup.different_email') }}
     </button>
   </form>
 </template>

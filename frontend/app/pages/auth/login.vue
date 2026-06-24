@@ -15,7 +15,15 @@ const loading = ref(false);
 
 const localePath = useLocalePath();
 const router = useRouter();
+const route = useRoute();
 const auth = useAuthService();
+
+// Only honour internal paths so ?redirect can't bounce to an external site.
+function redirectTarget(): string {
+  const r = route.query.redirect;
+  if (typeof r === "string" && r.startsWith("/") && !r.startsWith("//")) return r;
+  return localePath("/dashboard");
+}
 const failureHandler = useFailureHandler();
 const { t } = useI18n();
 
@@ -44,11 +52,16 @@ async function login() {
   let failure = await auth.login(identifier.value.value, password.value.value);
   loading.value = false;
   if (!failure.ok) {
-    failureHandler.fail(failure.failure as Failure);
+    // A 401 here means bad credentials, not an expired session — say so plainly.
+    if (failure.needsAuth) {
+      mainError.value = t('login.invalid_credentials');
+    } else {
+      failureHandler.fail(failure.failure as Failure);
+    }
     return;
   }
 
-  await router.push(localePath("/dashboard"));
+  await router.push(redirectTarget());
 }
 </script>
 

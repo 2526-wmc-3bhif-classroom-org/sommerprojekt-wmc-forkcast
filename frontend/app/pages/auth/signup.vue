@@ -4,12 +4,29 @@ const img = useImage();
 const bgImage = img('/images/signup-bg.jpg', { quality: 90, format: 'webp' });
 const mode = ref<"credentials" | "code">("credentials")
 const enteredEmail = ref("");
-const enteredPassword = ref("");
 
-function continueWithCredentials(email: string, password: string) {
+// Survive a reload mid-verification: the pending email keeps us on the code
+// step. Password is intentionally NOT persisted (sensitive); if it's gone after
+// a reload the code form redirects to login instead of auto-login.
+const PENDING_EMAIL_KEY = "signup-pending-email";
+
+onMounted(() => {
+  const saved = sessionStorage.getItem(PENDING_EMAIL_KEY);
+  if (saved) {
+    enteredEmail.value = saved;
+    mode.value = "code";
+  }
+});
+
+function continueWithCredentials(email: string) {
   enteredEmail.value = email;
-  enteredPassword.value = password;
+  sessionStorage.setItem(PENDING_EMAIL_KEY, email);
   mode.value = "code";
+}
+
+function restartSignup() {
+  enteredEmail.value = "";
+  mode.value = "credentials";
 }
 </script>
 
@@ -30,7 +47,7 @@ function continueWithCredentials(email: string, password: string) {
         </div>
         <div class="card bg-base-100 rounded-2xl w-full max-w-sm shrink-0 shadow-2xl opacity-0 animate-fade-in-slide-in-up">
           <div class="card-body w-full">
-            <signup-code-form-component v-if="mode == 'code'" :enteredEmail="enteredEmail" :enteredPassword="enteredPassword"/>
+            <signup-code-form-component v-if="mode == 'code'" :enteredEmail="enteredEmail" @restart="restartSignup"/>
             <signup-crededentials-form-component v-else :mode="mode" @continue="continueWithCredentials"/>
           </div>
         </div>

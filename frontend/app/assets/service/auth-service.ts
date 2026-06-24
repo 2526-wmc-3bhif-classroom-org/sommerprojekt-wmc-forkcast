@@ -60,10 +60,12 @@ export default function useAuthService() {
         return result;
     }
 
-    async function verify(email: string, password: string, code: string) {
+    async function verify(email: string, code: string) {
         if (authenticated.value) throw Error("Already authenticated");
         let result = await verifyUser(email, code);
-        if (result.ok) await login(email, password);
+        // The verify endpoint now returns a session, so no password-based login
+        // is needed — this works even after a reload dropped the password.
+        if (result.ok && result.value) await setAuthState(result.value as AuthResponse);
         return result;
     }
 
@@ -81,7 +83,7 @@ export default function useAuthService() {
     }
 
     function verifyUser(email: string, code: string) {
-        return connection.apiRequest("/auth/verify", "POST", undefined, { email, code });
+        return connection.apiRequest<AuthResponse>("/auth/verify", "POST", undefined, { email, code });
     }
 
     function forgotPassword(email: string, lang: string) {

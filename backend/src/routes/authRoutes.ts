@@ -78,10 +78,10 @@ router.post("/verify",
         }
 
         const authService = new AuthService(unit);
-        await authService.verifyUser(email);
+        const { user, token } = await authService.verifyUser(email);
         unit.complete(true);
 
-        return res.status(StatusCodes.OK).json({ message: "Code verified successfully" });
+        return res.status(StatusCodes.OK).json({ user, token });
     }
     catch (error: any) {
         unit.complete(false);
