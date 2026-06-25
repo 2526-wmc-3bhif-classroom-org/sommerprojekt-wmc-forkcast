@@ -117,7 +117,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="bg-[#090B0E] bg-fixed bg-no-repeat " :style="`background-image: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.8)), url('${bgImage}');`"
+  <div class="bg-[#090B0E] bg-fixed bg-no-repeat bg-cover bg-center" :style="`background-image: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.8)), url('${bgImage}');`"
   >
 
     <!-- Hero -->
