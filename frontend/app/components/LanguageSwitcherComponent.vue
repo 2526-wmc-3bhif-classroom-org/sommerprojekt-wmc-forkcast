@@ -14,7 +14,7 @@ function changeLanguage(code: any) {
          class="btn btn-ghost btn-circle tooltip tooltip-bottom [--tt-bg:var(--color-base-200)] before:text-base-content before:font-normal">
       <i class="fa-solid fa-language"/>
     </div>
-    <ul tabindex="0" class="menu menu-md dropdown-content bg-base-100 rounded-box z-1 mt-3 p-2 shadow">
+    <ul tabindex="0" class="menu menu-md dropdown-content bg-base-100 rounded-box z-1 mt-3 p-2 shadow text-base-content">
       <li v-for="l in locales">
         <span @click="changeLanguage(l.code)">
           <i class="fa-solid fa-language"/>

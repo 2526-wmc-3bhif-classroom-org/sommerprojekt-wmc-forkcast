@@ -279,7 +279,7 @@ async function removeFriend() {
     <div class="flex flex-col gap-4 overflow-visible md:overflow-hidden opacity-0 animate-fade-in-slide-in-left">
 
       <!-- Profile stats card -->
-      <div class="bg-base-100 rounded-2xl shrink-0">
+      <div class="bg-base-200 rounded-2xl shrink-0">
         <div class="stats stats-vertical sm:stats-horizontal w-full rounded-2xl">
           <div class="stat">
             <div class="stat-figure flex items-center justify-center">
@@ -318,7 +318,7 @@ async function removeFriend() {
       </div>
 
       <!-- Friends card -->
-      <div class="bg-base-100 rounded-2xl flex flex-col flex-1 overflow-hidden">
+      <div class="bg-base-200 rounded-2xl flex flex-col flex-1 overflow-hidden">
         <div class="flex items-center gap-3 px-4 py-3 border-b border-base-200 shrink-0">
           <i class="fa-solid fa-user-group text-primary" />
           <span class="font-semibold text-base-content">{{ $t('page.account.friends') }}</span>
@@ -419,7 +419,7 @@ async function removeFriend() {
     </div>
 
     <!-- Right column: favorites card -->
-    <div class="bg-base-100 rounded-2xl flex flex-col overflow-visible md:overflow-hidden opacity-0 animate-fade-in-slide-in-right min-h-64 md:min-h-0">
+    <div class="bg-base-200 rounded-2xl flex flex-col overflow-visible md:overflow-hidden opacity-0 animate-fade-in-slide-in-right min-h-64 md:min-h-0">
       <div class="flex items-center gap-3 px-4 py-3 border-b border-base-200 shrink-0">
         <i class="fa-solid fa-heart text-primary" />
         <span class="font-semibold text-base-content">{{ $t('page.account.favorite_foods') }}</span>
@@ -448,7 +448,7 @@ async function removeFriend() {
         </button>
       </div>
       <div class="flex flex-col gap-3">
-        <button @click="editModal = 'username'" class="btn btn-soft w-full justify-start gap-3 h-auto py-4">
+        <button @click="editModal = 'username'" class="btn btn-base-200 w-full justify-start gap-3 h-auto py-4">
           <i class="fa-solid fa-user text-primary text-xl w-6" />
           <span class="text-left flex flex-col">
             <span class="font-semibold">{{ $t('page.modifyprofile.username.title') }}</span>
@@ -456,7 +456,7 @@ async function removeFriend() {
           </span>
           <i class="fa-solid fa-chevron-right ml-auto text-base-content/30" />
         </button>
-        <button @click="editModal = 'password'" class="btn btn-soft w-full justify-start gap-3 h-auto py-4">
+        <button @click="editModal = 'password'" class="btn btn-base-200 w-full justify-start gap-3 h-auto py-4">
           <i class="fa-solid fa-key text-primary text-xl w-6" />
           <span class="text-left flex flex-col">
             <span class="font-semibold">{{ $t('page.modifyprofile.password.title') }}</span>

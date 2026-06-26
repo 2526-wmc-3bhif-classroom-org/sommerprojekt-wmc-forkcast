@@ -2,13 +2,13 @@
   <company-pages-component>
 
     <!-- Header -->
-    <div class="card shadow-xl">
+    <div class="card">
       <div class="card-body">
         <h1 class="text-4xl font-bold text-base-content mb-2">About Forkcast</h1>
         <p class="text-base-content opacity-80 text-lg leading-relaxed">
           Forkcast is a free meal planning and recipe management platform developed as a school project by
-          <span class="text-primary font-semibold">Forkcast Solutions</span> at
-          <span class="text-primary font-semibold">HTL Leonding</span>, Upper Austria.
+          <span class="font-semibold">Forkcast Solutions</span> at
+          <span class="font-semibold">HTL Leonding</span>, Upper Austria.
         </p>
         <p class="text-base-content opacity-70 leading-relaxed mt-2">
           Our goal is to make meal planning simple and enjoyable — discover recipes, organize your weekly schedule,
@@ -18,10 +18,10 @@
     </div>
 
     <!-- Team -->
-    <div class="card shadow-xl">
+    <div class="card">
       <div class="card-body">
         <h2 class="card-title text-2xl font-bold text-base-content mb-6">
-          <i class="fa-solid fa-users text-primary mr-2" />
+          <i class="fa-solid fa-users mr-2" />
           The Team
         </h2>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -79,10 +79,10 @@
     </div>
 
     <!-- School context -->
-    <div class="card shadow-xl">
+    <div class="card">
       <div class="card-body">
         <h2 class="card-title text-xl font-bold text-base-content mb-2">
-          <i class="fa-solid fa-graduation-cap text-primary mr-2" />
+          <i class="fa-solid fa-graduation-cap mr-2" />
           School Project
         </h2>
         <p class="text-base-content opacity-70 leading-relaxed">

@@ -2,10 +2,10 @@
   <company-pages-component>
 
     <!-- Header -->
-    <div class="card shadow-xl">
+    <div class="card">
       <div class="card-body">
         <div class="flex items-center gap-4 mb-2">
-          <i class="fa-solid fa-file-lines text-primary text-3xl" />
+          <i class="fa-solid fa-file-lines text-3xl" />
           <h1 class="text-4xl font-bold text-base-content">Documentation</h1>
         </div>
         <p class="text-base-content opacity-70 leading-relaxed">
@@ -15,10 +15,10 @@
     </div>
 
     <!-- Dashboard -->
-    <div class="card shadow-xl">
+    <div class="card">
       <div class="card-body">
         <h2 class="card-title text-xl font-bold text-base-content mb-4">
-          <i class="fa-solid fa-house text-primary mr-2" />
+          <i class="fa-solid fa-house mr-2" />
           Dashboard
         </h2>
         <p class="text-base-content opacity-70 leading-relaxed mb-4">
@@ -27,19 +27,19 @@
         </p>
         <ul class="flex flex-col gap-2">
           <li class="flex items-center gap-3 rounded-box px-4 py-2">
-            <i class="fa-solid fa-fire text-primary shrink-0" />
+            <i class="fa-solid fa-fire shrink-0" />
             <span class="text-base-content opacity-80">Calorie count and nutritional context</span>
           </li>
           <li class="flex items-center gap-3 rounded-box px-4 py-2">
-            <i class="fa-solid fa-clock text-primary shrink-0" />
+            <i class="fa-solid fa-clock shrink-0" />
             <span class="text-base-content opacity-80">Preparation time and effort rating</span>
           </li>
           <li class="flex items-center gap-3 rounded-box px-4 py-2">
-            <i class="fa-solid fa-utensils text-primary shrink-0" />
+            <i class="fa-solid fa-utensils shrink-0" />
             <span class="text-base-content opacity-80">Ingredient count and serving size</span>
           </li>
           <li class="flex items-center gap-3 rounded-box px-4 py-2">
-            <i class="fa-solid fa-tags text-primary shrink-0" />
+            <i class="fa-solid fa-tags shrink-0" />
             <span class="text-base-content opacity-80">Dietary tags (Vegetarian, Vegan, Gluten Free, Spicy, …)</span>
           </li>
         </ul>
@@ -47,10 +47,10 @@
     </div>
 
     <!-- Meal Planner -->
-    <div class="card shadow-xl">
+    <div class="card">
       <div class="card-body">
         <h2 class="card-title text-xl font-bold text-base-content mb-4">
-          <i class="fa-solid fa-calendar-days text-primary mr-2" />
+          <i class="fa-solid fa-calendar-days mr-2" />
           Meal Planner / Schedule
         </h2>
         <p class="text-base-content opacity-70 leading-relaxed mb-4">
@@ -59,14 +59,14 @@
         </p>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div class="rounded-box p-3 flex items-start gap-3">
-            <i class="fa-solid fa-hand-pointer text-primary mt-0.5 shrink-0" />
+            <i class="fa-solid fa-hand-pointer mt-0.5 shrink-0" />
             <div>
               <p class="text-base-content font-medium">Drag &amp; Drop</p>
               <p class="text-base-content opacity-50 text-sm">Drag any recipe from the list into your schedule</p>
             </div>
           </div>
           <div class="rounded-box p-3 flex items-start gap-3">
-            <i class="fa-solid fa-calendar text-primary mt-0.5 shrink-0" />
+            <i class="fa-solid fa-calendar mt-0.5 shrink-0" />
             <div>
               <p class="text-base-content font-medium">Calendar Navigation</p>
               <p class="text-base-content opacity-50 text-sm">Use the navbar calendar to jump to specific dates</p>
@@ -77,10 +77,10 @@
     </div>
 
     <!-- Favorites -->
-    <div class="card shadow-xl">
+    <div class="card">
       <div class="card-body">
         <h2 class="card-title text-xl font-bold text-base-content mb-4">
-          <i class="fa-solid fa-heart text-primary mr-2" />
+          <i class="fa-solid fa-heart mr-2" />
           Favorites
         </h2>
         <p class="text-base-content opacity-70 leading-relaxed">
@@ -91,10 +91,10 @@
     </div>
 
     <!-- Friends -->
-    <div class="card shadow-xl">
+    <div class="card">
       <div class="card-body">
         <h2 class="card-title text-xl font-bold text-base-content mb-4">
-          <i class="fa-solid fa-user-group text-primary mr-2" />
+          <i class="fa-solid fa-user-group mr-2" />
           Friends
         </h2>
         <p class="text-base-content opacity-70 leading-relaxed">
@@ -106,10 +106,10 @@
     </div>
 
     <!-- Account & Profile -->
-    <div class="card shadow-xl">
+    <div class="card">
       <div class="card-body">
         <h2 class="card-title text-xl font-bold text-base-content mb-4">
-          <i class="fa-solid fa-user text-primary mr-2" />
+          <i class="fa-solid fa-user mr-2" />
           Account &amp; Profile
         </h2>
         <p class="text-base-content opacity-70 leading-relaxed mb-4">
@@ -118,11 +118,11 @@
         </p>
         <ul class="flex flex-col gap-2">
           <li class="flex items-center gap-3 rounded-box px-4 py-2">
-            <i class="fa-solid fa-signature text-primary shrink-0" />
+            <i class="fa-solid fa-signature shrink-0" />
             <span class="text-base-content opacity-80">Change your username</span>
           </li>
           <li class="flex items-center gap-3 rounded-box px-4 py-2">
-            <i class="fa-solid fa-lock text-primary shrink-0" />
+            <i class="fa-solid fa-lock shrink-0" />
             <span class="text-base-content opacity-80">Update your password</span>
           </li>
         </ul>
@@ -130,25 +130,25 @@
     </div>
 
     <!-- Auth -->
-    <div class="card shadow-xl">
+    <div class="card">
       <div class="card-body">
         <h2 class="card-title text-xl font-bold text-base-content mb-4">
-          <i class="fa-solid fa-key text-primary mr-2" />
+          <i class="fa-solid fa-key mr-2" />
           Authentication
         </h2>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div class="rounded-box p-3 text-center">
-            <i class="fa-solid fa-user-plus text-primary text-2xl mb-2" />
+            <i class="fa-solid fa-user-plus text-2xl mb-2" />
             <p class="text-base-content font-medium">Sign Up</p>
             <p class="text-base-content opacity-50 text-sm">Register with email and password</p>
           </div>
           <div class="rounded-box p-3 text-center">
-            <i class="fa-solid fa-right-to-bracket text-primary text-2xl mb-2" />
+            <i class="fa-solid fa-right-to-bracket text-2xl mb-2" />
             <p class="text-base-content font-medium">Login</p>
             <p class="text-base-content opacity-50 text-sm">Access your existing account</p>
           </div>
           <div class="rounded-box p-3 text-center">
-            <i class="fa-solid fa-envelope-circle-check text-primary text-2xl mb-2" />
+            <i class="fa-solid fa-envelope-circle-check text-2xl mb-2" />
             <p class="text-base-content font-medium">Forgot Password</p>
             <p class="text-base-content opacity-50 text-sm">Reset via email verification</p>
           </div>

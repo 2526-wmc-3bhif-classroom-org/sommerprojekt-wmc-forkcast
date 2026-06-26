@@ -14,10 +14,10 @@ function submitForm() {
   <company-pages-component>
 
     <!-- Header -->
-    <div class="card shadow-xl">
+    <div class="card">
       <div class="card-body">
         <div class="flex items-center gap-4 mb-2">
-          <i class="fa-solid fa-envelope text-primary text-3xl" />
+          <i class="fa-solid fa-envelope text-3xl" />
           <h1 class="text-4xl font-bold text-base-content">Contact</h1>
         </div>
         <p class="text-base-content opacity-70 leading-relaxed">
@@ -28,10 +28,10 @@ function submitForm() {
     </div>
 
     <!-- Form -->
-    <div class="card bg-base-100 shadow-xl">
+    <div class="card bg-base-200">
       <div class="card-body">
         <h2 class="card-title text-xl font-bold text-base-content mb-4">
-          <i class="fa-solid fa-paper-plane text-primary mr-2" />
+          <i class="fa-solid fa-paper-plane mr-2" />
           Send a Message
         </h2>
         <form @submit.prevent="submitForm" class="flex flex-col gap-4">
@@ -84,16 +84,16 @@ function submitForm() {
     </div>
 
     <!-- Direct contact -->
-    <div class="card shadow-xl">
+    <div class="card">
       <div class="card-body">
         <h2 class="card-title text-xl font-bold text-base-content mb-2">
-          <i class="fa-solid fa-at text-primary mr-2" />
+          <i class="fa-solid fa-at mr-2" />
           Direct Contact
         </h2>
         <p class="text-base-content opacity-70 mb-3">You can also reach us directly via email:</p>
         <a
           href="mailto:n.haider@students.htl-leonding.ac.at"
-          class="flex items-center gap-3 text-primary hover:underline break-all"
+          class="flex items-center gap-3 hover:underline break-all"
         >
           <i class="fa-solid fa-envelope shrink-0" />
           n.haider@students.htl-leonding.ac.at

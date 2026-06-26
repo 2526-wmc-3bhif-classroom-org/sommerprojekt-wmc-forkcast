@@ -54,7 +54,7 @@ const legend = computed(() => {
 </script>
 
 <template>
-  <li v-if="data" class="list-row bg-base-100">
+  <li v-if="data" class="list-row bg-base-200">
     <div class="shrink-0">
       <img :src="data.image" :alt="`Image for: ${data.title}`" class="object-cover rounded-box size-20 sm:size-33" loading="lazy"/>
     </div>
