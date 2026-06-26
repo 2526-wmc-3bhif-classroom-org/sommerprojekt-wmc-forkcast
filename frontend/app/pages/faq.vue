@@ -2,10 +2,10 @@
   <company-pages-component>
 
     <!-- Header -->
-    <div class="card bg-base-100 shadow-xl">
+    <div class="card">
       <div class="card-body">
         <div class="flex items-center gap-4 mb-2">
-          <i class="fa-solid fa-circle-question text-primary text-3xl" />
+          <i class="fa-solid fa-circle-question text-3xl" />
           <h1 class="text-4xl font-bold text-base-content">FAQ</h1>
         </div>
         <p class="text-base-content opacity-70 leading-relaxed">
@@ -16,15 +16,15 @@
     </div>
 
     <!-- General -->
-    <div class="card bg-base-100 shadow-xl">
+    <div class="card">
       <div class="card-body">
         <h2 class="card-title text-xl font-bold text-base-content mb-4">
-          <i class="fa-solid fa-info-circle text-primary mr-2" />
+          <i class="fa-solid fa-info-circle mr-2" />
           General
         </h2>
         <div class="join join-vertical w-full flex flex-col gap-1">
 
-          <div class="collapse collapse-arrow join-item bg-base-200">
+          <div class="collapse collapse-arrow join-item">
             <input type="radio" name="faq-general" defaultChecked />
             <div class="collapse-title font-semibold text-base-content">
               Is Forkcast free to use?
@@ -35,7 +35,7 @@
             </div>
           </div>
 
-          <div class="collapse collapse-arrow join-item bg-base-200">
+          <div class="collapse collapse-arrow join-item">
             <input type="radio" name="faq-general" />
             <div class="collapse-title font-semibold text-base-content">
               Do I need an account to use Forkcast?
@@ -46,7 +46,7 @@
             </div>
           </div>
 
-          <div class="collapse collapse-arrow join-item bg-base-200">
+          <div class="collapse collapse-arrow join-item">
             <input type="radio" name="faq-general" />
             <div class="collapse-title font-semibold text-base-content">
               Is Forkcast available in multiple languages?
@@ -62,15 +62,15 @@
     </div>
 
     <!-- Account -->
-    <div class="card bg-base-100 shadow-xl">
+    <div class="card">
       <div class="card-body">
         <h2 class="card-title text-xl font-bold text-base-content mb-4">
-          <i class="fa-solid fa-user text-primary mr-2" />
+          <i class="fa-solid fa-user mr-2" />
           Account
         </h2>
         <div class="join join-vertical w-full flex flex-col gap-1">
 
-          <div class="collapse collapse-arrow join-item bg-base-200">
+          <div class="collapse collapse-arrow join-item">
             <input type="radio" name="faq-account" defaultChecked />
             <div class="collapse-title font-semibold text-base-content">
               How do I change my password?
@@ -81,7 +81,7 @@
             </div>
           </div>
 
-          <div class="collapse collapse-arrow join-item bg-base-200">
+          <div class="collapse collapse-arrow join-item">
             <input type="radio" name="faq-account" />
             <div class="collapse-title font-semibold text-base-content">
               How do I delete my account?
@@ -93,7 +93,7 @@
             </div>
           </div>
 
-          <div class="collapse collapse-arrow join-item bg-base-200">
+          <div class="collapse collapse-arrow join-item">
             <input type="radio" name="faq-account" />
             <div class="collapse-title font-semibold text-base-content">
               I forgot my password. What do I do?
@@ -109,15 +109,15 @@
     </div>
 
     <!-- Features -->
-    <div class="card bg-base-100 shadow-xl">
+    <div class="card">
       <div class="card-body">
         <h2 class="card-title text-xl font-bold text-base-content mb-4">
-          <i class="fa-solid fa-star text-primary mr-2" />
+          <i class="fa-solid fa-star mr-2" />
           Features
         </h2>
         <div class="join join-vertical w-full flex flex-col gap-1">
 
-          <div class="collapse collapse-arrow join-item bg-base-200">
+          <div class="collapse collapse-arrow join-item">
             <input type="radio" name="faq-features" defaultChecked />
             <div class="collapse-title font-semibold text-base-content">
               How do I add a recipe to my meal schedule?
@@ -128,7 +128,7 @@
             </div>
           </div>
 
-          <div class="collapse collapse-arrow join-item bg-base-200">
+          <div class="collapse collapse-arrow join-item">
             <input type="radio" name="faq-features" />
             <div class="collapse-title font-semibold text-base-content">
               How do I remove a recipe from my favorites?
@@ -139,7 +139,7 @@
             </div>
           </div>
 
-          <div class="collapse collapse-arrow join-item bg-base-200">
+          <div class="collapse collapse-arrow join-item">
             <input type="radio" name="faq-features" />
             <div class="collapse-title font-semibold text-base-content">
               Can I use Forkcast on my phone?
@@ -155,15 +155,15 @@
     </div>
 
     <!-- Privacy & Data -->
-    <div class="card bg-base-100 shadow-xl">
+    <div class="card">
       <div class="card-body">
         <h2 class="card-title text-xl font-bold text-base-content mb-4">
-          <i class="fa-solid fa-shield-halved text-primary mr-2" />
+          <i class="fa-solid fa-shield-halved mr-2" />
           Privacy &amp; Data
         </h2>
         <div class="join join-vertical w-full flex flex-col gap-1">
 
-          <div class="collapse collapse-arrow join-item bg-base-200">
+          <div class="collapse collapse-arrow join-item">
             <input type="radio" name="faq-privacy" defaultChecked />
             <div class="collapse-title font-semibold text-base-content">
               Is my data safe?
@@ -176,7 +176,7 @@
             </div>
           </div>
 
-          <div class="collapse collapse-arrow join-item bg-base-200">
+          <div class="collapse collapse-arrow join-item">
             <input type="radio" name="faq-privacy" />
             <div class="collapse-title font-semibold text-base-content">
               Does Forkcast use cookies?

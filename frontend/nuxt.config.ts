@@ -30,7 +30,8 @@ export default defineNuxtConfig({
     },
     runtimeConfig: {
         public: {
-            apiBaseUrl: process.env.API_BASE_URL || 'http://localhost:3000/api'
+            apiBaseUrl: process.env.API_BASE_URL || 'http://localhost:3000/api',
+            scrollAllowedPages: ["/", "/auth/login", "/auth/signup", "/auth/forgot"] // Pages where the navbar can turn invisible when at the top
         }
     },
     i18n: {
