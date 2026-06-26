@@ -9,6 +9,7 @@ export function useTheme() {
 
   function resolve(c: ThemeChoice): "light" | "dark" {
     if (c !== "system") return c;
+    if (!import.meta.client) return "dark";
     return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
   }
 
