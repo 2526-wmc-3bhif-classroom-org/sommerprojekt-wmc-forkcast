@@ -12,7 +12,7 @@ defineEmits<{ toggle: [] }>();
 
 <template>
   <li
-    class="flex items-center gap-3 bg-base-300 rounded-box px-4 py-3 cursor-pointer select-none transition-opacity"
+    class="flex items-center gap-3 bg-base-200 rounded-box px-4 py-3 cursor-pointer select-none transition-opacity"
     :class="{ 'opacity-50': checked }"
     @click="$emit('toggle')"
   >

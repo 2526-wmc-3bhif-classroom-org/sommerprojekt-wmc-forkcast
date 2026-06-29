@@ -195,7 +195,7 @@ onMounted(fetchShoppingList);
     <div class="flex flex-col gap-4 min-h-0 opacity-0 animate-fade-in-slide-in-left no-print">
 
       <!-- Controls card -->
-      <div class="bg-base-200 rounded-2xl shrink-0">
+      <div class="bg-base-100 rounded-2xl shrink-0">
         <div class="p-5 flex flex-col gap-4">
           <div>
             <h1 class="card-title text-2xl font-bold">
@@ -234,7 +234,7 @@ onMounted(fetchShoppingList);
       </div>
 
       <!-- Calendar card (auto height) -->
-      <div class="bg-base-200 rounded-2xl overflow-hidden flex items-center justify-center p-4">
+      <div class="bg-base-100 rounded-2xl overflow-hidden flex items-center justify-center p-4">
         <calendar-range
           ref="calendarRangeEl"
           class="cally"
@@ -250,7 +250,7 @@ onMounted(fetchShoppingList);
     </div>
 
     <!-- Right column: shopping list -->
-    <div class="sl-right-col bg-base-200 rounded-2xl overflow-hidden flex flex-col opacity-0 animate-fade-in-slide-in-right">
+    <div class="sl-right-col bg-base-100 rounded-2xl overflow-hidden flex flex-col opacity-0 animate-fade-in-slide-in-right">
 
       <!-- Print-only header -->
       <div class="print-only hidden p-4">

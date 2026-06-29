@@ -28,7 +28,7 @@ const failureHandler = useFailureHandler();
 const { t } = useI18n();
 
 const img = useImage();
-const bgImage = img('/images/login-bg.jpg', { quality: 90, format: 'webp' });
+const bgImage = img('/images/signup-bg.jpg', { quality: 90, format: 'webp' });
 
 failureHandler.addHandler("identifier", (message) => {
   identifierError.value = message;
@@ -72,7 +72,7 @@ async function login() {
         :style="`background-image: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.8)), url('${bgImage}');`"
     >
       <div class="hero-content flex-col lg:flex-row-reverse">
-        <div class="text-center lg:text-left lg:ml-24 opacity-0 animate-fade-in-slide-in-up-delay text-[#E6E4E3FF]">
+        <div class="text-center lg:text-left lg:ml-24 opacity-0 animate-fade-in-slide-in-up-delay">
           <h1 class="text-3xl md:text-5xl font-bold text-nowrap">
             {{$t('login.greeting')}}
           </h1>

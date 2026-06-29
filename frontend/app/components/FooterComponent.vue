@@ -1,14 +1,9 @@
 <script setup lang="ts">
-  import {useTheme} from "~/composables/useTheme";
-
-  const theme = useTheme();
 </script>
 <template>
   <footer class="footer sm:footer-horizontal bg-base-200 text-base-content p-10">
     <aside>
-      <nuxt-img v-if="theme.resolve(theme.choice.value) == 'dark'" src="/logo-white.svg" width="60px" class="pr-5"/>
-      <nuxt-img v-else src="/logo-black.svg" width="60px" class="pr-5"/>
-
+      <nuxt-img src="/logo-white.svg" width="60px" class="pr-5"/>
       <p>
         <strong>{{$t('component.footer.title')}}</strong>
         <br />

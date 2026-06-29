@@ -419,7 +419,7 @@ onUnmounted(() => { if (timerInterval !== null) clearInterval(timerInterval); })
             <div class="card-body p-5 gap-4">
               <!-- Step text -->
               <div class="flex items-start gap-3">
-                <span class="shrink-0 w-8 h-8 rounded-full bg-primary/30 flex items-center justify-center text-sm font-bold text-primary mt-0.5">
+                <span class="shrink-0 w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-sm font-bold text-primary mt-0.5">
                   {{ currentStep?.number ?? currentStepIndex + 1 }}
                 </span>
                 <p class="text-base leading-relaxed text-base-content/90 flex-1">{{ currentStep?.step }}</p>
@@ -444,7 +444,7 @@ onUnmounted(() => { if (timerInterval !== null) clearInterval(timerInterval); })
                   <span
                     v-for="ing in currentStep.ingredients"
                     :key="ing.id"
-                    class="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full bg-primary/30 text-base-content border border-primary"
+                    class="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full bg-primary/10 text-primary/80 border border-primary/15"
                   >
                     <img
                       :src="`https://img.spoonacular.com/ingredients_24x24/${ing.image}`"
@@ -465,7 +465,7 @@ onUnmounted(() => { if (timerInterval !== null) clearInterval(timerInterval); })
                   <span
                     v-for="eq in currentStep.equipment.filter(e => !e.temperature)"
                     :key="eq.id"
-                    class="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full bg-base-300 text-base-content border border-base-content/10"
+                    class="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full bg-base-300 text-base-content/60 border border-base-content/10"
                   >
                     <img
                       :src="`https://img.spoonacular.com/equipment_24x24/${eq.image}`"

@@ -266,7 +266,7 @@ function goToToday() {
 
 <template>
   <div v-bind="$attrs" class="grid grid-rows-[4.5rem_1fr] grid-cols-1 gap-4 h-full min-h-0 rounded-2xl overflow-hidden opacity-0 animate-fade-in-slide-in-right">
-    <div class="bg-base-200 rounded-2xl text-base-content">
+    <div class="bg-base-100 rounded-2xl text-base-content">
       <div class="flex items-center justify-between gap-4 px-4 py-4">
         <div class="flex flex-col gap-0.5 min-w-0">
           <!-- Desktop: week range -->
@@ -311,12 +311,12 @@ function goToToday() {
       </div>
     </div>
 
-    <div class="bg-base-200 rounded-2xl text-base-content overflow-hidden">
+    <div class="bg-base-100 rounded-2xl text-base-content overflow-hidden">
       <div ref="calendarGridRef" class="grid grid-cols-1 md:grid-cols-7 gap-px bg-base-300 h-full">
         <div
             v-for="(day, i) in weekDays"
             :key="day.key"
-            class="bg-base-200 flex flex-col overflow-hidden min-h-0"
+            class="bg-base-100 flex flex-col overflow-hidden min-h-0"
             :class="i !== mobileDayIndex ? 'hidden md:flex' : ''"
         >
           <div class="hidden md:flex flex-col items-center py-3 shrink-0 border-b border-base-300">

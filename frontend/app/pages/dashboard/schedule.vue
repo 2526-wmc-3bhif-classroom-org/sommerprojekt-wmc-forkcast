@@ -154,7 +154,7 @@ function onMainListDragEnd() {
 
     <!-- Browse panel -->
     <div
-      class="bg-base-200 rounded-2xl overflow-hidden opacity-0 animate-fade-in-slide-in-left"
+      class="bg-base-100 rounded-2xl overflow-hidden opacity-0 animate-fade-in-slide-in-left"
       :class="activeTab === 'browse' ? 'flex flex-col flex-1 min-h-0' : 'hidden md:flex md:flex-col'"
     >
         <recipe-search-component ref="searchRef" class="m-3 w-[stretch] shrink-0" @results="onSearchResults" @loading="isSearchLoading = $event"/>

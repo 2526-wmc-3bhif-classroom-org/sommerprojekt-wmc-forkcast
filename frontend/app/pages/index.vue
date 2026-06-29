@@ -24,6 +24,7 @@ const statDisplay = ref(stats.map(s => s.to));
 // Fixed locale so SSR and client format identically (avoids hydration mismatch).
 const fmtStat = (n: number) => n.toLocaleString('en-US');
 
+// TODO(assets): provide real screenshots for these views (see filenames below).
 const showcase = [
   { title: 'index.showcase.1.title', desc: 'index.showcase.1.desc', img: '/images/showcase-cooking.png', alt: 'index.showcase.1.alt' },
   { title: 'index.showcase.2.title', desc: 'index.showcase.2.desc', img: '/images/showcase-discovery.png', alt: 'index.showcase.2.alt' },
@@ -123,7 +124,7 @@ onUnmounted(() => {
     <div
         class="hero h-screen bg-cover bg-center animate-zoom-in"
     >
-      <div role="main" class="hero-content flex-col lg:flex-row text-[#E6E4E3FF]">
+      <div role="main" class="hero-content flex-col lg:flex-row">
         <div>
           <h1 class="text-6xl md:text-8xl font-bold mb-2.5 opacity-0 animate-fade-in-slide-in-left">
             {{$t('index.title')}}
@@ -166,8 +167,8 @@ onUnmounted(() => {
     <section class="py-20 px-6 bg-linear-to-b from-transparent to-base-100">
       <div class="max-w-6xl mx-auto">
         <div class="max-w-xl mb-14 scroll-reveal">
-          <h2 class="text-3xl md:text-4xl font-semibold tracking-tight mb-3 text-[#E6E4E3FF]">{{$t('index.features.title')}}</h2>
-          <p class="text-[#E6E4E3FF]/50 text-lg">{{$t('index.features.subtitle')}}</p>
+          <h2 class="text-3xl md:text-4xl font-semibold tracking-tight mb-3">{{$t('index.features.title')}}</h2>
+          <p class="text-base-content/50 text-lg">{{$t('index.features.subtitle')}}</p>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-10">
           <div class="flex gap-4 scroll-reveal">
@@ -206,7 +207,7 @@ onUnmounted(() => {
     <section ref="statsRef" class="px-6 bg-base-100 border-t border-base-content/10">
       <div class="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 divide-x divide-y md:divide-y-0 divide-base-content/10">
         <div v-for="(s, i) in stats" :key="s.label" class="py-12 px-6 text-center">
-          <div class="text-4xl md:text-5xl font-semibold tracking-tight text-primary mb-1 tabular-nums">{{ fmtStat(statDisplay[i]!!) }}{{ s.suffix }}</div>
+          <div class="text-4xl md:text-5xl font-semibold tracking-tight text-primary mb-1 tabular-nums">{{ fmtStat(statDisplay[i]) }}{{ s.suffix }}</div>
           <div class="text-sm text-base-content/50">{{$t(s.label)}}</div>
         </div>
       </div>
@@ -246,7 +247,7 @@ onUnmounted(() => {
               <button
                 type="button"
                 class="relative order-1 md:order-2 w-full aspect-video rounded-2xl overflow-hidden border border-base-content/10 bg-base-200 shadow-2xl shadow-black/30 cursor-zoom-in"
-                @click="lightbox = steps[activeStep]!!.img"
+                @click="lightbox = steps[activeStep].img"
               >
                 <img
                   v-for="(s, i) in steps"
@@ -359,11 +360,11 @@ onUnmounted(() => {
           <h2 class="text-3xl md:text-5xl font-semibold tracking-tight mb-3 text-white">{{$t('index.cta.title')}}</h2>
           <p class="text-white/70 text-lg mb-8">{{$t('index.cta.subtitle')}}</p>
           <client-only>
-            <nuxt-link-locale v-if="!authService.authenticated.value" to="/auth/signup" class="btn btn-primary">
+            <nuxt-link-locale v-if="!authService.authenticated.value" to="/auth/signup" class="btn btn-primary btn-lg">
               <i class="fa-solid fa-user-plus mr-1"/>
               {{$t('index.cta.signup')}}
             </nuxt-link-locale>
-            <nuxt-link-locale v-if="authService.authenticated.value" to="/dashboard" class="btn btn-primary">
+            <nuxt-link-locale v-if="authService.authenticated.value" to="/dashboard" class="btn btn-primary btn-lg">
               <i class="fa-solid fa-chart-line mr-1"/>
               {{$t('index.prompt_dashboard')}}
             </nuxt-link-locale>
